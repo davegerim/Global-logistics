@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
+import 'package:global_logistics_app/core/providers/consignor_active_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
@@ -21,10 +22,28 @@ class ConsignorShipmentDetailScreen extends ConsumerStatefulWidget {
 
 class _ConsignorShipmentDetailScreenState
     extends ConsumerState<ConsignorShipmentDetailScreen> {
+  static const Set<String> _assignedOrLaterStatuses = {
+    'DRIVER_ASSIGNED',
+    'GDN_GENERATED',
+    'LOADED',
+    'IN_TRANSIT',
+    'ARRIVED',
+    'OFFLOADED',
+    'GRN_GENERATED',
+    'CONSIGNOR_RECEIVED',
+    'COMPLETED',
+  };
+
   String? _assignmentId;
   bool _resolvingAssignment = false;
   bool _gdnCreated = false;
   String? _gdnMessage;
+  bool _grnCreated = false;
+  String? _grnMessage;
+  String? _assignmentApiStatus;
+  bool _resolvingDriverSelection = false;
+  bool _driverSelected = false;
+  String? _selectionResolvedForShipment;
 
   Future<void> _resolveAssignmentIfNeeded(ShipmentModel s) async {
     if (_resolvingAssignment || _assignmentId != null || !mounted) return;
@@ -33,17 +52,27 @@ class _ConsignorShipmentDetailScreenState
       final api = ref.read(backendApiProvider);
       final assignments = await api.assignmentsConsignorOfShipment(s.id);
       String? found;
+      String? resolvedAssignmentStatus;
       if (assignments.isNotEmpty && assignments.first is Map) {
         final row = (assignments.first as Map).cast<String, dynamic>();
         found =
             (row['assignmentId'] as String?) ??
             (row['publicId'] as String?) ??
             (row['id'] as String?);
+        final rawStatus =
+            row['status'] ?? row['assignmentStatus'] ?? row['currentStatus'];
+        if (rawStatus is String && rawStatus.trim().isNotEmpty) {
+          resolvedAssignmentStatus = rawStatus.trim().toUpperCase();
+        }
       }
       if (!mounted) return;
-      setState(() => _assignmentId = found);
+      setState(() {
+        _assignmentId = found;
+        _assignmentApiStatus = resolvedAssignmentStatus;
+      });
       if (found != null) {
         await _refreshGdnState(found);
+        await _refreshGrnState(found);
       }
     } catch (_) {
     } finally {
@@ -53,7 +82,9 @@ class _ConsignorShipmentDetailScreenState
 
   Future<void> _refreshGdnState(String assignmentId) async {
     try {
-      final gdns = await ref.read(backendApiProvider).gdnOfAssignment(assignmentId);
+      final gdns = await ref
+          .read(backendApiProvider)
+          .gdnOfAssignment(assignmentId);
       if (!mounted) return;
       setState(() {
         _gdnCreated = gdns.isNotEmpty;
@@ -62,6 +93,156 @@ class _ConsignorShipmentDetailScreenState
         }
       });
     } catch (_) {}
+  }
+
+  Future<void> _refreshGrnState(String assignmentId) async {
+    try {
+      final grns = await ref
+          .read(backendApiProvider)
+          .grnOfAssignment(assignmentId);
+      if (!mounted) return;
+      setState(() {
+        _grnCreated = grns.isNotEmpty;
+        if (_grnCreated) {
+          _grnMessage = 'GRN already generated.';
+        } else {
+          _grnMessage = null;
+        }
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _resolveDriverSelectionIfNeeded(ShipmentModel s) async {
+    if (_resolvingDriverSelection || !mounted) return;
+    if (_selectionResolvedForShipment == s.id) return;
+    setState(() => _resolvingDriverSelection = true);
+    try {
+      final payload = await ref.read(consignorActiveProvider.future);
+      final active = _findActiveShipment(payload, s);
+      final selected = _hasSelectedDriver(active);
+      if (!mounted) return;
+      setState(() {
+        _driverSelected = selected;
+        _selectionResolvedForShipment = s.id;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _driverSelected = false;
+        _selectionResolvedForShipment = s.id;
+      });
+    } finally {
+      if (mounted) setState(() => _resolvingDriverSelection = false);
+    }
+  }
+
+  Map<String, dynamic>? _findActiveShipment(dynamic payload, ShipmentModel s) {
+    if (payload is! List) return null;
+    for (final item in payload) {
+      if (item is! Map) continue;
+      final map = item.cast<String, dynamic>();
+      final publicId = map['publicId']?.toString();
+      if (publicId == s.publicId || publicId == s.id) {
+        return map;
+      }
+    }
+    return null;
+  }
+
+  bool _hasSelectedDriver(Map<String, dynamic>? shipment) {
+    if (shipment == null) return false;
+    final selectedDrivers = shipment['selectedDrivers'];
+    if (selectedDrivers is! List || selectedDrivers.isEmpty) return false;
+    for (final item in selectedDrivers) {
+      if (item is! Map) continue;
+      final row = item.cast<String, dynamic>();
+      final status = (row['status']?.toString() ?? '').trim().toUpperCase();
+      if (status == 'SELECTED' ||
+          status == 'ASSIGNED' ||
+          status == 'DRIVER_ASSIGNED') {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool _isAssignedOrLater(String? apiStatusLabel) {
+    final status = (apiStatusLabel ?? '').trim().toUpperCase();
+    return _assignedOrLaterStatuses.contains(status);
+  }
+
+  bool _canOpenGrnControl(String assignmentStatus) {
+    switch (assignmentStatus) {
+      case 'OFFLOADED':
+      case 'GRN_GENERATED':
+      case 'CONSIGNOR_RECEIVED':
+      case 'COMPLETED':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  bool _handoverConfirmed(String assignmentStatus) {
+    switch (assignmentStatus) {
+      case 'CONSIGNOR_RECEIVED':
+      case 'COMPLETED':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  bool _confirmingHandover = false;
+
+  Future<String?> _promptConfirmRemark() async {
+    final value = await showDialog<String>(
+      context: context,
+      builder: (ctx) => const _ConsignorConfirmRemarkDialog(),
+    );
+    if (value == null) return null;
+    if (value.isEmpty) {
+      if (!mounted) return null;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Remark is required to confirm.')),
+      );
+      return null;
+    }
+    return value;
+  }
+
+  Future<void> _confirmHandover(String shipmentId) async {
+    if (_confirmingHandover || _assignmentId == null) return;
+    final remark = await _promptConfirmRemark();
+    if (!mounted || remark == null) return;
+    setState(() => _confirmingHandover = true);
+    try {
+      await ref.read(backendApiProvider).assignmentsConsignorConfirm({
+        'assignmentId': _assignmentId!,
+        'remark': remark,
+      });
+      if (!mounted) return;
+      setState(() {
+        _assignmentApiStatus = 'CONSIGNOR_RECEIVED';
+        _confirmingHandover = false;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.invalidate(consignorShipmentsProvider);
+        ref.invalidate(shipmentDetailProvider(shipmentId));
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Consignor confirmation completed.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    } finally {
+      if (mounted && _confirmingHandover) {
+        setState(() => _confirmingHandover = false);
+      }
+    }
   }
 
   @override
@@ -78,7 +259,11 @@ class _ConsignorShipmentDetailScreenState
         title: const Text('Shipment'),
         actions: [
           IconButton(
-            onPressed: () => ref.invalidate(consignorShipmentsProvider),
+            onPressed: () {
+              _selectionResolvedForShipment = null;
+              ref.invalidate(consignorShipmentsProvider);
+              ref.invalidate(consignorActiveProvider);
+            },
             icon: const Icon(Icons.refresh_rounded),
           ),
         ],
@@ -89,7 +274,19 @@ class _ConsignorShipmentDetailScreenState
           if (s == null) {
             return const Center(child: Text('Shipment not found'));
           }
-          _resolveAssignmentIfNeeded(s);
+          _resolveDriverSelectionIfNeeded(s);
+          final assignedByStatus = _isAssignedOrLater(s.apiStatusLabel);
+          if (_driverSelected || assignedByStatus) {
+            _resolveAssignmentIfNeeded(s);
+          }
+          final assignmentStatus =
+              (_assignmentApiStatus ?? s.apiStatusLabel ?? '')
+                  .trim()
+                  .toUpperCase();
+          final gdnControlEnabled =
+              _driverSelected || (assignedByStatus && _assignmentId != null);
+          final grnControlEnabled =
+              _assignmentId != null && _canOpenGrnControl(assignmentStatus);
           final fmt = DateFormat.yMMMd();
           return ListView(
             padding: const EdgeInsets.all(20),
@@ -167,6 +364,12 @@ class _ConsignorShipmentDetailScreenState
                   const SizedBox(height: 10),
                   if (_resolvingAssignment)
                     const LinearProgressIndicator()
+                  else if (_resolvingDriverSelection)
+                    const LinearProgressIndicator()
+                  else if (!gdnControlEnabled)
+                    const Text(
+                      'GDN control becomes available once admin selects and assigns a driver.',
+                    )
                   else if (_assignmentId == null)
                     const Text(
                       'Waiting for driver assignment. Once assigned, create GDN before driver can continue status updates.',
@@ -177,14 +380,116 @@ class _ConsignorShipmentDetailScreenState
                     const SizedBox(height: 12),
                     GlPrimaryButton(
                       label: _gdnCreated ? 'View GDN form' : 'Open GDN form',
-                      icon: _gdnCreated ? Icons.lock_rounded : Icons.description_outlined,
-                      onPressed: () => context.push(
-                        '/consignor/shipment/${s.id}/gdn?assignment=$_assignmentId&goods=${Uri.encodeQueryComponent(s.goodsDescription)}',
-                      ),
+                      icon: _gdnCreated
+                          ? Icons.lock_rounded
+                          : Icons.description_outlined,
+                      onPressed: () async {
+                        await context.push(
+                          '/consignor/shipment/${s.id}/gdn?assignment=$_assignmentId&goods=${Uri.encodeQueryComponent(s.goodsDescription)}',
+                        );
+                        if (_assignmentId != null) {
+                          await _refreshGdnState(_assignmentId!);
+                        }
+                      },
                     ),
                   ],
                 ],
               ),
+              const SizedBox(height: 16),
+              _InfoCard(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.inventory_2_outlined,
+                        color: AppColors.primary.withValues(alpha: 0.85),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'GRN Control',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  if (_resolvingAssignment)
+                    const LinearProgressIndicator()
+                  else if (_assignmentId == null)
+                    const Text(
+                      'GRN control becomes available after driver assignment is active.',
+                    )
+                  else if (!grnControlEnabled)
+                    const Text(
+                      'GRN can be created after the driver confirms offloaded status.',
+                    )
+                  else ...[
+                    _kv('Assignment', _assignmentId!),
+                    if (_grnMessage != null) _kv('Status', _grnMessage!),
+                    const SizedBox(height: 12),
+                    GlPrimaryButton(
+                      label: _grnCreated ? 'View GRN form' : 'Open GRN form',
+                      icon: _grnCreated
+                          ? Icons.lock_rounded
+                          : Icons.inventory_rounded,
+                      onPressed: () async {
+                        await context.push(
+                          '/consignor/shipment/${s.id}/grn?assignment=$_assignmentId&status=$assignmentStatus',
+                        );
+                        if (_assignmentId != null) {
+                          await _refreshGrnState(_assignmentId!);
+                        }
+                        ref.invalidate(consignorShipmentsProvider);
+                        ref.invalidate(shipmentDetailProvider(s.id));
+                      },
+                    ),
+                  ],
+                ],
+              ),
+              if (_grnCreated && _assignmentId != null) ...[
+                const SizedBox(height: 16),
+                _InfoCard(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.task_alt_rounded,
+                          color: AppColors.primary.withValues(alpha: 0.85),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Confirm handover',
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    if (_handoverConfirmed(assignmentStatus))
+                      Text(
+                        'Handover confirmed.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.success,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )
+                    else ...[
+                      Text(
+                        'After GRN is recorded, confirm final receipt here.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      GlPrimaryButton(
+                        label: 'Confirm completed',
+                        icon: Icons.task_alt_rounded,
+                        onPressed: _confirmingHandover
+                            ? null
+                            : () => _confirmHandover(s.id),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
               const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(14),
@@ -225,7 +530,9 @@ class _ConsignorShipmentDetailScreenState
                 icon: Icons.map_outlined,
                 onPressed: _assignmentId == null
                     ? null
-                    : () => context.push('/consignor/track/${s.id}?assignment=$_assignmentId'),
+                    : () => context.push(
+                        '/consignor/track/${s.id}?assignment=$_assignmentId',
+                      ),
               ),
             ],
           );
@@ -422,6 +729,59 @@ class _TimelineCard extends StatelessWidget {
               Text(value),
             ],
           ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Owns [TextEditingController] lifecycle so it is not disposed while the
+/// dialog route is still tearing down (avoids framework assertion failures).
+class _ConsignorConfirmRemarkDialog extends StatefulWidget {
+  const _ConsignorConfirmRemarkDialog();
+
+  @override
+  State<_ConsignorConfirmRemarkDialog> createState() =>
+      _ConsignorConfirmRemarkDialogState();
+}
+
+class _ConsignorConfirmRemarkDialogState
+    extends State<_ConsignorConfirmRemarkDialog> {
+  late final TextEditingController _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Confirm Assignment'),
+      content: TextField(
+        controller: _ctrl,
+        maxLines: 3,
+        decoration: const InputDecoration(
+          labelText: 'Remark *',
+          hintText: 'Add consignor confirmation remark',
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () {
+            final remark = _ctrl.text.trim();
+            if (remark.isEmpty) {
+              Navigator.of(context).pop('');
+              return;
+            }
+            Navigator.of(context).pop(remark);
+          },
+          child: const Text('Confirm'),
         ),
       ],
     );

@@ -240,6 +240,10 @@ class BackendApi {
     await _dio.put<void>('/assignments/consignor-received', data: body);
   }
 
+  Future<void> assignmentsConsignorConfirm(Map<String, dynamic> body) async {
+    await _dio.put<void>('/assignments/consignor-confirm', data: body);
+  }
+
   Future<void> assignmentsCancel(Map<String, dynamic> body) async {
     await _dio.put<void>('/assignments/cancel', data: body);
   }

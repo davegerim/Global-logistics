@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
+import 'package:global_logistics_app/core/services/device_location_service.dart';
 import 'package:global_logistics_app/data/storage/token_cache.dart';
 import 'package:global_logistics_app/data/storage/token_storage.dart';
 
@@ -124,6 +126,7 @@ class AuthNotifier extends Notifier<AuthState> {
       final api = ref.read(backendApiProvider);
       final profile = await api.identityGet();
       _applyProfile(profile);
+      await _sendInitialDriverTrackingPing();
       state = state.copyWith(
         isAuthenticated: true,
         isLoading: false,
@@ -222,9 +225,44 @@ class AuthNotifier extends Notifier<AuthState> {
           )) {
         state = state.copyWith(role: intendedRole);
       }
+      await _sendInitialDriverTrackingPing();
       state = state.copyWith(isAuthenticated: true, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: _formatError(e));
+    }
+  }
+
+  Future<void> _sendInitialDriverTrackingPing() async {
+    if (state.role != AppRole.driver) return;
+    try {
+      final api = ref.read(backendApiProvider);
+      final assignments = await api.assignmentsDriver();
+      if (assignments.isEmpty || assignments.first is! Map) return;
+      final first = (assignments.first as Map).cast<String, dynamic>();
+      final assignmentId =
+          (first['publicId'] as String?) ??
+          (first['assignmentId'] as String?) ??
+          (first['id'] as String?);
+      if (assignmentId == null || assignmentId.trim().isEmpty) return;
+      final location = await DeviceLocationService.current();
+      final recordedAt = DateTime.fromMillisecondsSinceEpoch(
+        DateTime.now().toUtc().millisecondsSinceEpoch,
+        isUtc: true,
+      ).toIso8601String();
+      await api.trackingRecord({
+        'assignmentId': assignmentId,
+        'lat': location.latitude,
+        'lon': location.longitude,
+        'latitude': location.latitude,
+        'longitude': location.longitude,
+        'accuracy': location.accuracy,
+        'speed': location.speed,
+        'recordedAt': recordedAt,
+      });
+      debugPrint('[TRACKING] sent (login-initial) for assignment=$assignmentId');
+    } catch (e) {
+      // Tracking ping must never block successful login.
+      debugPrint('[TRACKING] skipped (login-initial): $e');
     }
   }
 
@@ -269,6 +307,7 @@ class AuthNotifier extends Notifier<AuthState> {
       }
       final profile = await api.identityGet();
       _applyProfile(profile);
+      await _sendInitialDriverTrackingPing();
       state = state.copyWith(isAuthenticated: true, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: _formatError(e));

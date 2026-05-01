@@ -5,6 +5,7 @@ import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/driver_offers_provider.dart';
+import 'package:global_logistics_app/core/services/device_location_service.dart';
 import 'package:intl/intl.dart';
 
 class DriverOffersScreen extends ConsumerWidget {
@@ -12,12 +13,15 @@ class DriverOffersScreen extends ConsumerWidget {
 
   Future<void> _accept(BuildContext context, WidgetRef ref, String negotiationId) async {
     try {
-      await ref.read(backendApiProvider).driverNegotiationsDriverAccepts({
+      final location = await DeviceLocationService.current();
+      final payload = {
         'negotiationId': negotiationId,
-        'lat': 9.03,
-        'lon': 38.75,
-        'locationText': 'Addis Ababa (mobile demo)',
-      });
+        'lat': location.latitude,
+        'lon': location.longitude,
+        'locationText':
+            'GPS(${location.latitude.toStringAsFixed(6)}, ${location.longitude.toStringAsFixed(6)})',
+      };
+      await ref.read(backendApiProvider).driverNegotiationsDriverAccepts(payload);
       ref.invalidate(driverOffersProvider);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

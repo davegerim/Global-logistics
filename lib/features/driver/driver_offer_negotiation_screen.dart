@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/driver_offers_provider.dart';
+import 'package:global_logistics_app/core/services/device_location_service.dart';
 import 'package:global_logistics_app/data/models/driver_offer_model.dart';
 import 'package:intl/intl.dart';
 
@@ -28,12 +29,15 @@ class _DriverOfferNegotiationScreenState
 
   Future<void> _accept(String negotiationId) async {
     await _runAction(() async {
-      await ref.read(backendApiProvider).driverNegotiationsDriverAccepts({
+      final location = await DeviceLocationService.current();
+      final payload = {
         'negotiationId': negotiationId,
-        'lat': 9.03,
-        'lon': 38.75,
-        'locationText': 'Addis Ababa (mobile demo)',
-      });
+        'lat': location.latitude,
+        'lon': location.longitude,
+        'locationText':
+            'GPS(${location.latitude.toStringAsFixed(6)}, ${location.longitude.toStringAsFixed(6)})',
+      };
+      await ref.read(backendApiProvider).driverNegotiationsDriverAccepts(payload);
     }, success: 'Offer accepted.');
   }
 

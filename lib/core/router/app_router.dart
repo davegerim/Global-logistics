@@ -13,6 +13,7 @@ import 'package:global_logistics_app/features/auth/register_driver_vehicle_scree
 import 'package:global_logistics_app/features/auth/register_driver_verify_screen.dart';
 import 'package:global_logistics_app/features/consignor/consignor_documents_screen.dart';
 import 'package:global_logistics_app/features/consignor/consignor_gdn_form_screen.dart';
+import 'package:global_logistics_app/features/consignor/consignor_grn_form_screen.dart';
 import 'package:global_logistics_app/features/consignor/consignor_home_screen.dart';
 import 'package:global_logistics_app/features/consignor/consignor_negotiation_screen.dart';
 import 'package:global_logistics_app/features/consignor/consignor_profile_screen.dart';
@@ -111,7 +112,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/forgot-password',
         builder: (context, state) {
           final extra = state.extra;
-          final phone = extra is Map<String, dynamic> ? (extra['phone'] as String? ?? '') : '';
+          final phone = extra is Map<String, dynamic>
+              ? (extra['phone'] as String? ?? '')
+              : '';
           return ForgotPasswordScreen(initialPhone: phone);
         },
       ),
@@ -239,16 +242,41 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) {
               final id = state.pathParameters['id']!;
               final assignmentId = state.uri.queryParameters['assignment'];
-              final goodsDescription = state.uri.queryParameters['goods'] ?? 'Shipment';
+              final goodsDescription =
+                  state.uri.queryParameters['goods'] ?? 'Shipment';
               if (assignmentId == null || assignmentId.isEmpty) {
                 return const Scaffold(
-                  body: Center(child: Text('Assignment is required to create GDN.')),
+                  body: Center(
+                    child: Text('Assignment is required to create GDN.'),
+                  ),
                 );
               }
               return ConsignorGdnFormScreen(
                 shipmentId: id,
                 assignmentId: assignmentId,
                 goodsDescription: goodsDescription,
+              );
+            },
+          ),
+          GoRoute(
+            parentNavigatorKey: _rootNavigatorKey,
+            path: 'shipment/:id/grn',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              final assignmentId = state.uri.queryParameters['assignment'];
+              final assignmentStatus =
+                  state.uri.queryParameters['status'] ?? '';
+              if (assignmentId == null || assignmentId.isEmpty) {
+                return const Scaffold(
+                  body: Center(
+                    child: Text('Assignment is required to create GRN.'),
+                  ),
+                );
+              }
+              return ConsignorGrnFormScreen(
+                shipmentId: id,
+                assignmentId: assignmentId,
+                assignmentStatus: assignmentStatus,
               );
             },
           ),

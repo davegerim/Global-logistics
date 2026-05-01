@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
+import 'package:global_logistics_app/core/providers/repository_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
-import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
+import 'package:global_logistics_app/core/services/device_location_service.dart';
+import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/shared/widgets/status_chip.dart';
+import 'package:intl/intl.dart';
 
 /// Driver assignment actions: `PUT /assignments/*` and `POST /tracking`.
 class DriverShipmentDetailScreen extends ConsumerStatefulWidget {
@@ -19,10 +24,45 @@ class DriverShipmentDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _DriverShipmentDetailScreenState
-    extends ConsumerState<DriverShipmentDetailScreen> {
+    extends ConsumerState<DriverShipmentDetailScreen>
+    with WidgetsBindingObserver {
+  static const Duration _trackingInterval = Duration(minutes: 15);
+
   bool _checkingGdn = false;
   bool _hasGdn = false;
   String? _gdnInfo;
+  List<DocumentRef>? _assignmentDocuments;
+  String? _documentsLoadedForAid;
+  bool _loadingDocuments = false;
+  Timer? _trackingTimer;
+  String? _trackedAssignmentId;
+  bool _trackingInFlight = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    _trackingTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _trackingTimer?.cancel();
+      _trackingTimer = null;
+      return;
+    }
+    if (state == AppLifecycleState.resumed && _trackedAssignmentId != null) {
+      _startTrackingLoop(_trackedAssignmentId!);
+    }
+  }
 
   Future<String?> _prompt(BuildContext context, String title, String hint) {
     final c = TextEditingController();
@@ -36,8 +76,14 @@ class _DriverShipmentDetailScreenState
           decoration: InputDecoration(hintText: hint),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, c.text.trim()), child: const Text('OK')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, c.text.trim()),
+            child: const Text('OK'),
+          ),
         ],
       ),
     );
@@ -52,18 +98,89 @@ class _DriverShipmentDetailScreenState
   ) async {
     try {
       await call();
+      await _recordTracking(
+        assignmentId,
+        reason: 'status:$label',
+        throwOnFailure: false,
+      );
       ref.invalidate(shipmentDetailProvider(widget.shipmentId));
       ref.invalidate(driverAssignedShipmentsProvider);
       if (context.mounted) {
         await _refreshGdnState(assignmentId);
       }
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$label — OK')));
+        await _refreshAssignmentDocuments(assignmentId, force: true);
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$label — OK')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$e')));
       }
+    }
+  }
+
+  void _startTrackingLoop(String assignmentId) {
+    if (_trackedAssignmentId != assignmentId || _trackingTimer == null) {
+      _trackingTimer?.cancel();
+      _trackedAssignmentId = assignmentId;
+      _trackingTimer = Timer.periodic(_trackingInterval, (_) {
+        _recordTracking(
+          assignmentId,
+          reason: 'periodic-15m',
+          throwOnFailure: false,
+        );
+      });
+      _recordTracking(
+        assignmentId,
+        reason: 'tracking-loop-start',
+        throwOnFailure: false,
+      );
+    }
+  }
+
+  void _stopTrackingLoop() {
+    _trackingTimer?.cancel();
+    _trackingTimer = null;
+    _trackedAssignmentId = null;
+  }
+
+  Future<void> _recordTracking(
+    String assignmentId, {
+    required String reason,
+    required bool throwOnFailure,
+  }) async {
+    if (_trackingInFlight) return;
+    _trackingInFlight = true;
+    try {
+      final location = await DeviceLocationService.current();
+      final recordedAt = DateTime.fromMillisecondsSinceEpoch(
+        DateTime.now().toUtc().millisecondsSinceEpoch,
+        isUtc: true,
+      ).toIso8601String();
+      await ref.read(backendApiProvider).trackingRecord({
+        'assignmentId': assignmentId,
+        // Keep both key variants for backend compatibility.
+        'lat': location.latitude,
+        'lon': location.longitude,
+        'latitude': location.latitude,
+        'longitude': location.longitude,
+        'accuracy': location.accuracy,
+        'speed': location.speed,
+        'recordedAt': recordedAt,
+      });
+      // Tag app-level tracking events; full payload/response is already logged by GL_API interceptor.
+      debugPrint('[TRACKING] sent ($reason) for assignment=$assignmentId');
+    } catch (e) {
+      debugPrint('[TRACKING] failed ($reason): $e');
+      if (throwOnFailure) rethrow;
+    } finally {
+      _trackingInFlight = false;
     }
   }
 
@@ -71,22 +188,50 @@ class _DriverShipmentDetailScreenState
     if (_checkingGdn) return;
     setState(() => _checkingGdn = true);
     try {
-      final gdns = await ref.read(backendApiProvider).gdnOfAssignment(assignmentId);
+      final gdns = await ref
+          .read(backendApiProvider)
+          .gdnOfAssignment(assignmentId);
       if (!mounted) return;
       setState(() {
         _hasGdn = gdns.isNotEmpty;
-        _gdnInfo = _hasGdn ? 'GDN is ready' : 'Waiting for consignor to create GDN';
+        _gdnInfo = _hasGdn
+            ? 'GDN is ready'
+            : 'Waiting for consignor to create GDN';
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _gdnInfo = 'Unable to verify GDN right now. Please refresh.');
+      setState(
+        () => _gdnInfo = 'Unable to verify GDN right now. Please refresh.',
+      );
     } finally {
       if (mounted) setState(() => _checkingGdn = false);
     }
   }
 
+  Future<void> _refreshAssignmentDocuments(
+    String assignmentId, {
+    bool force = false,
+  }) async {
+    if (_loadingDocuments && !force) return;
+    setState(() => _loadingDocuments = true);
+    try {
+      final docs = await ref
+          .read(logisticsRepositoryProvider)
+          .fetchDocumentsForAssignment(assignmentId);
+      if (!mounted) return;
+      setState(() {
+        _assignmentDocuments = docs;
+        _documentsLoadedForAid = assignmentId;
+        _loadingDocuments = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loadingDocuments = false);
+    }
+  }
+
   bool _canLoaded(String? apiStatus) =>
-      _hasGdn && (apiStatus == 'DRIVER_ASSIGNED' || apiStatus == 'GDN_GENERATED');
+      _hasGdn &&
+      (apiStatus == 'DRIVER_ASSIGNED' || apiStatus == 'GDN_GENERATED');
 
   bool _canTransit(String? apiStatus) => apiStatus == 'LOADED';
 
@@ -115,6 +260,7 @@ class _DriverShipmentDetailScreenState
   Widget build(BuildContext context) {
     final async = ref.watch(shipmentDetailProvider(widget.shipmentId));
     final api = ref.read(backendApiProvider);
+    final fmt = DateFormat.yMMMd();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -131,10 +277,30 @@ class _DriverShipmentDetailScreenState
             return const Center(child: Text('Not found'));
           }
           final aid = s.assignmentId;
-          if (aid != null && !_checkingGdn && _gdnInfo == null) {
-            _refreshGdnState(aid);
-          }
           final status = (s.apiStatusLabel ?? '').trim().toUpperCase();
+          final shouldTrackInBackground =
+              status == 'IN_TRANSIT' || status == 'ARRIVED';
+          if (aid == null) {
+            _stopTrackingLoop();
+          } else if (!_checkingGdn && _gdnInfo == null) {
+            _refreshGdnState(aid);
+            if (shouldTrackInBackground) {
+              _startTrackingLoop(aid);
+            } else {
+              _stopTrackingLoop();
+            }
+          } else {
+            if (shouldTrackInBackground) {
+              _startTrackingLoop(aid);
+            } else {
+              _stopTrackingLoop();
+            }
+          }
+          if (aid != null &&
+              _documentsLoadedForAid != aid &&
+              !_loadingDocuments) {
+            _refreshAssignmentDocuments(aid);
+          }
           final currentStep = _currentStepIndex(status);
           return ListView(
             padding: const EdgeInsets.all(20),
@@ -142,26 +308,41 @@ class _DriverShipmentDetailScreenState
               Row(
                 children: [
                   Expanded(
-                    child: Text(s.publicId, style: Theme.of(context).textTheme.headlineSmall),
+                    child: Text(
+                      s.publicId,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                   ),
-                  StatusChip(
-                    status: s.status,
-                    labelOverride: s.apiStatusLabel,
-                  ),
+                  StatusChip(status: s.status, labelOverride: s.apiStatusLabel),
                 ],
               ),
               if (aid != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text('assignmentId: $aid', style: Theme.of(context).textTheme.bodySmall),
+                  child: Text(
+                    'assignmentId: $aid',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
               const SizedBox(height: 12),
-              Text(s.goodsDescription, style: Theme.of(context).textTheme.bodyLarge),
+              Text(
+                s.goodsDescription,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
               const SizedBox(height: 20),
               _block('Pickup', s.loadingAddress, Icons.north_east),
               const SizedBox(height: 12),
               _block('Drop-off', s.offloadingAddress, Icons.south_west),
               const SizedBox(height: 20),
+              if (aid != null)
+                _DriverGdnGrnSection(
+                  loading: _loadingDocuments,
+                  documents: _assignmentDocuments,
+                  dateFmt: fmt,
+                  onOpenDetail: (d) =>
+                      _showDriverDocumentSheet(context, d, fmt),
+                ),
+              if (aid != null) const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -204,10 +385,15 @@ class _DriverShipmentDetailScreenState
                 ),
               ),
               const SizedBox(height: 18),
-              Text('Assignment actions', style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                'Assignment actions',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
               const SizedBox(height: 10),
               if (aid == null)
-                const Text('Assignment id missing — open again after assignment is created.')
+                const Text(
+                  'Assignment id missing — open again after assignment is created.',
+                )
               else ...[
                 Container(
                   padding: const EdgeInsets.all(14),
@@ -221,16 +407,19 @@ class _DriverShipmentDetailScreenState
                   child: Row(
                     children: [
                       Icon(
-                        _hasGdn ? Icons.verified_rounded : Icons.pending_actions_rounded,
+                        _hasGdn
+                            ? Icons.verified_rounded
+                            : Icons.pending_actions_rounded,
                         color: _hasGdn ? AppColors.success : AppColors.warning,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          _checkingGdn ? 'Checking GDN...' : (_gdnInfo ?? 'Checking GDN...'),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          _checkingGdn
+                              ? 'Checking GDN...'
+                              : (_gdnInfo ?? 'Checking GDN...'),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -260,7 +449,8 @@ class _DriverShipmentDetailScreenState
                     context,
                     ref,
                     aid,
-                    () => api.assignmentsConfirmInTransit({'assignmentId': aid}),
+                    () =>
+                        api.assignmentsConfirmInTransit({'assignmentId': aid}),
                     'In transit confirmed',
                   ),
                 ),
@@ -288,14 +478,19 @@ class _DriverShipmentDetailScreenState
                     context,
                     ref,
                     aid,
-                    () => api.assignmentsConfirmOffloaded({'assignmentId': aid}),
+                    () =>
+                        api.assignmentsConfirmOffloaded({'assignmentId': aid}),
                     'Offload confirmed',
                   ),
                 ),
                 const SizedBox(height: 8),
                 OutlinedButton(
                   onPressed: () async {
-                    final remark = await _prompt(context, 'Cancel assignment', 'Reason (optional)');
+                    final remark = await _prompt(
+                      context,
+                      'Cancel assignment',
+                      'Reason (optional)',
+                    );
                     if (!context.mounted) return;
                     await _putStatus(
                       context,
@@ -303,37 +498,13 @@ class _DriverShipmentDetailScreenState
                       aid,
                       () => api.assignmentsCancel({
                         'assignmentId': aid,
-                        if (remark != null && remark.isNotEmpty) 'remark': remark,
+                        if (remark != null && remark.isNotEmpty)
+                          'remark': remark,
                       }),
                       'Assignment cancelled',
                     );
                   },
                   child: const Text('Cancel assignment'),
-                ),
-                const SizedBox(height: 20),
-                GlPrimaryButton(
-                  label: 'Record GPS',
-                  onPressed: () async {
-                    try {
-                      await api.trackingRecord({
-                        'assignmentId': aid,
-                        'latitude': 9.03,
-                        'longitude': 38.75,
-                        'accuracy': 12.0,
-                        'speed': 0.0,
-                        'recordedAt': DateTime.now().toUtc().toIso8601String(),
-                      });
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('GPS location recorded.')),
-                        );
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
-                      }
-                    }
-                  },
                 ),
               ],
               const SizedBox(height: 16),
@@ -341,8 +512,14 @@ class _DriverShipmentDetailScreenState
               TextButton.icon(
                 onPressed: () async {
                   if (aid == null) return;
-                  final comment = await _prompt(context, 'Feedback to consignor', 'Comment *');
-                  if (!context.mounted || comment == null || comment.isEmpty) return;
+                  final comment = await _prompt(
+                    context,
+                    'Feedback to consignor',
+                    'Comment *',
+                  );
+                  if (!context.mounted || comment == null || comment.isEmpty) {
+                    return;
+                  }
                   try {
                     await api.feedbackToConsignor({
                       'assignmentId': aid,
@@ -356,7 +533,9 @@ class _DriverShipmentDetailScreenState
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('$e')));
                     }
                   }
                 },
@@ -369,6 +548,82 @@ class _DriverShipmentDetailScreenState
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
       ),
+    );
+  }
+
+  Future<void> _showDriverDocumentSheet(
+    BuildContext context,
+    DocumentRef d,
+    DateFormat fmt,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  d.title,
+                  style: Theme.of(
+                    ctx,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 14),
+                _DriverDocDetailRow(label: 'Type', value: d.type),
+                _DriverDocDetailRow(
+                  label: 'Document number',
+                  value: d.documentNumber ?? 'Not provided',
+                ),
+                _DriverDocDetailRow(
+                  label: 'Status',
+                  value: d.status ?? 'Unknown',
+                ),
+                _DriverDocDetailRow(
+                  label: 'Issued',
+                  value: fmt.format(d.availableAt),
+                ),
+                _DriverDocDetailRow(label: 'Reference ID', value: d.id),
+                const SizedBox(height: 8),
+                if ((d.qrCodeValue ?? '').isNotEmpty)
+                  Text(
+                    'QR: ${d.qrCodeValue}',
+                    style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                const SizedBox(height: 18),
+                FilledButton.icon(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  icon: const Icon(Icons.check_circle_outline),
+                  label: const Text('Done'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -400,6 +655,313 @@ class _DriverShipmentDetailScreenState
                 const SizedBox(height: 4),
                 Text(body),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Gradient-framed section aligned with consignor Documents hub; lists GDN/GRN for this assignment.
+class _DriverGdnGrnSection extends StatelessWidget {
+  const _DriverGdnGrnSection({
+    required this.loading,
+    required this.documents,
+    required this.dateFmt,
+    required this.onOpenDetail,
+  });
+
+  final bool loading;
+  final List<DocumentRef>? documents;
+  final DateFormat dateFmt;
+  final void Function(DocumentRef d) onOpenDetail;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0E4A42), Color(0xFF135C52)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.2),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(
+                    Icons.folder_special_outlined,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'GDN & GRN',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Documents issued for this assignment',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.88),
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+            child: Material(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: loading
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Center(child: LinearProgressIndicator()),
+                      )
+                    : _buildInner(context),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInner(BuildContext context) {
+    final docs = documents ?? [];
+    if (docs.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.folder_open_outlined,
+              color: AppColors.textTertiary.withValues(alpha: 0.9),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'No GDN or GRN yet. They appear when the consignor creates them.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.35,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    final gdn = docs.where((d) => d.type == 'GDN').toList();
+    final grn = docs.where((d) => d.type == 'GRN').toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (gdn.isNotEmpty) ...[
+          _DriverDocTypeHeader(label: 'Goods Delivery Note', count: gdn.length),
+          ...gdn.map(
+            (d) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _DriverDocTile(
+                doc: d,
+                dateFmt: dateFmt,
+                onTap: () => onOpenDetail(d),
+              ),
+            ),
+          ),
+        ],
+        if (grn.isNotEmpty) ...[
+          if (gdn.isNotEmpty) const SizedBox(height: 4),
+          _DriverDocTypeHeader(label: 'Goods Received Note', count: grn.length),
+          ...grn.map(
+            (d) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _DriverDocTile(
+                doc: d,
+                dateFmt: dateFmt,
+                onTap: () => onOpenDetail(d),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _DriverDocTypeHeader extends StatelessWidget {
+  const _DriverDocTypeHeader({required this.label, required this.count});
+
+  final String label;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, top: 4),
+      child: Text(
+        '$label ($count)',
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.2,
+        ),
+      ),
+    );
+  }
+}
+
+class _DriverDocTile extends StatelessWidget {
+  const _DriverDocTile({
+    required this.doc,
+    required this.dateFmt,
+    required this.onTap,
+  });
+
+  final DocumentRef doc;
+  final DateFormat dateFmt;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isGdn = doc.type == 'GDN';
+    return Material(
+      color: AppColors.surfaceMuted,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.borderLight),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isGdn
+                      ? AppColors.gold.withValues(alpha: 0.18)
+                      : AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  isGdn ? Icons.outbox_rounded : Icons.inbox_rounded,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      doc.title,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${doc.type} • ${dateFmt.format(doc.availableAt)}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    if ((doc.documentNumber ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'No: ${doc.documentNumber}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textTertiary,
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.visibility_outlined,
+                color: AppColors.primary,
+                size: 22,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DriverDocDetailRow extends StatelessWidget {
+  const _DriverDocDetailRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 130,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -519,18 +1081,19 @@ class _ActionTile extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
+                      color: enabled
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
                     ),
                   ),
-                  Text(
-                    subtitle,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
             ),
             Icon(
-              enabled ? Icons.arrow_forward_ios_rounded : Icons.lock_outline_rounded,
+              enabled
+                  ? Icons.arrow_forward_ios_rounded
+                  : Icons.lock_outline_rounded,
               size: 16,
               color: enabled ? AppColors.primary : AppColors.textTertiary,
             ),
