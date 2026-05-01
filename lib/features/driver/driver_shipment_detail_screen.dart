@@ -165,9 +165,6 @@ class _DriverShipmentDetailScreenState
       ).toIso8601String();
       await ref.read(backendApiProvider).trackingRecord({
         'assignmentId': assignmentId,
-        // Keep both key variants for backend compatibility.
-        'lat': location.latitude,
-        'lon': location.longitude,
         'latitude': location.latitude,
         'longitude': location.longitude,
         'accuracy': location.accuracy,

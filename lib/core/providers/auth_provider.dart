@@ -251,8 +251,6 @@ class AuthNotifier extends Notifier<AuthState> {
       ).toIso8601String();
       await api.trackingRecord({
         'assignmentId': assignmentId,
-        'lat': location.latitude,
-        'lon': location.longitude,
         'latitude': location.latitude,
         'longitude': location.longitude,
         'accuracy': location.accuracy,
