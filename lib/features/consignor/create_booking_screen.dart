@@ -89,7 +89,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Shipment created — see console for response.'),
+            content: Text('Shipment created successfully.'),
           ),
         );
         context.pop();
@@ -105,6 +105,162 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
     }
   }
 
+  Widget _buildInput({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+    String? hint,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceHighlight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderLight, width: 1.5),
+      ),
+      child: TextField(
+        controller: controller,
+        maxLines: maxLines,
+        keyboardType: keyboardType,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+          fontSize: 15,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          labelStyle: const TextStyle(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+          prefixIcon: Container(
+            padding: EdgeInsets.only(top: maxLines > 1 ? 16 : 0),
+            alignment: maxLines > 1 ? Alignment.topCenter : Alignment.center,
+            width: 48,
+            child: Icon(icon, color: AppColors.primary, size: 22),
+          ),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: maxLines > 1 ? 16 : 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceHighlight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderLight, width: 1.5),
+      ),
+      child: DropdownButtonFormField<String>(
+        initialValue: _priceType,
+        icon: const Icon(
+          Icons.keyboard_arrow_down_rounded,
+          color: AppColors.textTertiary,
+        ),
+        decoration: const InputDecoration(
+          labelText: 'Price Type',
+          labelStyle: TextStyle(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+          prefixIcon: Icon(
+            Icons.sell_outlined,
+            color: AppColors.primary,
+            size: 22,
+          ),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+          fontSize: 15,
+        ),
+        dropdownColor: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        items: const [
+          DropdownMenuItem(value: 'FIXED', child: Text('Fixed Rate')),
+          DropdownMenuItem(value: 'PER_TON', child: Text('Per Ton')),
+          DropdownMenuItem(value: 'PER_KM', child: Text('Per KM')),
+        ],
+        onChanged: (v) => setState(() => _priceType = v ?? _priceType),
+      ),
+    );
+  }
+
+  Widget _buildSection({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primarySoft,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: AppColors.primary, size: 20),
+                ),
+                const SizedBox(width: 14),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primaryDark,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(
+            height: 1,
+            color: AppColors.borderLight,
+            thickness: 1.5,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
@@ -113,171 +269,288 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
     final statusLabel = canBook
         ? (rawStatus.isEmpty ? 'APPROVED' : rawStatus.toUpperCase())
         : (rawStatus.toUpperCase() == 'VERIFIED'
-              ? 'VERIFIED (waiting admin approval)'
-              : (rawStatus.isEmpty
-                    ? 'PENDING ADMIN APPROVAL'
-                    : '${rawStatus.toUpperCase()} (waiting admin approval)'));
+            ? 'VERIFIED (WAITING ADMIN APPROVAL)'
+            : (rawStatus.isEmpty
+                ? 'PENDING ADMIN APPROVAL'
+                : '${rawStatus.toUpperCase()} (WAITING ADMIN APPROVAL)'));
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundWarm,
       appBar: AppBar(
-        title: const Text('New booking'),
+        backgroundColor: AppColors.backgroundWarm,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'Create Booking',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            color: AppColors.textPrimary,
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
+        physics: const BouncingScrollPhysics(),
         children: [
+          // Header Card
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: AppColors.heroCardGradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.rocket_launch_outlined,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Text(
+                        'New Shipment',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Create a new shipment offer. Provide accurate logistics details to match with the best drivers.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    height: 1.4,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Notice if not approved
           if (!canBook) ...[
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.warning.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppColors.warning.withValues(alpha: 0.35),
+                  color: AppColors.warning.withValues(alpha: 0.3),
+                  width: 1.5,
                 ),
               ),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.pending_actions_rounded,
-                    color: AppColors.warning,
-                    size: 20,
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: const BoxDecoration(
+                      color: AppColors.warning,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.lock_clock_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 14),
                   Expanded(
-                    child: Text(
-                      'Account status: $statusLabel. Your account is not approved yet, so booking is disabled until admin approval.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Status: $statusLabel',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Your account is pending admin approval. Booking is currently disabled.',
+                          style: TextStyle(
+                            color: AppColors.textPrimary.withValues(alpha: 0.8),
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 24),
           ],
-          Text(
-            'Create a shipment offer. Dates default to +1 day / +3 days if not provided.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 20),
-          Text('Locations', style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _loading,
-            maxLines: 2,
-            decoration: const InputDecoration(
-              labelText: 'Loading location *',
-              prefixIcon: Icon(Icons.upload_rounded),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _offloading,
-            maxLines: 2,
-            decoration: const InputDecoration(
-              labelText: 'Offloading location *',
-              prefixIcon: Icon(Icons.download_rounded),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _route,
-            decoration: const InputDecoration(labelText: 'Route (optional)'),
-          ),
-          const SizedBox(height: 20),
-          Text('Cargo', style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _goods,
-            decoration: const InputDecoration(labelText: 'Type of goods'),
-          ),
-          const SizedBox(height: 12),
-          Row(
+
+          // Form Sections
+          _buildSection(
+            title: 'Route & Logistics',
+            icon: Icons.map_outlined,
             children: [
-              Expanded(
-                child: TextField(
-                  controller: _quantity,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Quantity'),
-                ),
+              _buildInput(
+                controller: _loading,
+                label: 'Loading Location',
+                hint: 'e.g. Addis Ababa, Warehouse A',
+                icon: Icons.upload_rounded,
+                maxLines: 2,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                  controller: _weight,
-                  decoration: const InputDecoration(
-                    labelText: 'Weight (string)',
+              _buildInput(
+                controller: _offloading,
+                label: 'Offloading Location',
+                hint: 'e.g. Adama, Central Hub',
+                icon: Icons.download_rounded,
+                maxLines: 2,
+              ),
+              _buildInput(
+                controller: _route,
+                label: 'Preferred Route (Optional)',
+                hint: 'Specific highways or transit points',
+                icon: Icons.alt_route_rounded,
+              ),
+            ],
+          ),
+
+          _buildSection(
+            title: 'Cargo Information',
+            icon: Icons.inventory_2_outlined,
+            children: [
+              _buildInput(
+                controller: _goods,
+                label: 'Type of Goods',
+                hint: 'e.g. Electronics, Textiles, Perishables',
+                icon: Icons.category_outlined,
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInput(
+                      controller: _quantity,
+                      label: 'Quantity',
+                      icon: Icons.numbers_rounded,
+                      keyboardType: TextInputType.number,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildInput(
+                      controller: _weight,
+                      label: 'Weight',
+                      hint: 'e.g. 5000 kg',
+                      icon: Icons.scale_rounded,
+                    ),
+                  ),
+                ],
+              ),
+              _buildInput(
+                controller: _volume,
+                label: 'Volume',
+                hint: 'e.g. 20 cubic meters',
+                icon: Icons.view_in_ar_rounded,
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _volume,
-            decoration: const InputDecoration(labelText: 'Volume (string)'),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Vehicle & price',
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _vehicle,
-            decoration: const InputDecoration(
-              labelText: 'Required vehicle type',
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _vehicleCount,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Required vehicle count',
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _price,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Offer price (number)',
-            ),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: _priceType,
-            items: const [
-              DropdownMenuItem(value: 'FIXED', child: Text('FIXED')),
-              DropdownMenuItem(value: 'PER_TON', child: Text('PER_TON')),
-              DropdownMenuItem(value: 'PER_KM', child: Text('PER_KM')),
+
+          _buildSection(
+            title: 'Vehicle & Pricing',
+            icon: Icons.local_shipping_outlined,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: _buildInput(
+                      controller: _vehicle,
+                      label: 'Vehicle Type',
+                      hint: 'e.g. Flatbed, Reefer',
+                      icon: Icons.fire_truck_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 4,
+                    child: _buildInput(
+                      controller: _vehicleCount,
+                      label: 'Count',
+                      icon: Icons.tag_rounded,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              _buildDropdown(),
+              _buildInput(
+                controller: _price,
+                label: 'Offer Price',
+                hint: 'e.g. 15000',
+                icon: Icons.payments_outlined,
+                keyboardType: TextInputType.number,
+              ),
             ],
-            onChanged: (v) => setState(() => _priceType = v ?? _priceType),
-            decoration: const InputDecoration(labelText: 'Price type'),
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _timeline,
-            maxLines: 2,
-            decoration: const InputDecoration(labelText: 'Details / notes'),
+
+          _buildSection(
+            title: 'Additional Details',
+            icon: Icons.note_alt_outlined,
+            children: [
+              _buildInput(
+                controller: _timeline,
+                label: 'Special Instructions',
+                hint: 'Any fragile handling, timeline constraints, or documentation needed...',
+                icon: Icons.edit_note_rounded,
+                maxLines: 3,
+              ),
+            ],
           ),
-          const SizedBox(height: 28),
-          GlPrimaryButton(
-            label: 'Submit booking',
-            icon: Icons.send_rounded,
-            isLoading: _busy,
-            onPressed: canBook ? _submit : null,
+
+          // Submit Button
+          Container(
+            padding: const EdgeInsets.only(top: 8, bottom: 40),
+            child: GlPrimaryButton(
+              label: 'Publish Booking Offer',
+              icon: Icons.rocket_launch_rounded,
+              isLoading: _busy,
+              onPressed: canBook ? _submit : null,
+              useGoldAccent: true,
+            ),
           ),
-          const SizedBox(height: 24),
         ],
       ),
     );
   }
 }
+

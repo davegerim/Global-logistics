@@ -257,7 +257,9 @@ class AuthNotifier extends Notifier<AuthState> {
         'speed': location.speed,
         'recordedAt': recordedAt,
       });
-      debugPrint('[TRACKING] sent (login-initial) for assignment=$assignmentId');
+      debugPrint(
+        '[TRACKING] sent (login-initial) for assignment=$assignmentId',
+      );
     } catch (e) {
       // Tracking ping must never block successful login.
       debugPrint('[TRACKING] skipped (login-initial): $e');

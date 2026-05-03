@@ -118,27 +118,11 @@ class ConsignorHomeScreen extends ConsumerWidget {
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Freight operations,\nmade effortless.',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      height: 1.2,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Book quickly, track milestones, and receive delivery documents in one place.',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
@@ -147,14 +131,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.32),
-                          blurRadius: 32,
-                          offset: const Offset(0, 16),
-                        ),
-                      ],
+                      borderRadius: BorderRadius.circular(24),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,16 +166,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
                                 fontWeight: FontWeight.w800,
                               ),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Points, goods, timeline, payment.',
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.9),
-                                height: 1.35,
-                              ),
-                        ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 14),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,

@@ -250,13 +250,23 @@ class _ConsignorShipmentDetailScreenState
     final async = ref.watch(consignorShipmentsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundWarm,
       appBar: AppBar(
+        backgroundColor: AppColors.backgroundWarm,
+        elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Shipment'),
+        title: const Text(
+          'Shipment',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            color: AppColors.textPrimary,
+          ),
+        ),
         actions: [
           IconButton(
             onPressed: () {
@@ -264,7 +274,7 @@ class _ConsignorShipmentDetailScreenState
               ref.invalidate(consignorShipmentsProvider);
               ref.invalidate(consignorActiveProvider);
             },
-            icon: const Icon(Icons.refresh_rounded),
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.textPrimary),
           ),
         ],
       ),
@@ -290,37 +300,62 @@ class _ConsignorShipmentDetailScreenState
           final fmt = DateFormat.yMMMd();
           return ListView(
             padding: const EdgeInsets.all(20),
+            physics: const BouncingScrollPhysics(),
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Text(
-                      s.publicId,
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.publicId,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          s.goodsDescription,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  const SizedBox(width: 12),
                   StatusChip(status: s.status, labelOverride: s.apiStatusLabel),
                 ],
               ),
-              const SizedBox(height: 10),
-              Text(
-                s.goodsDescription,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               _ProgressCard(progress: s.progress01 ?? 0.0),
               const SizedBox(height: 20),
               _InfoCard(
+                title: 'Shipment Details',
+                icon: Icons.inventory_2_outlined,
                 children: [
-                  _kv('Weight', _formatMetric(s.weightKg)),
-                  _kv('Volume', _formatMetric(s.volumeM3)),
-                  _kv('Vehicle', s.vehicleType),
-                  _kv('Created', fmt.format(s.placedAt)),
-                  if (s.paymentMethod != null)
-                    _kv('Price type', s.paymentMethod!),
-                  if (s.priceOffer != null)
-                    _kv('Price', _formatPrice(s.priceOffer!)),
+                  _kv('WEIGHT', _formatMetric(s.weightKg)),
+                  _docDivider(),
+                  _kv('VOLUME', _formatMetric(s.volumeM3)),
+                  _docDivider(),
+                  _kv('VEHICLE', s.vehicleType),
+                  _docDivider(),
+                  _kv('CREATED', fmt.format(s.placedAt)),
+                  if (s.paymentMethod != null) ...[
+                    _docDivider(),
+                    _kv('PRICE TYPE', s.paymentMethod!),
+                  ],
+                  if (s.priceOffer != null) ...[
+                    _docDivider(),
+                    _kv('PRICE', _formatPrice(s.priceOffer!)),
+                  ],
                 ],
               ),
               const SizedBox(height: 16),
@@ -334,34 +369,41 @@ class _ConsignorShipmentDetailScreenState
               ),
               if (s.timelineNote.trim().isNotEmpty) ...[
                 const SizedBox(height: 16),
-                _InfoCard(children: [_kv('Notes', s.timelineNote.trim())]),
+                _InfoCard(
+                  title: 'Notes',
+                  icon: Icons.note_alt_outlined,
+                  children: [
+                    Text(
+                      s.timelineNote.trim(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textPrimary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
               ],
               if (s.driver != null) ...[
                 const SizedBox(height: 16),
-                _DriverCard(
-                  name: s.driver!.name,
-                  vehicle: s.driver!.vehicleLabel ?? '—',
-                  plate: s.driver!.plate ?? '—',
-                  rating: s.driver!.rating,
+                _InfoCard(
+                  title: 'Driver Details',
+                  icon: Icons.person_pin_circle_outlined,
+                  children: [
+                    _DriverCard(
+                      name: s.driver!.name,
+                      vehicle: s.driver!.vehicleLabel ?? '—',
+                      plate: s.driver!.plate ?? '—',
+                      rating: s.driver!.rating,
+                    ),
+                  ],
                 ),
               ],
               const SizedBox(height: 16),
               _InfoCard(
+                title: 'GDN Control',
+                icon: Icons.assignment_turned_in_outlined,
                 children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.assignment_turned_in_outlined,
-                        color: AppColors.primary.withValues(alpha: 0.85),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'GDN Control',
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
                   if (_resolvingAssignment)
                     const LinearProgressIndicator()
                   else if (_resolvingDriverSelection)
@@ -369,15 +411,20 @@ class _ConsignorShipmentDetailScreenState
                   else if (!gdnControlEnabled)
                     const Text(
                       'GDN control becomes available once admin selects and assigns a driver.',
+                      style: TextStyle(color: AppColors.textSecondary, height: 1.4),
                     )
                   else if (_assignmentId == null)
                     const Text(
                       'Waiting for driver assignment. Once assigned, create GDN before driver can continue status updates.',
+                      style: TextStyle(color: AppColors.textSecondary, height: 1.4),
                     )
                   else ...[
-                    _kv('Assignment', _assignmentId!),
-                    if (_gdnMessage != null) _kv('Status', _gdnMessage!),
-                    const SizedBox(height: 12),
+                    _kv('ASSIGNMENT', _assignmentId!),
+                    _docDivider(),
+                    if (_gdnMessage != null) ...[
+                      _kv('STATUS', _gdnMessage!),
+                      const SizedBox(height: 12),
+                    ],
                     GlPrimaryButton(
                       label: _gdnCreated ? 'View GDN form' : 'Open GDN form',
                       icon: _gdnCreated
@@ -397,35 +444,28 @@ class _ConsignorShipmentDetailScreenState
               ),
               const SizedBox(height: 16),
               _InfoCard(
+                title: 'GRN Control',
+                icon: Icons.inventory_rounded,
                 children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.inventory_2_outlined,
-                        color: AppColors.primary.withValues(alpha: 0.85),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'GRN Control',
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
                   if (_resolvingAssignment)
                     const LinearProgressIndicator()
                   else if (_assignmentId == null)
                     const Text(
                       'GRN control becomes available after driver assignment is active.',
+                      style: TextStyle(color: AppColors.textSecondary, height: 1.4),
                     )
                   else if (!grnControlEnabled)
                     const Text(
                       'GRN can be created after the driver confirms offloaded status.',
+                      style: TextStyle(color: AppColors.textSecondary, height: 1.4),
                     )
                   else ...[
-                    _kv('Assignment', _assignmentId!),
-                    if (_grnMessage != null) _kv('Status', _grnMessage!),
-                    const SizedBox(height: 12),
+                    _kv('ASSIGNMENT', _assignmentId!),
+                    _docDivider(),
+                    if (_grnMessage != null) ...[
+                      _kv('STATUS', _grnMessage!),
+                      const SizedBox(height: 12),
+                    ],
                     GlPrimaryButton(
                       label: _grnCreated ? 'View GRN form' : 'Open GRN form',
                       icon: _grnCreated
@@ -448,92 +488,80 @@ class _ConsignorShipmentDetailScreenState
               if (_grnCreated && _assignmentId != null) ...[
                 const SizedBox(height: 16),
                 _InfoCard(
+                  title: 'Confirm Handover',
+                  icon: Icons.task_alt_rounded,
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.task_alt_rounded,
-                          color: AppColors.primary.withValues(alpha: 0.85),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Confirm handover',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
                     if (_handoverConfirmed(assignmentStatus))
-                      Text(
-                        'Handover confirmed.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.success,
-                          fontWeight: FontWeight.w600,
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.verified_rounded, color: AppColors.success),
+                            SizedBox(width: 10),
+                            Text(
+                              'Handover confirmed',
+                              style: TextStyle(
+                                color: AppColors.success,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     else ...[
-                      Text(
+                      const Text(
                         'After GRN is recorded, confirm final receipt here.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: TextStyle(color: AppColors.textSecondary, height: 1.4),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       GlPrimaryButton(
                         label: 'Confirm completed',
                         icon: Icons.task_alt_rounded,
                         onPressed: _confirmingHandover
                             ? null
                             : () => _confirmHandover(s.id),
+                        useGoldAccent: true,
                       ),
                     ],
                   ],
                 ),
               ],
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceMuted,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.borderLight),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.info_outline_rounded,
-                      color: AppColors.textSecondary,
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: GlPrimaryButton(
+                      label: 'Negotiation Room',
+                      icon: Icons.forum_rounded,
+                      onPressed: () =>
+                          context.push('/consignor/shipment/${s.id}/negotiation'),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'This page shows your shipment details and current progress.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
-              GlPrimaryButton(
-                label: 'Open negotiation room',
-                icon: Icons.forum_rounded,
-                onPressed: () =>
-                    context.push('/consignor/shipment/${s.id}/negotiation'),
+              Row(
+                children: [
+                  Expanded(
+                    child: GlPrimaryButton(
+                      label: 'Live Tracking Map',
+                      icon: Icons.map_outlined,
+                      useGoldAccent: true,
+                      onPressed: _assignmentId == null
+                          ? null
+                          : () => context.push(
+                              '/consignor/track/${s.id}?assignment=$_assignmentId',
+                            ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              GlPrimaryButton(
-                label: 'Open live tracking map',
-                icon: Icons.map_outlined,
-                onPressed: _assignmentId == null
-                    ? null
-                    : () => context.push(
-                        '/consignor/track/${s.id}?assignment=$_assignmentId',
-                      ),
-              ),
+              const SizedBox(height: 32),
             ],
           );
         },
@@ -564,25 +592,6 @@ class _ConsignorShipmentDetailScreenState
   }
 }
 
-class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(children: children),
-    );
-  }
-}
-
 class _ProgressCard extends StatelessWidget {
   const _ProgressCard({required this.progress});
 
@@ -593,40 +602,70 @@ class _ProgressCard extends StatelessWidget {
     final clamped = progress.clamp(0.0, 1.0);
     final label = '${(clamped * 100).round()}%';
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.show_chart_rounded,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
               Text(
-                'Progress',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                'Shipment Progress',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primaryDark,
+                  letterSpacing: -0.2,
+                ),
               ),
               const Spacer(),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 20),
           ClipRRect(
             borderRadius: BorderRadius.circular(999),
             child: LinearProgressIndicator(
               value: clamped,
-              minHeight: 9,
-              backgroundColor: AppColors.borderLight,
+              minHeight: 12,
+              backgroundColor: AppColors.surfaceMuted,
               valueColor: const AlwaysStoppedAnimation<Color>(
                 AppColors.primary,
               ),
@@ -640,26 +679,108 @@ class _ProgressCard extends StatelessWidget {
 
 Widget _kv(String k, String v) {
   return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
+    padding: const EdgeInsets.symmetric(vertical: 10),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 110,
+        Expanded(
+          flex: 2,
           child: Text(
             k,
             style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
               color: AppColors.textSecondary,
-              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
             ),
           ),
         ),
         Expanded(
-          child: Text(v, style: const TextStyle(fontWeight: FontWeight.w500)),
+          flex: 3,
+          child: Text(
+            v,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+            textAlign: TextAlign.right,
+          ),
         ),
       ],
     ),
   );
+}
+
+Widget _docDivider() {
+  return const Divider(
+    color: AppColors.borderLight,
+    height: 1,
+    thickness: 1,
+  );
+}
+
+class _InfoCard extends StatelessWidget {
+  const _InfoCard({required this.children, this.title, this.icon});
+
+  final List<Widget> children;
+  final String? title;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (title != null && icon != null) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.primarySoft,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, color: AppColors.primary, size: 20),
+                  ),
+                  const SizedBox(width: 14),
+                  Text(
+                    title!,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primaryDark,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1, color: AppColors.borderLight, thickness: 1.5),
+          ],
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(children: children),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _TimelineCard extends StatelessWidget {
@@ -678,55 +799,172 @@ class _TimelineCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Route', style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 12),
-          _dotLine(Icons.trending_flat, 'Pickup', loading),
-          const SizedBox(height: 10),
-          _dotLine(Icons.flag, 'Delivery', offloading),
-          const Divider(height: 28),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Placed $placed',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              Text('Est. $eta', style: Theme.of(context).textTheme.bodySmall),
-            ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primarySoft,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.alt_route_rounded, color: AppColors.primary, size: 20),
+                ),
+                const SizedBox(width: 14),
+                const Text(
+                  'Route Map',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primaryDark,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: AppColors.borderLight, thickness: 1.5),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _dotLine(Icons.upload_rounded, 'Pickup Location', loading, isStart: true),
+                Container(
+                  margin: const EdgeInsets.only(left: 17),
+                  height: 24,
+                  width: 2,
+                  color: AppColors.borderLight,
+                ),
+                _dotLine(Icons.flag_rounded, 'Delivery Destination', offloading, isStart: false),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceHighlight,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.borderLight),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'PLACED ON',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textTertiary,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              placed,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(width: 1, height: 30, color: AppColors.borderLight),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text(
+                              'EST. ARRIVAL',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textTertiary,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              eta,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _dotLine(IconData icon, String label, String value) {
+  Widget _dotLine(IconData icon, String label, String value, {required bool isStart}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: AppColors.primary),
-        const SizedBox(width: 10),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isStart ? AppColors.surfaceMuted : AppColors.success.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: isStart ? AppColors.textSecondary : AppColors.success,
+          ),
+        ),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                label,
+                label.toUpperCase(),
                 style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 11,
+                  color: AppColors.textTertiary,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
                 ),
               ),
-              Text(value),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                  height: 1.3,
+                ),
+              ),
             ],
           ),
         ),
@@ -803,49 +1041,89 @@ class _DriverCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceMuted,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-            child: Text(
-              name.isNotEmpty ? name.substring(0, 1) : '?',
-              style: const TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
-                fontSize: 22,
-              ),
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 28,
+          backgroundColor: AppColors.primarySoft,
+          child: Text(
+            name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?',
+            style: const TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w900,
+              fontSize: 22,
             ),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: Theme.of(context).textTheme.titleSmall),
-                Text(
-                  '$vehicle · $plate',
-                  style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
                 ),
-                if (rating != null)
-                  Text(
-                    '${rating!.toStringAsFixed(1)} ★',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelLarge?.copyWith(color: AppColors.gold),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceMuted,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      vehicle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ),
+                  const SizedBox(width: 8),
+                  Text(
+                    plate,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        if (rating != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.gold.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.star_rounded, color: AppColors.gold, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  rating!.toStringAsFixed(1),
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                  ),
+                ),
               ],
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }

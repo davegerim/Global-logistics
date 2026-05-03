@@ -6,6 +6,7 @@ import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/payments_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:global_logistics_app/data/models/shipment_status.dart';
 
 class ConsignorProfileScreen extends ConsumerStatefulWidget {
   const ConsignorProfileScreen({super.key});
@@ -41,6 +42,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
   }) async {
     await showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
@@ -53,7 +55,9 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
           left: 24,
           right: 24,
           top: 32,
-          bottom: MediaQuery.viewInsetsOf(ctx).bottom + 32,
+          bottom: MediaQuery.viewInsetsOf(ctx).bottom +
+              MediaQuery.paddingOf(ctx).bottom +
+              32,
         ),
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -333,6 +337,9 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                     : '${rawStatus.toUpperCase()} (WAITING ADMIN APPROVAL)'));
     final payments = ref.watch(paymentsProvider);
     final shipments = ref.watch(consignorShipmentsProvider);
+    // Clearance above ConsignorShell bottom nav: SafeArea min bottom (10) + bar (72).
+    final bottomNavClearance =
+        MediaQuery.paddingOf(context).bottom + 10 + 72 + 24;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundWarm,
@@ -422,7 +429,14 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                       _buildStatCard(
                         title: 'Active Orders',
                         value: shipments.maybeWhen(
-                          data: (list) => list.where((s) => s.status != 'COMPLETED' && s.status != 'CANCELLED').length.toString(),
+                          data: (list) => list
+                              .where(
+                                (s) =>
+                                    s.status != ShipmentStatus.completed &&
+                                    s.status != ShipmentStatus.cancelled,
+                              )
+                              .length
+                              .toString(),
                           orElse: () => '-',
                         ),
                       ),
@@ -457,7 +471,8 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                     _buildListItem(Icons.notifications_none_rounded, 'Notifications', 'Push alerts', trailing: Switch.adaptive(
                       value: _notificationsEnabled,
                       onChanged: (v) => setState(() => _notificationsEnabled = v),
-                      activeColor: AppColors.primary,
+                      activeTrackColor: AppColors.primary.withValues(alpha: 0.45),
+                      activeThumbColor: AppColors.surface,
                     )),
                     _buildListItem(Icons.support_agent_rounded, 'Help Desk', '24/7 priority support', onTap: _showSupport),
                     _buildListItem(Icons.policy_outlined, 'Legal', 'Privacy & terms', onTap: _showLegal),
@@ -472,7 +487,8 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                     child: OutlinedButton.icon(
                       onPressed: () async {
                         await ref.read(authProvider.notifier).logout();
-                        if (mounted) context.go('/login?role=consignor');
+                        if (!context.mounted) return;
+                        context.go('/login?role=consignor');
                       },
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: AppColors.error.withValues(alpha: 0.3), width: 1.5),
@@ -483,7 +499,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                       label: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                     ),
                   ),
-                  const SizedBox(height: 120),
+                  SizedBox(height: bottomNavClearance),
                 ],
               ),
             ),

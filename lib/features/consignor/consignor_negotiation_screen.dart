@@ -370,86 +370,98 @@ class _ConsignorNegotiationScreenState
                               ? Colors.white
                               : AppColors.textPrimary;
                           return Align(
-                            alignment: mine
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
+                            alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
-                                maxWidth:
-                                    MediaQuery.of(context).size.width * 0.82,
+                                maxWidth: MediaQuery.of(context).size.width * 0.85,
                               ),
                               child: Container(
-                                padding: const EdgeInsets.all(14),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                                 decoration: BoxDecoration(
                                   color: bubbleColor,
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: const Radius.circular(16),
+                                    topRight: const Radius.circular(16),
+                                    bottomLeft: Radius.circular(mine ? 16 : 4),
+                                    bottomRight: Radius.circular(mine ? 4 : 16),
+                                  ),
                                   border: Border.all(
-                                    color: mine
-                                        ? AppColors.primary
-                                        : AppColors.border,
+                                    color: mine ? AppColors.primary : AppColors.borderLight,
+                                    width: 1,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.04,
-                                      ),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 6),
+                                      color: Colors.black.withValues(alpha: 0.03),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
                                     ),
                                   ],
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      e.title,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelLarge
-                                          ?.copyWith(
-                                            color: textColor,
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          mine ? Icons.person_rounded : Icons.admin_panel_settings_rounded,
+                                          size: 14,
+                                          color: mine ? Colors.white.withValues(alpha: 0.9) : AppColors.primary,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          e.title,
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: -0.2,
+                                          ).copyWith(color: textColor),
+                                        ),
+                                      ],
                                     ),
-                                    if (e.message != null &&
-                                        e.message!.trim().isNotEmpty) ...[
-                                      const SizedBox(height: 6),
+                                    if (e.message != null && e.message!.trim().isNotEmpty) ...[
+                                      const SizedBox(height: 4),
                                       Text(
                                         e.message!,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(color: textColor),
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          height: 1.3,
+                                          fontWeight: FontWeight.w500,
+                                        ).copyWith(color: textColor.withValues(alpha: 0.9)),
                                       ),
                                     ],
                                     if (e.price != null) ...[
                                       const SizedBox(height: 6),
-                                      Text(
-                                        'Price: ${e.price}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                              color: textColor,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: mine ? Colors.white.withValues(alpha: 0.15) : AppColors.primarySoft,
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          'Price: ${e.price}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w800,
+                                            color: mine ? Colors.white : AppColors.primaryDark,
+                                          ),
+                                        ),
                                       ),
                                     ],
                                     const SizedBox(height: 6),
-                                    Text(
-                                      e.when != null
-                                          ? fmt.format(e.when!)
-                                          : 'time unknown',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: mine
-                                                ? Colors.white.withValues(
-                                                    alpha: 0.82,
-                                                  )
-                                                : AppColors.textSecondary,
-                                          ),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        e.when != null ? fmt.format(e.when!) : 'time unknown',
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                        ).copyWith(
+                                          color: mine
+                                              ? Colors.white.withValues(alpha: 0.7)
+                                              : AppColors.textTertiary,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),

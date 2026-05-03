@@ -22,24 +22,21 @@ class ShipmentCard extends StatelessWidget {
     final t = Theme.of(context).textTheme;
     final dateFmt = DateFormat.MMMd();
     return Material(
-      color: AppColors.surface,
+      color: Colors.transparent,
       elevation: 0,
       shadowColor: Colors.transparent,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         child: Ink(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.borderLight),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.06),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.border,
+              width: 1.5,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -51,12 +48,15 @@ class ShipmentCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         shipment.publicId,
-                        style: t.titleLarge?.copyWith(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: t.titleMedium?.copyWith(
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.2,
                         ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     StatusChip(
                       status: shipment.status,
                       labelOverride: shipment.apiStatusLabel,
