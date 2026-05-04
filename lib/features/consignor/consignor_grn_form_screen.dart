@@ -23,6 +23,36 @@ class ConsignorGrnFormScreen extends ConsumerStatefulWidget {
       _ConsignorGrnFormScreenState();
 }
 
+Map<String, dynamic> _pickLatestMap(
+  List<dynamic> list,
+  List<String> dateKeys,
+) {
+  Map<String, dynamic>? best;
+  DateTime? bestTime;
+  for (final e in list) {
+    if (e is! Map) continue;
+    final m = Map<String, dynamic>.from(e);
+    DateTime? t;
+    for (final k in dateKeys) {
+      final v = m[k];
+      if (v != null) {
+        t = DateTime.tryParse(v.toString());
+        if (t != null) break;
+      }
+    }
+    if (best == null) {
+      best = m;
+      bestTime = t;
+      continue;
+    }
+    if (t != null && (bestTime == null || t.isAfter(bestTime))) {
+      best = m;
+      bestTime = t;
+    }
+  }
+  return best ?? {};
+}
+
 class _ConsignorGrnFormScreenState
     extends ConsumerState<ConsignorGrnFormScreen> {
   final _receiverNameCtrl = TextEditingController();
@@ -62,6 +92,61 @@ class _ConsignorGrnFormScreenState
 
   bool get _canCreateGrn => !_grnCreated && !_consignorConfirmed;
 
+  String _pickStr(Map<String, dynamic> m, List<String> keys) {
+    for (final k in keys) {
+      final v = m[k];
+      if (v == null) continue;
+      final s = v.toString().trim();
+      if (s.isNotEmpty) return s;
+    }
+    return '';
+  }
+
+  void _applyGrnFields(Map<String, dynamic> m) {
+    _receiverNameCtrl.text = _pickStr(m, ['receiverName', 'receiver_name']);
+    final rq = _pickStr(m, [
+      'receivedQuantity',
+      'received_quantity',
+      'quantity',
+    ]);
+    if (rq.isNotEmpty) _receivedQuantityCtrl.text = rq;
+    final rw = _pickStr(m, [
+      'receivedWeight',
+      'received_weight',
+      'weight',
+    ]);
+    if (rw.isNotEmpty) _receivedWeightCtrl.text = rw;
+    final rv = _pickStr(m, [
+      'receivedVolume',
+      'received_volume',
+      'volume',
+    ]);
+    if (rv.isNotEmpty) _receivedVolumeCtrl.text = rv;
+    final dq = _pickStr(m, [
+      'damageQuantity',
+      'damage_quantity',
+      'damageQty',
+    ]);
+    if (dq.isNotEmpty) _damageQtyCtrl.text = dq;
+    final sq = _pickStr(m, [
+      'shortageQuantity',
+      'shortage_quantity',
+      'shortageQty',
+    ]);
+    if (sq.isNotEmpty) _shortageQtyCtrl.text = sq;
+    _conditionNoteCtrl.text = _pickStr(m, [
+      'conditionNote',
+      'condition_note',
+      'note',
+    ]);
+    final ra = _pickStr(m, [
+      'receivedAt',
+      'received_at',
+      'issuedAt',
+    ]);
+    if (ra.isNotEmpty) _receivedAtCtrl.text = ra;
+  }
+
   Future<void> _loadGrnState() async {
     setState(() => _loadingState = true);
     try {
@@ -70,6 +155,26 @@ class _ConsignorGrnFormScreenState
           .grnOfAssignment(widget.assignmentId);
       if (!mounted) return;
       final status = widget.assignmentStatus.toUpperCase();
+
+      Map<String, dynamic>? resolved;
+      if (grns.isNotEmpty) {
+        final summary = _pickLatestMap(
+          grns,
+          const ['receivedAt', 'issuedAt', 'createdAt'],
+        );
+        final pid = summary['publicId'] as String?;
+        if (pid != null && pid.isNotEmpty) {
+          try {
+            resolved = await ref.read(backendApiProvider).grnGet(pid);
+          } catch (_) {
+            resolved = summary;
+          }
+        } else {
+          resolved = summary;
+        }
+      }
+
+      if (!mounted) return;
       setState(() {
         _grnCreated = grns.isNotEmpty;
         _consignorConfirmed =
@@ -81,6 +186,9 @@ class _ConsignorGrnFormScreenState
               'GRN already created. Confirm final receipt on the shipment screen.';
         } else {
           _stateMessage = 'Fill the form to create GRN after offloading.';
+        }
+        if (resolved != null) {
+          _applyGrnFields(resolved);
         }
       });
     } catch (e) {

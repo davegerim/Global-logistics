@@ -23,6 +23,37 @@ class ConsignorGdnFormScreen extends ConsumerStatefulWidget {
       _ConsignorGdnFormScreenState();
 }
 
+/// Picks the newest row when the API returns multiple documents for one assignment.
+Map<String, dynamic> _pickLatestMap(
+  List<dynamic> list,
+  List<String> dateKeys,
+) {
+  Map<String, dynamic>? best;
+  DateTime? bestTime;
+  for (final e in list) {
+    if (e is! Map) continue;
+    final m = Map<String, dynamic>.from(e);
+    DateTime? t;
+    for (final k in dateKeys) {
+      final v = m[k];
+      if (v != null) {
+        t = DateTime.tryParse(v.toString());
+        if (t != null) break;
+      }
+    }
+    if (best == null) {
+      best = m;
+      bestTime = t;
+      continue;
+    }
+    if (t != null && (bestTime == null || t.isAfter(bestTime))) {
+      best = m;
+      bestTime = t;
+    }
+  }
+  return best ?? {};
+}
+
 class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen> {
   final _issuerCtrl = TextEditingController();
   final _consigneeCtrl = TextEditingController();
@@ -59,6 +90,43 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
     super.dispose();
   }
 
+  String _pickStr(Map<String, dynamic> m, List<String> keys) {
+    for (final k in keys) {
+      final v = m[k];
+      if (v == null) continue;
+      final s = v.toString().trim();
+      if (s.isNotEmpty) return s;
+    }
+    return '';
+  }
+
+  void _applyGdnFields(Map<String, dynamic> m) {
+    _issuerCtrl.text = _pickStr(m, [
+      'issuersName',
+      'issuerName',
+      'issuers_name',
+    ]);
+    _consigneeCtrl.text = _pickStr(m, ['consigneeName', 'consignee_name']);
+    _contactCtrl.text = _pickStr(m, [
+      'consigneeContact',
+      'consignee_contact',
+      'contact',
+    ]);
+    final q = _pickStr(m, ['quantity']);
+    if (q.isNotEmpty) _quantityCtrl.text = q;
+    final w = _pickStr(m, ['weight']);
+    if (w.isNotEmpty) _weightCtrl.text = w;
+    final vol = _pickStr(m, ['volume']);
+    if (vol.isNotEmpty) _volumeCtrl.text = vol;
+    final pkg = _pickStr(m, [
+      'packagingType',
+      'packaging_type',
+      'packaging',
+    ]);
+    if (pkg.isNotEmpty) _packagingCtrl.text = pkg;
+    _remarksCtrl.text = _pickStr(m, ['remarks', 'remark']);
+  }
+
   Future<void> _loadGdnState() async {
     setState(() => _loadingState = true);
     try {
@@ -66,11 +134,32 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
           .read(backendApiProvider)
           .gdnOfAssignment(widget.assignmentId);
       if (!mounted) return;
+
+      Map<String, dynamic>? resolved;
+      if (gdns.isNotEmpty) {
+        final summary =
+            _pickLatestMap(gdns, const ['issuedAt', 'createdAt']);
+        final pid = summary['publicId'] as String?;
+        if (pid != null && pid.isNotEmpty) {
+          try {
+            resolved = await ref.read(backendApiProvider).gdnGet(pid);
+          } catch (_) {
+            resolved = summary;
+          }
+        } else {
+          resolved = summary;
+        }
+      }
+
+      if (!mounted) return;
       setState(() {
         _locked = gdns.isNotEmpty;
         _stateMessage = _locked
             ? 'GDN already generated and locked.'
             : 'Fill the form to create GDN.';
+        if (resolved != null) {
+          _applyGdnFields(resolved);
+        }
       });
     } catch (e) {
       if (!mounted) return;

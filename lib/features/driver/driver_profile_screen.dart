@@ -490,12 +490,13 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                       _vehicle != null
                           ? '${_vehicle!['type'] ?? 'Truck'} · ${_vehicle!['plateNumber'] ?? 'No Plate'}'
                           : 'Load vehicle info',
-                      onTap: _loadVehicle,
+                      onTap: () => context.push('/driver/profile/vehicle'),
                     ),
                     _buildListItem(
                       Icons.badge_outlined,
                       'Driver License',
                       'Verification & expiry',
+                      onTap: () => context.push('/driver/profile/license'),
                     ),
                   ]),
 

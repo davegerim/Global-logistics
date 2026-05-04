@@ -302,40 +302,64 @@ class _ConsignorShipmentDetailScreenState
             padding: const EdgeInsets.all(20),
             physics: const BouncingScrollPhysics(),
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          s.publicId,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.5,
-                            color: AppColors.textPrimary,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  s.publicId,
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -0.5,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  s.goodsDescription,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 12),
+                          StatusChip(status: s.status, labelOverride: s.apiStatusLabel),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      _ProgressCard(progress: s.progress01 ?? 0.0),
+                    ],
+                  ),
+                  Positioned(
+                    right: 16,
+                    top: 25,
+                    child: IgnorePointer(
+                      child: Hero(
+                        tag: 'shipment_vehicle_${s.id}',
+                        child: Image.asset(
+                          'assets/images/image-31GYuaDQ6tzlmK2MsYTpfwzmJwf9Kr.webp',
+                          height: 100,
+                          fit: BoxFit.contain,
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          s.goodsDescription,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  StatusChip(status: s.status, labelOverride: s.apiStatusLabel),
                 ],
               ),
-              const SizedBox(height: 24),
-              _ProgressCard(progress: s.progress01 ?? 0.0),
               const SizedBox(height: 20),
               _InfoCard(
                 title: 'Shipment Details',

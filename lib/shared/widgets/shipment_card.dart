@@ -38,86 +38,111 @@ class ShipmentCard extends StatelessWidget {
               width: 1.5,
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        shipment.publicId,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: t.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.2,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            shipment.publicId,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: t.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
                         ),
+                        const SizedBox(width: 8),
+                        StatusChip(
+                          status: shipment.status,
+                          labelOverride: shipment.apiStatusLabel,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 110),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _row(
+                            context,
+                            Icons.upload_rounded,
+                            'From',
+                            shipment.loadingAddress,
+                          ),
+                          const SizedBox(height: 10),
+                          _row(
+                            context,
+                            Icons.download_rounded,
+                            'To',
+                            shipment.offloadingAddress,
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    StatusChip(
-                      status: shipment.status,
-                      labelOverride: shipment.apiStatusLabel,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _row(
-                  context,
-                  Icons.upload_rounded,
-                  'From',
-                  shipment.loadingAddress,
-                ),
-                const SizedBox(height: 10),
-                _row(
-                  context,
-                  Icons.download_rounded,
-                  'To',
-                  shipment.offloadingAddress,
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today_outlined,
-                      size: 16,
-                      color: AppColors.textTertiary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Placed ${dateFmt.format(shipment.placedAt)}',
-                      style: t.bodyMedium,
-                    ),
-                    if (shipment.estimatedDelivery != null) ...[
-                      const SizedBox(width: 12),
-                      Icon(
-                        Icons.flag_outlined,
-                        size: 16,
-                        color: AppColors.gold,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Est. ${dateFmt.format(shipment.estimatedDelivery!)}',
-                        style: t.bodyMedium?.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 16,
+                          color: AppColors.textTertiary,
                         ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Placed ${dateFmt.format(shipment.placedAt)}',
+                          style: t.bodyMedium,
+                        ),
+                        if (shipment.estimatedDelivery != null) ...[
+                          const SizedBox(width: 12),
+                          Icon(
+                            Icons.flag_outlined,
+                            size: 16,
+                            color: AppColors.gold,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Est. ${dateFmt.format(shipment.estimatedDelivery!)}',
+                            style: t.bodyMedium?.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (showTimeline) ...[
+                      const SizedBox(height: 18),
+                      _ProgressStrip(
+                        progress:
+                            shipment.progress01 ??
+                            _fallbackProgress(shipment.status),
                       ),
                     ],
                   ],
                 ),
-                if (showTimeline) ...[
-                  const SizedBox(height: 18),
-                  _ProgressStrip(
-                    progress:
-                        shipment.progress01 ??
-                        _fallbackProgress(shipment.status),
+              ),
+              Positioned(
+                right: -15,
+                top: 60,
+                child: IgnorePointer(
+                  child: Image.asset(
+                    'assets/images/boxes-3d-icon-png-download-4504985.webp',
+                    width: 135,
+                    height: 135,
+                    fit: BoxFit.contain,
                   ),
-                ],
-              ],
-            ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

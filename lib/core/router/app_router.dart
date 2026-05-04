@@ -24,11 +24,13 @@ import 'package:global_logistics_app/features/consignor/consignor_shell.dart';
 import 'package:global_logistics_app/features/consignor/create_booking_screen.dart';
 import 'package:global_logistics_app/features/consignor/tracking_map_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_home_screen.dart';
+import 'package:global_logistics_app/features/driver/driver_license_details_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_offer_negotiation_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_offers_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_profile_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_shipment_detail_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_shell.dart';
+import 'package:global_logistics_app/features/driver/driver_vehicle_details_screen.dart';
 import 'package:global_logistics_app/features/onboarding/onboarding_screen.dart';
 import 'package:global_logistics_app/features/role/role_selection_screen.dart';
 import 'package:global_logistics_app/features/splash/splash_screen.dart';
@@ -353,6 +355,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               final id = state.pathParameters['id']!;
               return DriverShipmentDetailScreen(shipmentId: id);
             },
+          ),
+          GoRoute(
+            parentNavigatorKey: _rootNavigatorKey,
+            path: 'profile/vehicle',
+            builder: (context, state) => const DriverVehicleDetailsScreen(),
+          ),
+          GoRoute(
+            parentNavigatorKey: _rootNavigatorKey,
+            path: 'profile/license',
+            builder: (context, state) => const DriverLicenseDetailsScreen(),
           ),
         ],
       ),

@@ -12,6 +12,17 @@ import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/shared/widgets/status_chip.dart';
 import 'package:intl/intl.dart';
 
+String _feedbackRatingCaption(int rating) {
+  return switch (rating) {
+    1 => 'Poor',
+    2 => 'Fair',
+    3 => 'Good',
+    4 => 'Very good',
+    5 => 'Excellent',
+    _ => '',
+  };
+}
+
 /// Driver assignment actions: `PUT /assignments/*` and `POST /tracking`.
 class DriverShipmentDetailScreen extends ConsumerStatefulWidget {
   const DriverShipmentDetailScreen({super.key, required this.shipmentId});
@@ -87,6 +98,294 @@ class _DriverShipmentDetailScreenState
         ],
       ),
     );
+  }
+
+  /// Styled sheet for driver → consignor feedback (replaces generic [_prompt] for this flow).
+  Future<({String comment, int rating})?> _showFeedbackToConsignorSheet(
+    BuildContext context,
+  ) async {
+    final commentCtrl = TextEditingController();
+    var rating = 4;
+    String? errorText;
+
+    try {
+      return await showModalBottomSheet<({String comment, int rating})>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        backgroundColor: Colors.transparent,
+        builder: (ctx) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.viewInsetsOf(ctx).bottom,
+            ),
+            child: StatefulBuilder(
+              builder: (ctx, setModalState) {
+                void submit() {
+                  final text = commentCtrl.text.trim();
+                  if (text.isEmpty) {
+                    setModalState(
+                      () => errorText = 'Please enter your feedback.',
+                    );
+                    return;
+                  }
+                  Navigator.pop(ctx, (comment: text, rating: rating));
+                }
+
+                return Container(
+                  decoration: const BoxDecoration(
+                    color: AppColors.backgroundWarm,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                  child: SafeArea(
+                    top: false,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.06),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Container(
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.primary,
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(16),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(24),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            width: 48,
+                                            height: 48,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: AppColors.primarySoft,
+                                              border: Border.all(
+                                                color: AppColors.gold
+                                                    .withValues(alpha: 0.35),
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              Icons.chat_rounded,
+                                              color: AppColors.primary,
+                                              size: 24,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 14),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Feedback to consignor',
+                                                  style: Theme.of(ctx)
+                                                      .textTheme
+                                                      .titleLarge
+                                                      ?.copyWith(
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                        color:
+                                                            AppColors.primaryDark,
+                                                        height: 1.2,
+                                                      ),
+                                                ),
+                                                const SizedBox(height: 6),
+                                                Text(
+                                                  'Your message helps improve '
+                                                  'service and keeps the shipper '
+                                                  'informed.',
+                                                  style: Theme.of(ctx)
+                                                      .textTheme
+                                                      .bodySmall
+                                                      ?.copyWith(
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                        height: 1.45,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 24),
+                                      Text(
+                                        'Experience rating',
+                                        style: Theme.of(ctx)
+                                            .textTheme
+                                            .labelLarge
+                                            ?.copyWith(
+                                              color: AppColors.textPrimary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: List.generate(5, (i) {
+                                          final idx = i + 1;
+                                          return IconButton(
+                                            onPressed: () => setModalState(
+                                              () => rating = idx,
+                                            ),
+                                            icon: Icon(
+                                              idx <= rating
+                                                  ? Icons.star_rounded
+                                                  : Icons.star_outline_rounded,
+                                              color: idx <= rating
+                                                  ? AppColors.gold
+                                                  : AppColors.textTertiary,
+                                              size: 36,
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                      Center(
+                                        child: Text(
+                                          _feedbackRatingCaption(rating),
+                                          style: Theme.of(ctx)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color: AppColors.primary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      TextField(
+                                        controller: commentCtrl,
+                                        maxLines: 5,
+                                        minLines: 4,
+                                        textCapitalization:
+                                            TextCapitalization.sentences,
+                                        onChanged: (_) {
+                                          if (errorText != null) {
+                                            setModalState(() => errorText = null);
+                                          }
+                                        },
+                                        decoration: InputDecoration(
+                                          labelText: 'Your message',
+                                          hintText:
+                                              'Describe handover, condition, '
+                                              'timing, or appreciation…',
+                                          alignLabelWithHint: true,
+                                          errorText: errorText,
+                                          filled: true,
+                                          fillColor: AppColors.surfaceHighlight,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(14),
+                                            borderSide: const BorderSide(
+                                              color: AppColors.border,
+                                            ),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(14),
+                                            borderSide: const BorderSide(
+                                              color: AppColors.border,
+                                            ),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(14),
+                                            borderSide: BorderSide(
+                                              color: AppColors.primary
+                                                  .withValues(alpha: 0.65),
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: OutlinedButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(ctx),
+                                              style: OutlinedButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  vertical: 14,
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(14),
+                                                ),
+                                              ),
+                                              child: const Text('Cancel'),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            flex: 2,
+                                            child: FilledButton(
+                                              onPressed: submit,
+                                              style: FilledButton.styleFrom(
+                                                backgroundColor:
+                                                    AppColors.primary,
+                                                foregroundColor: Colors.white,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  vertical: 14,
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(14),
+                                                ),
+                                              ),
+                                              child: const Text('Send feedback'),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      );
+    } finally {
+      commentCtrl.dispose();
+    }
   }
 
   Future<void> _putStatus(
@@ -504,40 +803,38 @@ class _DriverShipmentDetailScreenState
                   child: const Text('Cancel assignment'),
                 ),
               ],
-              const SizedBox(height: 16),
-              const SizedBox(height: 4),
-              TextButton.icon(
-                onPressed: () async {
-                  if (aid == null) return;
-                  final comment = await _prompt(
-                    context,
-                    'Feedback to consignor',
-                    'Comment *',
-                  );
-                  if (!context.mounted || comment == null || comment.isEmpty) {
-                    return;
-                  }
-                  try {
-                    await api.feedbackToConsignor({
-                      'assignmentId': aid,
-                      'comment': comment,
-                      'rating': 4,
-                    });
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Feedback sent.')),
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text('$e')));
-                    }
-                  }
-                },
-                icon: const Icon(Icons.chat_bubble_outline),
-                label: const Text('Feedback to consignor'),
+              const SizedBox(height: 20),
+              _FeedbackToConsignorCard(
+                enabled: aid != null,
+                onPressed: aid == null
+                    ? null
+                    : () async {
+                        final result =
+                            await _showFeedbackToConsignorSheet(context);
+                        if (!context.mounted || result == null) {
+                          return;
+                        }
+                        try {
+                          await api.feedbackToConsignor({
+                            'assignmentId': aid,
+                            'comment': result.comment,
+                            'rating': result.rating,
+                          });
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Feedback sent.'),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('$e')),
+                            );
+                          }
+                        }
+                      },
               ),
             ],
           );
@@ -1086,52 +1383,212 @@ class _StepTracker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(steps.length, (i) {
-        final active = i <= currentIndex;
-        return Expanded(
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
+    final gold = AppColors.gold;
+    final dim = Colors.white.withValues(alpha: 0.22);
+    final labelStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        );
+
+    // Icons + connectors share one row; labels use a separate row so each label
+    // gets the full column width (pairing label with connector in one Row halved
+    // the text width and caused mid-word wraps).
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: List.generate(steps.length, (i) {
+            final active = i <= currentIndex;
+            final leftLineColor =
+                i > 0 ? ((i - 1) < currentIndex ? gold : dim) : null;
+            final rightLineColor =
+                i < steps.length - 1 ? (i < currentIndex ? gold : dim) : null;
+
+            return Expanded(
+              child: SizedBox(
+                height: 36,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    Expanded(
+                      child: leftLineColor != null
+                          ? Container(height: 2, color: leftLineColor)
+                          : const SizedBox.shrink(),
+                    ),
                     CircleAvatar(
                       radius: 16,
-                      backgroundColor: active
-                          ? AppColors.gold
-                          : Colors.white.withValues(alpha: 0.22),
+                      backgroundColor: active ? gold : dim,
                       child: Icon(
                         steps[i].icon,
                         size: 16,
                         color: active ? AppColors.primaryDark : Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      steps[i].label,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Expanded(
+                      child: rightLineColor != null
+                          ? Container(height: 2, color: rightLineColor)
+                          : const SizedBox.shrink(),
                     ),
                   ],
                 ),
               ),
-              if (i < steps.length - 1)
-                Expanded(
-                  child: Container(
-                    height: 2,
-                    margin: const EdgeInsets.only(bottom: 20),
-                    color: i < currentIndex
-                        ? AppColors.gold
-                        : Colors.white.withValues(alpha: 0.22),
+            );
+          }),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: List.generate(steps.length, (i) {
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    steps[i].label,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: labelStyle,
                   ),
                 ),
-            ],
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+}
+
+class _FeedbackToConsignorCard extends StatelessWidget {
+  const _FeedbackToConsignorCard({
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  final bool enabled;
+  final Future<void> Function()? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: enabled ? 1 : 0.55,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: enabled && onPressed != null
+              ? () {
+                  onPressed!();
+                }
+              : null,
+          borderRadius: BorderRadius.circular(18),
+          child: Ink(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.14),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.07),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      width: 4,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        gradient: const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AppColors.gold,
+                            AppColors.primary,
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.primarySoft,
+                        border: Border.all(
+                          color: AppColors.gold.withValues(alpha: 0.4),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.08),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.chat_rounded,
+                        color: AppColors.primary,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Feedback to consignor',
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: enabled
+                                      ? AppColors.textPrimary
+                                      : AppColors.textSecondary,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            enabled
+                                ? 'Share delivery notes or appreciation with the shipper.'
+                                : 'Available once your assignment is active.',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppColors.textSecondary,
+                                  height: 1.35,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      enabled
+                          ? Icons.arrow_forward_ios_rounded
+                          : Icons.lock_outline_rounded,
+                      size: 16,
+                      color: enabled
+                          ? AppColors.primary
+                          : AppColors.textTertiary,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        );
-      }),
+        ),
+      ),
     );
   }
 }
