@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
@@ -107,6 +110,8 @@ class AuthState {
 }
 
 class AuthNotifier extends Notifier<AuthState> {
+  StreamSubscription<String>? _fcmRefreshSub;
+
   @override
   AuthState build() => const AuthState();
 
@@ -127,6 +132,8 @@ class AuthNotifier extends Notifier<AuthState> {
       final profile = await api.identityGet();
       _applyProfile(profile);
       await _sendInitialDriverTrackingPing();
+      await _registerFcmTokenIfPossible();
+      _ensureFcmTokenRefreshListener();
       state = state.copyWith(
         isAuthenticated: true,
         isLoading: false,
@@ -134,6 +141,7 @@ class AuthNotifier extends Notifier<AuthState> {
       );
     } catch (_) {
       await TokenStorage.instance.clearPersisted();
+      await _stopFcmTokenRefreshListener();
       state = state.copyWith(
         isLoading: false,
         bootstrapDone: true,
@@ -226,6 +234,8 @@ class AuthNotifier extends Notifier<AuthState> {
         state = state.copyWith(role: intendedRole);
       }
       await _sendInitialDriverTrackingPing();
+      await _registerFcmTokenIfPossible();
+      _ensureFcmTokenRefreshListener();
       state = state.copyWith(isAuthenticated: true, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: _formatError(e));
@@ -308,6 +318,8 @@ class AuthNotifier extends Notifier<AuthState> {
       final profile = await api.identityGet();
       _applyProfile(profile);
       await _sendInitialDriverTrackingPing();
+      await _registerFcmTokenIfPossible();
+      _ensureFcmTokenRefreshListener();
       state = state.copyWith(isAuthenticated: true, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: _formatError(e));
@@ -322,8 +334,50 @@ class AuthNotifier extends Notifier<AuthState> {
         await ref.read(backendApiProvider).authLogout(rt);
       }
     } catch (_) {}
+    await _stopFcmTokenRefreshListener();
     await TokenStorage.instance.clearPersisted();
     state = AuthState(bootstrapDone: true);
+  }
+
+  Future<void> _registerFcmTokenIfPossible() async {
+    final userId = state.userPublicId;
+    if (userId == null || userId.trim().isEmpty) return;
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token == null || token.trim().isEmpty) return;
+      await ref
+          .read(backendApiProvider)
+          .fcmTokenRegister(userId: userId, fcmToken: token);
+      debugPrint('[FCM] registered token for userId=$userId');
+    } catch (e) {
+      // FCM registration must never block successful login/bootstrap.
+      debugPrint('[FCM] token registration skipped: $e');
+    }
+  }
+
+  void _ensureFcmTokenRefreshListener() {
+    if (_fcmRefreshSub != null) return;
+    _fcmRefreshSub = FirebaseMessaging.instance.onTokenRefresh.listen(
+      (newToken) async {
+        final userId = state.userPublicId;
+        if (userId == null || userId.trim().isEmpty) return;
+        if (newToken.trim().isEmpty) return;
+        try {
+          await ref
+              .read(backendApiProvider)
+              .fcmTokenRegister(userId: userId, fcmToken: newToken);
+          debugPrint('[FCM] updated token (rotation) for userId=$userId');
+        } catch (e) {
+          debugPrint('[FCM] token rotation update skipped: $e');
+        }
+      },
+    );
+  }
+
+  Future<void> _stopFcmTokenRefreshListener() async {
+    final sub = _fcmRefreshSub;
+    _fcmRefreshSub = null;
+    await sub?.cancel();
   }
 
   String _formatError(Object e) => e.toString();

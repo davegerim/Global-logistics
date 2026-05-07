@@ -84,57 +84,78 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0E4A42), Color(0xFF135C52)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
-                      blurRadius: 24,
-                      offset: const Offset(0, 12),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.16),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: const Icon(Icons.description_outlined, color: Colors.white),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0E4A42), Color(0xFF135C52)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.25),
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.16),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(Icons.description_rounded, color: Colors.white),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'GDN & GRN Hub',
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 90),
                           child: Text(
-                            'GDN & GRN Hub',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+                            'View all shipping documents for the selected shipment assignment.',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              height: 1.4,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'View all shipping documents for the selected shipment assignment.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        height: 1.4,
+                  ),
+                  Positioned(
+                    right: -10,
+                    bottom: -15,
+                    child: IgnorePointer(
+                      child: Image.asset(
+                        'assets/images/boxes-3d-icon-png-download-4504985.webp',
+                        width: 130,
+                        height: 130,
+                        fit: BoxFit.contain,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               Container(
@@ -142,30 +163,63 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.borderLight),
+                  border: Border.all(color: AppColors.borderLight, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.03),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
-                child: DropdownButtonFormField<String>(
-                  initialValue: selected.id,
-                  isExpanded: true,
-                  items: shipments
-                      .map(
-                        (s) => DropdownMenuItem(
-                          value: s.id,
-                          child: Text(
-                            s.publicId,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.primarySoft,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.local_shipping_rounded, color: AppColors.primary, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: selected.id,
+                        isExpanded: true,
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary),
+                        decoration: const InputDecoration(
+                          labelText: 'Select Shipment',
+                          labelStyle: TextStyle(
+                            color: AppColors.textTertiary,
+                            fontWeight: FontWeight.w600,
                           ),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
                         ),
-                      )
-                      .toList(),
-                  onChanged: (v) {
-                    if (v != null) _resolveAssignment(v);
-                  },
-                  decoration: const InputDecoration(
-                    labelText: 'Shipment',
-                    prefixIcon: Icon(Icons.local_shipping_outlined),
-                  ),
+                        items: shipments
+                            .map(
+                              (s) => DropdownMenuItem(
+                                value: s.id,
+                                child: Text(
+                                  s.publicId,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (v) {
+                          if (v != null) _resolveAssignment(v);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 18),
@@ -264,61 +318,93 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
   Widget _documentCard(BuildContext context, DocumentRef d, DateFormat fmt) {
     final isGdn = d.type == 'GDN';
     return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(18),
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: () => _showDocumentViewer(context, d, fmt),
-        borderRadius: BorderRadius.circular(18),
-        child: Container(
-          padding: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(20),
+        child: Ink(
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.border),
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.borderLight, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.03),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           child: Row(
             children: [
               Container(
-                width: 46,
-                height: 46,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
                   color: isGdn
-                      ? AppColors.gold.withValues(alpha: 0.16)
-                      : AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
+                      ? AppColors.gold.withValues(alpha: 0.15)
+                      : AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isGdn ? AppColors.gold.withValues(alpha: 0.3) : AppColors.primary.withValues(alpha: 0.1),
+                  ),
                 ),
                 child: Icon(
-                  isGdn ? Icons.outbox_outlined : Icons.inbox_outlined,
-                  color: AppColors.primary,
+                  isGdn ? Icons.outbox_rounded : Icons.inbox_rounded,
+                  color: isGdn ? AppColors.goldMuted : AppColors.primary,
+                  size: 26,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(d.title, style: Theme.of(context).textTheme.titleSmall),
-                    const SizedBox(height: 3),
+                    Text(
+                      d.title, 
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.2,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
                     Text(
                       '${d.type} • ${fmt.format(d.availableAt)}',
                       style: Theme.of(
                         context,
-                      ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+                      ).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     if ((d.documentNumber ?? '').isNotEmpty) ...[
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Text(
                         'No: ${d.documentNumber}',
                         style: Theme.of(
                           context,
-                        ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
+                        ).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textTertiary,
+                          fontWeight: FontWeight.w600,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
-              const Icon(Icons.visibility_outlined, color: AppColors.primary),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: AppColors.surfaceMuted,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textSecondary, size: 16),
+              ),
             ],
           ),
         ),
@@ -548,33 +634,50 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
     required IconData icon,
   }) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.borderLight),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 42,
-            height: 42,
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.primarySoft,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.1), width: 2),
             ),
-            child: Icon(icon, color: AppColors.primary),
+            child: Icon(icon, color: AppColors.primary, size: 32),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.titleSmall),
-                const SizedBox(height: 2),
-                Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-              ],
+          const SizedBox(height: 20),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: AppColors.primaryDark,
             ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

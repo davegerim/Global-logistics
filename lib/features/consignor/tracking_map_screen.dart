@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'dart:async';
 
-/// Uses `GET /tracking/{assignment-id}` and `GET /tracking/{assignment-id}/latest`.
+/// Uses `GET /tracking/{assignment-id}` for live route points.
 class TrackingMapScreen extends ConsumerStatefulWidget {
   const TrackingMapScreen({super.key, required this.shipmentId});
 
@@ -17,17 +20,23 @@ class TrackingMapScreen extends ConsumerStatefulWidget {
 }
 
 class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
+  static const LatLng _defaultCenter = LatLng(9.03, 38.74);
+
+  final MapController _mapController = MapController();
   List<dynamic> _points = const [];
   Map<String, dynamic>? _latest;
   String? _error;
   String? _loadedForAssignment;
+  Timer? _refreshTimer;
+  bool _isLoading = false;
+  bool _mapReady = false;
+  LatLng? _pendingCenter;
 
   Future<void> _openExternalMap({
     required double lat,
     required double lon,
-    required String label,
   }) async {
-    final query = Uri.encodeComponent('$lat,$lon ($label)');
+    final query = Uri.encodeComponent('$lat,$lon');
     final google = 'https://www.google.com/maps/search/?api=1&query=$query';
     final ok = await launchUrlString(
       google,
@@ -47,26 +56,95 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
     if (assignment != null &&
         assignment.isNotEmpty &&
         assignment != _loadedForAssignment) {
+      _refreshTimer?.cancel();
       _loadedForAssignment = assignment;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _load(assignment));
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await _load(assignment);
+        if (!mounted) return;
+        _refreshTimer = Timer.periodic(
+          const Duration(seconds: 20),
+          (_) => _load(assignment),
+        );
+      });
     }
   }
 
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
   Future<void> _load(String assignmentId) async {
+    if (_isLoading) return;
+    _isLoading = true;
     try {
       final api = ref.read(backendApiProvider);
       final route = await api.trackingRoute(assignmentId);
-      final latest = await api.trackingLatest(assignmentId);
+      final latest = _extractLatestPoint(route);
       if (mounted) {
         setState(() {
           _points = route;
           _latest = latest;
           _error = null;
         });
+        final center = _toLatLng(latest);
+        if (center != null) {
+          if (_mapReady) {
+            _mapController.move(center, 14);
+          } else {
+            _pendingCenter = center;
+          }
+        }
       }
     } catch (e) {
       if (mounted) setState(() => _error = '$e');
+    } finally {
+      _isLoading = false;
     }
+  }
+
+  Map<String, dynamic>? _extractLatestPoint(List<dynamic> points) {
+    for (var i = points.length - 1; i >= 0; i--) {
+      final item = points[i];
+      if (item is! Map) continue;
+      final p = item.cast<String, dynamic>();
+      if (_toLatLng(p) != null) return p;
+    }
+    return null;
+  }
+
+  double? _readCoord(Map<String, dynamic> m, List<String> keys) {
+    for (final k in keys) {
+      final v = m[k];
+      if (v is num) return v.toDouble();
+      if (v is String) return double.tryParse(v);
+    }
+    return null;
+  }
+
+  /// Only accepts WGS84 degrees. Some API rows include projected coordinates
+  /// (e.g. Web Mercator ~1e7) which must not be passed to [LatLng] or polylines crash.
+  LatLng? _toLatLng(Map<String, dynamic>? point) {
+    if (point == null) return null;
+    final lat = _readCoord(point, ['latitude', 'lat']);
+    final lon = _readCoord(point, ['longitude', 'lng', 'lon']);
+    if (lat == null || lon == null) return null;
+    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+    return LatLng(lat, lon);
+  }
+
+  List<LatLng> _polylinePoints() {
+    final path = <LatLng>[];
+    for (final item in _points) {
+      if (item is! Map) continue;
+      final p = item.cast<String, dynamic>();
+      final latLng = _toLatLng(p);
+      if (latLng != null) {
+        path.add(latLng);
+      }
+    }
+    return path;
   }
 
   @override
@@ -83,54 +161,105 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
           final progress = s.progress01 ?? 0.55;
           return Stack(
             children: [
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFFE8F0EE), Color(0xFFF5F7F6)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+              FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  initialCenter: _toLatLng(_latest) ?? _defaultCenter,
+                  initialZoom: 12,
+                  onMapReady: () {
+                    _mapReady = true;
+                    final center = _pendingCenter;
+                    if (center != null) {
+                      _pendingCenter = null;
+                      _mapController.move(center, 14);
+                    }
+                  },
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.globallogistics.global_logistics_app',
                   ),
-                ),
-                child: CustomPaint(
-                  size: Size.infinite,
-                  painter: _RoutePainter(progress: progress),
-                ),
+                  if (_polylinePoints().length > 1)
+                    PolylineLayer(
+                      polylines: [
+                        Polyline(
+                          points: _polylinePoints(),
+                          color: AppColors.primary,
+                          strokeWidth: 4,
+                        ),
+                      ],
+                    ),
+                  if (_toLatLng(_latest) != null)
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: _toLatLng(_latest)!,
+                          width: 34,
+                          height: 34,
+                          child: const Icon(
+                            Icons.local_shipping_rounded,
+                            color: AppColors.primary,
+                            size: 30,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
               ),
               SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        backgroundColor: AppColors.surface,
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          icon: const Icon(Icons.arrow_back_rounded),
-                          onPressed: () => context.pop(),
+                      Material(
+                        color: AppColors.surface,
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.antiAlias,
+                        elevation: 0,
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => context.pop(),
+                          child: const Padding(
+                            padding: EdgeInsets.all(10),
+                            child: Icon(
+                              Icons.arrow_back_rounded,
+                              color: AppColors.primary,
+                              size: 22,
+                            ),
+                          ),
                         ),
                       ),
                       const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(99),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 12,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.straighten, size: 18, color: AppColors.primary),
-                            const SizedBox(width: 6),
-                            Text(
-                              assignment == null ? 'No assignment id' : 'Tracking',
-                              style: Theme.of(context).textTheme.labelLarge,
-                            ),
-                          ],
+                      Tooltip(
+                        message: assignment == null
+                            ? 'Add assignment in the URL to load tracking'
+                            : 'Status: viewing live route and driver position for this shipment',
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(99),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 12,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.straighten, size: 18, color: AppColors.primary),
+                              const SizedBox(width: 6),
+                              Text(
+                                assignment == null ? 'No assignment id' : 'Tracking',
+                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                      color: AppColors.textPrimary,
+                                    ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -196,7 +325,6 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                               _openExternalMap(
                                 lat: lat,
                                 lon: lon,
-                                label: 'Driver live location',
                               );
                             },
                             icon: const Icon(Icons.location_searching_rounded),
@@ -207,16 +335,16 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                           const SizedBox(height: 8),
                           OutlinedButton.icon(
                             onPressed: () {
-                              final first = _points.first;
-                              if (first is! Map) return;
-                              final p = first.cast<String, dynamic>();
-                              final lat = (p['latitude'] as num?)?.toDouble();
-                              final lon = (p['longitude'] as num?)?.toDouble();
-                              if (lat == null || lon == null) return;
+                              LatLng? start;
+                              for (final item in _points) {
+                                if (item is! Map) continue;
+                                start = _toLatLng(item.cast<String, dynamic>());
+                                if (start != null) break;
+                              }
+                              if (start == null) return;
                               _openExternalMap(
-                                lat: lat,
-                                lon: lon,
-                                label: 'Route starting point',
+                                lat: start.latitude,
+                                lon: start.longitude,
                               );
                             },
                             icon: const Icon(Icons.alt_route_rounded),
@@ -235,7 +363,7 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Full payloads are printed in the debug console (GL_API).',
+                          '',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
@@ -253,43 +381,3 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
   }
 }
 
-class _RoutePainter extends CustomPainter {
-  _RoutePainter({required this.progress});
-
-  final double progress;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final path = Path()
-      ..moveTo(size.width * 0.15, size.height * 0.72)
-      ..quadraticBezierTo(
-        size.width * 0.45,
-        size.height * 0.35,
-        size.width * 0.85,
-        size.height * 0.22,
-      );
-
-    final bg = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.12)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round;
-
-    final fg = Paint()
-      ..color = AppColors.primary
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawPath(path, bg);
-
-    final metrics = path.computeMetrics().first;
-    final len = metrics.length * progress.clamp(0, 1);
-    final extractPath = metrics.extractPath(0, len);
-    canvas.drawPath(extractPath, fg);
-  }
-
-  @override
-  bool shouldRepaint(covariant _RoutePainter oldDelegate) =>
-      oldDelegate.progress != progress;
-}

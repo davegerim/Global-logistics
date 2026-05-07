@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
-import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/notifications_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
@@ -76,33 +75,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
                   ),
                 ),
                 IconButton(
-                  onPressed: () async {
-                    final list = await ref
-                        .read(backendApiProvider)
-                        .notificationsLatest();
-                    if (!context.mounted) return;
-                    ref.invalidate(unreadNotificationsCountProvider);
-                    await showModalBottomSheet<void>(
-                      context: context,
-                      showDragHandle: true,
-                      builder: (ctx) => Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: ListView(
-                          children: [
-                            Text(
-                              'Notifications',
-                              style: Theme.of(ctx).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              list.toString(),
-                              style: Theme.of(ctx).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: () => context.push('/consignor/notifications'),
                   icon: unreadAsync.when(
                     data: (n) => Badge(
                       isLabelVisible: n > 0,

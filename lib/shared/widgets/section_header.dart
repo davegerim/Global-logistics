@@ -28,11 +28,18 @@ class SectionHeader extends StatelessWidget {
           if (actionLabel != null && onAction != null)
             TextButton(
               onPressed: onAction,
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.gold,
+                foregroundColor: AppColors.primaryDark,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               child: Text(
                 actionLabel!,
                 style: const TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),

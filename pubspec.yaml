@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  firebase_core: ^4.1.1
+  firebase_messaging: ^16.0.1
   cupertino_icons: ^1.0.8
   flutter_svg: ^2.2.0
   dio: ^5.8.0+1
@@ -19,6 +21,8 @@ dependencies:
   shared_preferences: ^2.5.3
   url_launcher: ^6.3.1
   geolocator: ^14.0.2
+  flutter_map: ^8.3.0
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:

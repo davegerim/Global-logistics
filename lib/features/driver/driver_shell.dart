@@ -34,16 +34,15 @@ class DriverShell extends ConsumerWidget {
       bottomNavigationBar: Container(
         margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: AppColors.primary,
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: AppColors.primary.withValues(alpha: 0.3),
               blurRadius: 24,
               offset: const Offset(0, 8),
             ),
           ],
-          border: Border.all(color: AppColors.border),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
@@ -98,7 +97,7 @@ class _NavItem extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
+          color: selected ? AppColors.gold : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -106,7 +105,7 @@ class _NavItem extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: selected ? AppColors.primary : AppColors.textSecondary,
+              color: selected ? AppColors.primaryDark : AppColors.surface.withValues(alpha: 0.7),
               size: 26,
             ),
             const SizedBox(height: 2),
@@ -115,7 +114,7 @@ class _NavItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: selected ? AppColors.primary : AppColors.textSecondary,
+                color: selected ? AppColors.primaryDark : AppColors.surface.withValues(alpha: 0.7),
               ),
             ),
           ],

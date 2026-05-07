@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
-import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/notifications_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/shared/widgets/shipment_card.dart';
@@ -26,9 +26,12 @@ class DriverHomeScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.large(
+          SliverAppBar(
             pinned: true,
             backgroundColor: AppColors.surface,
+            surfaceTintColor: Colors.transparent,
+            systemOverlayStyle: SystemUiOverlayStyle.dark,
+            toolbarHeight: 70,
             title: Row(
               children: [
                 CircleAvatar(
@@ -61,33 +64,7 @@ class DriverHomeScreen extends ConsumerWidget {
                   ),
                 ),
                 IconButton(
-                  onPressed: () async {
-                    final list = await ref
-                        .read(backendApiProvider)
-                        .notificationsLatest();
-                    if (!context.mounted) return;
-                    ref.invalidate(unreadNotificationsCountProvider);
-                    await showModalBottomSheet<void>(
-                      context: context,
-                      showDragHandle: true,
-                      builder: (ctx) => Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: ListView(
-                          children: [
-                            Text(
-                              'Notifications',
-                              style: Theme.of(ctx).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              list.toString(),
-                              style: Theme.of(ctx).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: () => context.push('/driver/notifications'),
                   icon: unreadAsync.when(
                     data: (n) => Badge(
                       isLabelVisible: n > 0,
@@ -103,26 +80,39 @@ class DriverHomeScreen extends ConsumerWidget {
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
             sliver: SliverToBoxAdapter(
               child: Column(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.border),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.goldLight,
+                            color: AppColors.gold,
                             borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.gold.withValues(alpha: 0.4),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                          child: const Icon(Icons.route, color: AppColors.primary),
+                          child: const Icon(Icons.route, color: AppColors.primaryDark),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -131,11 +121,16 @@ class DriverHomeScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 'Assigned shipments',
-                                style: Theme.of(context).textTheme.titleSmall,
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                      color: AppColors.surface,
+                                    ),
                               ),
+                              const SizedBox(height: 4),
                               Text(
                                 'Accept offers from the Offers tab; admin assigns final routes.',
-                                style: Theme.of(context).textTheme.bodySmall,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppColors.surface.withValues(alpha: 0.8),
+                                    ),
                               ),
                             ],
                           ),
@@ -143,7 +138,7 @@ class DriverHomeScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 24),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

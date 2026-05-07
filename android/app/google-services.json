@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "636272952328",
+    "project_id": "global-logistics-push-notif",
+    "storage_bucket": "global-logistics-push-notif.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:636272952328:android:bb452e5ba70807ae1f3dbd",
+        "android_client_info": {
+          "package_name": "com.globallogistics.global_logistics_app_second"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAd7tw80uWFZ3NRcuDoAJLw1LgtYhzKMmo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

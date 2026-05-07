@@ -288,9 +288,9 @@ class BackendApi {
   }
 
   // --- tracking ---
-  /// OpenAPI declares `req` as query; Spring often accepts flattened query params.
+  /// POST body: assignmentId, latitude, longitude, accuracy, speed, recordedAt (ISO-8601).
   Future<void> trackingRecord(Map<String, dynamic> req) async {
-    await _dio.post<void>('/tracking', queryParameters: req);
+    await _dio.post<void>('/tracking', data: req);
   }
 
   Future<List<dynamic>> trackingRoute(String assignmentId) async {
@@ -401,8 +401,29 @@ class BackendApi {
     return r.data ?? [];
   }
 
+  Future<Map<String, dynamic>> notificationsPage({int page = 0, int size = 10}) async {
+    final r = await _dio.get<Map<String, dynamic>>(
+      '/notifications/page',
+      queryParameters: {'page': page, 'size': size},
+    );
+    return r.data ?? {};
+  }
+
   Future<void> notificationsMarkRead(String id) async {
     await _dio.post<void>('/notifications/$id/read');
+  }
+
+  // --- push notifications ---
+  /// Registers (or updates) the device FCM token for the given user.
+  /// Backend endpoint: POST /fcm-token { userId, fcmToken }
+  Future<void> fcmTokenRegister({
+    required String userId,
+    required String fcmToken,
+  }) async {
+    await _dio.post<void>(
+      '/fcm-token',
+      data: {'userId': userId, 'fcmToken': fcmToken},
+    );
   }
 
   // --- paged shipments by stage (optional UI) ---

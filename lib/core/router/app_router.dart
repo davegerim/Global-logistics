@@ -31,6 +31,7 @@ import 'package:global_logistics_app/features/driver/driver_profile_screen.dart'
 import 'package:global_logistics_app/features/driver/driver_shipment_detail_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_shell.dart';
 import 'package:global_logistics_app/features/driver/driver_vehicle_details_screen.dart';
+import 'package:global_logistics_app/features/notifications/notifications_screen.dart';
 import 'package:global_logistics_app/features/onboarding/onboarding_screen.dart';
 import 'package:global_logistics_app/features/role/role_selection_screen.dart';
 import 'package:global_logistics_app/features/splash/splash_screen.dart';
@@ -295,6 +296,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               return TrackingMapScreen(shipmentId: id);
             },
           ),
+          GoRoute(
+            parentNavigatorKey: _rootNavigatorKey,
+            path: 'notifications',
+            builder: (context, state) => const NotificationsScreen(),
+          ),
         ],
       ),
       GoRoute(
@@ -365,6 +371,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             parentNavigatorKey: _rootNavigatorKey,
             path: 'profile/license',
             builder: (context, state) => const DriverLicenseDetailsScreen(),
+          ),
+          GoRoute(
+            parentNavigatorKey: _rootNavigatorKey,
+            path: 'notifications',
+            builder: (context, state) => const NotificationsScreen(),
           ),
         ],
       ),

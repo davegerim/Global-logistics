@@ -109,43 +109,50 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
-    int maxLines = 1,
+    int? maxLines = 1,
     TextInputType? keyboardType,
     String? hint,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceHighlight,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        color: AppColors.surfaceHighlight.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderLight, width: 1.0),
       ),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
+        minLines: maxLines == null ? 1 : null,
         keyboardType: keyboardType,
         style: const TextStyle(
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
-          fontSize: 15,
+          fontSize: 14,
         ),
         decoration: InputDecoration(
+          isDense: true,
           labelText: label,
           hintText: hint,
-          labelStyle: const TextStyle(
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w600,
+          labelStyle: TextStyle(
+            color: AppColors.textSecondary.withValues(alpha: 0.8),
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
+          hintStyle: TextStyle(
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
+            fontSize: 13,
           ),
           prefixIcon: Container(
-            padding: EdgeInsets.only(top: maxLines > 1 ? 16 : 0),
-            alignment: maxLines > 1 ? Alignment.topCenter : Alignment.center,
-            width: 48,
-            child: Icon(icon, color: AppColors.primary, size: 22),
+            padding: EdgeInsets.only(top: (maxLines != null && maxLines > 1) ? 12 : 0),
+            alignment: (maxLines != null && maxLines > 1) ? Alignment.topCenter : Alignment.center,
+            width: 44,
+            child: Icon(icon, color: AppColors.primary.withValues(alpha: 0.8), size: 20),
           ),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: maxLines > 1 ? 16 : 12,
+            vertical: (maxLines != null && maxLines > 1) ? 12 : 10,
           ),
         ),
       ),
@@ -154,39 +161,42 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
 
   Widget _buildDropdown() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceHighlight,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        color: AppColors.surfaceHighlight.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderLight, width: 1.0),
       ),
       child: DropdownButtonFormField<String>(
         initialValue: _priceType,
         icon: const Icon(
           Icons.keyboard_arrow_down_rounded,
           color: AppColors.textTertiary,
+          size: 20,
         ),
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
+          isDense: true,
           labelText: 'Price Type',
           labelStyle: TextStyle(
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondary.withValues(alpha: 0.8),
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
           ),
           prefixIcon: Icon(
             Icons.sell_outlined,
-            color: AppColors.primary,
-            size: 22,
+            color: AppColors.primary.withValues(alpha: 0.8),
+            size: 20,
           ),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         ),
         style: const TextStyle(
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
-          fontSize: 15,
+          fontSize: 14,
         ),
         dropdownColor: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         items: const [
           DropdownMenuItem(value: 'FIXED', child: Text('Fixed Rate')),
           DropdownMenuItem(value: 'PER_TON', child: Text('Per Ton')),
@@ -203,16 +213,16 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
     required List<Widget> children,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
+      margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderLight, width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.04),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+            color: AppColors.textPrimary.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -220,37 +230,37 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.primarySoft,
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(icon, color: AppColors.primary, size: 20),
+                  child: Icon(icon, color: AppColors.primary, size: 18),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primaryDark,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
                     letterSpacing: -0.2,
                   ),
                 ),
               ],
             ),
           ),
-          const Divider(
+          Divider(
             height: 1,
-            color: AppColors.borderLight,
-            thickness: 1.5,
+            color: AppColors.borderLight.withValues(alpha: 0.5),
+            thickness: 1.0,
           ),
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: children,
@@ -299,19 +309,19 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
         children: [
           // Header Card
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: AppColors.heroCardGradient,
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10),
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
@@ -427,14 +437,12 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                 label: 'Loading Location',
                 hint: 'e.g. Addis Ababa, Warehouse A',
                 icon: Icons.upload_rounded,
-                maxLines: 2,
               ),
               _buildInput(
                 controller: _offloading,
                 label: 'Offloading Location',
                 hint: 'e.g. Adama, Central Hub',
                 icon: Icons.download_rounded,
-                maxLines: 2,
               ),
               _buildInput(
                 controller: _route,
