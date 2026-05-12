@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/data/storage/app_launch_preferences.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
-import 'dart:ui';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -37,13 +37,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       imagePath: 'assets/images/54596645_2.webp',
       accentColor: AppColors.gold,
     ),
-    _WalkthroughData(
-      title: 'Deliver with\nConfidence.',
-      description:
-          'Secure your records and finalize shipments with professional digital documentation.',
-      imagePath: 'assets/images/0x0.webp',
-      accentColor: AppColors.primaryDark,
-    ),
   ];
 
   @override
@@ -58,9 +51,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
+  Future<void> _goToRoleSelection() async {
+    await AppLaunchPreferences.instance.setIntroWalkthroughDone();
+    if (!mounted) return;
+    context.go('/role');
+  }
+
   void _nextPage() {
     if (_currentPage == _pages.length - 1) {
-      context.go('/role');
+      _goToRoleSelection();
       return;
     }
     _pageController.nextPage(
@@ -128,7 +127,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.go('/role'),
+                  onPressed: _goToRoleSelection,
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.white.withValues(alpha: 0.8),
                   ),
@@ -148,18 +147,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             right: 0,
             child: Container(
               padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
-              decoration: BoxDecoration(
-                color: AppColors.background.withValues(alpha: 0.95),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(40),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 40,
-                    offset: const Offset(0, -10),
-                  ),
-                ],
+              decoration: const BoxDecoration(
+                color: Colors.transparent,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -177,7 +166,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         decoration: BoxDecoration(
                           color: _currentPage == index
                               ? AppColors.primary
-                              : AppColors.primary.withValues(alpha: 0.2),
+                              : Colors.white.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -209,7 +198,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           _pages[_currentPage].title,
                           style: t.displaySmall?.copyWith(
                             fontWeight: FontWeight.w900,
-                            color: AppColors.textPrimary,
+                            color: Colors.white,
                             height: 1.1,
                             letterSpacing: -1,
                           ),
@@ -218,7 +207,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Text(
                           _pages[_currentPage].description,
                           style: t.bodyLarge?.copyWith(
-                            color: AppColors.textSecondary,
+                            color: Colors.white.withValues(alpha: 0.9),
                             height: 1.5,
                           ),
                         ),

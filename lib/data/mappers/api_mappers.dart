@@ -73,6 +73,7 @@ ShipmentModel shipmentFromDto(Map<String, dynamic> j) {
   return ShipmentModel(
     id: publicId,
     publicId: publicId,
+    bookingId: j['bookingId']?.toString(),
     apiStatusLabel: j['currentStatus'] as String?,
     assignmentId: null,
     status: status,
@@ -93,7 +94,10 @@ ShipmentModel shipmentFromDto(Map<String, dynamic> j) {
 
 /// OpenAPI `ShipmentWorkspaceResponse` has header+overview but no shipment UUID at root;
 /// We require caller to pass [shipmentPublicId].
-ShipmentModel shipmentFromWorkspaceWithId(Map<String, dynamic> w, String shipmentPublicId) {
+ShipmentModel shipmentFromWorkspaceWithId(
+  Map<String, dynamic> w,
+  String shipmentPublicId,
+) {
   final header = (w['header'] as Map?)?.cast<String, dynamic>() ?? {};
   final overview = (w['overview'] as Map?)?.cast<String, dynamic>() ?? {};
   final status = mapApiShipmentStatus(header['status'] as String?);
@@ -103,15 +107,24 @@ ShipmentModel shipmentFromWorkspaceWithId(Map<String, dynamic> w, String shipmen
     apiStatusLabel: header['status'] as String?,
     assignmentId: null,
     status: status,
-    loadingAddress: header['loadingLocation'] as String? ?? overview['loadingLocation'] as String? ?? '—',
-    offloadingAddress: header['offloadingLocation'] as String? ?? overview['offloadingLocation'] as String? ?? '—',
-    goodsDescription: overview['goodType'] as String? ?? header['goodType'] as String? ?? '—',
+    loadingAddress:
+        header['loadingLocation'] as String? ??
+        overview['loadingLocation'] as String? ??
+        '—',
+    offloadingAddress:
+        header['offloadingLocation'] as String? ??
+        overview['offloadingLocation'] as String? ??
+        '—',
+    goodsDescription:
+        overview['goodType'] as String? ?? header['goodType'] as String? ?? '—',
     weightKg: _parseDouble(overview['weight']) ?? 0,
     volumeM3: _parseDouble(overview['volume']) ?? 0,
     vehicleType: overview['requiredVehicleType'] as String? ?? '—',
     timelineNote: overview['details'] as String? ?? '',
     placedAt: _parseDt(header['createdAt']) ?? DateTime.now(),
-    estimatedDelivery: _parseDt(overview['deliveryDate'] ?? overview['loadingDate']),
+    estimatedDelivery: _parseDt(
+      overview['deliveryDate'] ?? overview['loadingDate'],
+    ),
     progress01: _progressForShipmentStatus(status),
     paymentMethod: overview['priceType'] as String?,
     priceOffer: _parseDouble(header['priceAmount'] ?? overview['priceAmount']),
@@ -148,7 +161,10 @@ ShipmentModel shipmentFromDriverWorkspace(
     goodsDescription: good,
     weightKg: _parseDouble(first?['weight']) ?? 0,
     volumeM3: _parseDouble(first?['volume']) ?? 0,
-    vehicleType: first?['requiredVehicleType'] as String? ?? sel?['vehicleType'] as String? ?? '—',
+    vehicleType:
+        first?['requiredVehicleType'] as String? ??
+        sel?['vehicleType'] as String? ??
+        '—',
     timelineNote: first?['details'] as String? ?? '',
     placedAt: _parseDt(first?['updatedAt']) ?? DateTime.now(),
     estimatedDelivery: null,
@@ -168,53 +184,87 @@ ShipmentModel shipmentFromDriverWorkspace(
   );
 }
 
-ShipmentModel shipmentFromAssignmentDriverView(Map<String, dynamic> j) {
-  final shipmentId = j['shipmentId'] as String? ?? '';
-  final assignmentPid = j['publicId'] as String?;
+/// Build a [ShipmentModel] from the `/assignments/driver` DTO, optionally
+/// enriched with negotiation data that carries the shipment locations.
+ShipmentModel shipmentFromAssignmentDriverView(
+  Map<String, dynamic> j, {
+  Map<String, dynamic>? negotiationData,
+}) {
+  final shipmentId = j['shipmentId']?.toString() ?? '';
+  final assignmentPid = j['publicId']?.toString();
+  final assignmentDisplayId = j['assignmentId']?.toString();
   final st = mapAssignmentStatus(j['status'] as String?);
+
+  final n = negotiationData;
+  final loading = _nonDash(j['loadingLocation']) ??
+      _nonDash(n?['loadingLocation']) ??
+      '—';
+  final off = _nonDash(j['offloadingLocation']) ??
+      _nonDash(n?['offloadingLocation']) ??
+      '—';
+  final good = _nonDash(j['goodType']) ??
+      _nonDash(n?['goodType']) ??
+      'Assignment';
+  final weight = _parseDouble(j['weight']) ?? _parseDouble(n?['weight']) ?? 0;
+  final volume = _parseDouble(j['volume']) ?? _parseDouble(n?['volume']) ?? 0;
+  final vehicle = _nonDash(j['requiredVehicleType']) ??
+      _nonDash(n?['requiredVehicleType']) ??
+      '—';
+
   return ShipmentModel(
     id: shipmentId,
     publicId: shipmentId,
     apiStatusLabel: j['status'] as String?,
-    assignmentId: assignmentPid,
+    assignmentId: assignmentPid ?? assignmentDisplayId,
+    assignmentDisplayId: assignmentDisplayId,
+    bookingId: j['bookingId']?.toString(),
     status: st,
-    loadingAddress: '—',
-    offloadingAddress: '—',
-    goodsDescription: 'Assignment',
-    weightKg: 0,
-    volumeM3: 0,
-    vehicleType: '—',
-    timelineNote: '',
+    loadingAddress: loading,
+    offloadingAddress: off,
+    goodsDescription: good,
+    weightKg: weight.toDouble(),
+    volumeM3: volume.toDouble(),
+    vehicleType: vehicle,
+    timelineNote: j['details'] as String? ?? '',
     placedAt: _parseDt(j['assignedAt']) ?? DateTime.now(),
     estimatedDelivery: _parseDt(j['completedAt']),
     progress01: _progressForAssignmentStatus(st),
-    paymentMethod: null,
-    priceOffer: _parseDouble(j['agreedPrice']),
+    paymentMethod: n?['priceType'] as String?,
+    priceOffer: _parseDouble(j['agreedPrice']) ??
+        _parseDouble(n?['priceAmount']),
   );
 }
 
+String? _nonDash(dynamic v) {
+  if (v is String) {
+    final t = v.trim();
+    if (t.isNotEmpty && t != '—') return t;
+  }
+  return null;
+}
+
 double _progressForShipmentStatus(ShipmentStatus s) => switch (s) {
-      ShipmentStatus.completed => 1.0,
-      ShipmentStatus.inTransit => 0.55,
-      ShipmentStatus.pendingReview => 0.12,
-      _ => 0.35,
-    };
+  ShipmentStatus.completed => 1.0,
+  ShipmentStatus.inTransit => 0.55,
+  ShipmentStatus.pendingReview => 0.12,
+  _ => 0.35,
+};
 
 double _progressForAssignmentStatus(ShipmentStatus s) => switch (s) {
-      ShipmentStatus.delivered => 1.0,
-      ShipmentStatus.completed => 1.0,
-      ShipmentStatus.inTransit => 0.6,
-      ShipmentStatus.loading => 0.35,
-      ShipmentStatus.gdnIssued => 0.35,
-      _ => 0.2,
-    };
+  ShipmentStatus.delivered => 1.0,
+  ShipmentStatus.completed => 1.0,
+  ShipmentStatus.inTransit => 0.6,
+  ShipmentStatus.loading => 0.35,
+  ShipmentStatus.gdnIssued => 0.35,
+  _ => 0.2,
+};
 
 List<DriverOfferModel> driverOffersFromApi(List<dynamic> list) {
   final out = <DriverOfferModel>[];
   for (final e in list) {
     if (e is! Map) continue;
     final m = e.cast<String, dynamic>();
-    final id = m['negotiationId'] as String? ?? '';
+    final id = m['negotiationId']?.toString() ?? '';
     final load = m['loadingLocation'] as String? ?? '';
     final off = m['offloadingLocation'] as String? ?? '';
     final route = '$load → $off'.trim();
@@ -225,7 +275,8 @@ List<DriverOfferModel> driverOffersFromApi(List<dynamic> list) {
     out.add(
       DriverOfferModel(
         negotiationId: id,
-        shipmentId: m['shipmentId'] as String?,
+        publicId: m['publicId']?.toString(),
+        shipmentId: m['shipmentId']?.toString(),
         routeSummary: route.isEmpty ? 'Offer' : route,
         price: price,
         currency: cur,

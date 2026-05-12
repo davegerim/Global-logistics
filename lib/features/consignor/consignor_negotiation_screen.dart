@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/consignor_active_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
@@ -99,7 +100,7 @@ class _ConsignorNegotiationScreenState
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('$e')));
+        ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -158,116 +159,179 @@ class _ConsignorNegotiationScreenState
               .toIso8601String(),
     );
     final reason = TextEditingController();
+    final displayFmt = DateFormat.yMMMd().add_jm();
 
     return showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 8,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Counter offer',
-                style: Theme.of(
-                  ctx,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: price,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Counter price *',
-                  hintText: 'e.g. 960.00',
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: vehicleType,
-                decoration: const InputDecoration(
-                  labelText: 'Required vehicle type (optional)',
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: vehicleNumber,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Required vehicle number (optional)',
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: loadingDate,
-                decoration: const InputDecoration(
-                  labelText: 'Loading date UTC (optional)',
-                  hintText: '2026-03-10T08:00:00Z',
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: deliveryDate,
-                decoration: const InputDecoration(
-                  labelText: 'Delivery date UTC (optional)',
-                  hintText: '2026-03-12T14:30:00Z',
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: reason,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Reason (optional)',
-                ),
-              ),
-              const SizedBox(height: 16),
-              GlPrimaryButton(
-                label: 'Send counter offer',
-                onPressed: () {
-                  final parsedPrice = double.tryParse(price.text.trim());
-                  if (parsedPrice == null) return;
-                  final parsedVehicleCount = int.tryParse(
-                    vehicleNumber.text.trim(),
-                  );
-                  final normalizedVehicleType = vehicleType.text.trim().isEmpty
-                      ? shipment.vehicleType
-                      : vehicleType.text.trim();
-                  final normalizedLoadingDate = loadingDate.text.trim().isEmpty
-                      ? shipment.placedAt.toUtc().toIso8601String()
-                      : loadingDate.text.trim();
-                  final normalizedDeliveryDate =
-                      deliveryDate.text.trim().isEmpty
-                      ? (shipment.estimatedDelivery ??
-                                shipment.placedAt.add(const Duration(days: 2)))
-                            .toUtc()
-                            .toIso8601String()
-                      : deliveryDate.text.trim();
+      builder: (ctx) {
+        DateTime? loadingValue = DateTime.tryParse(loadingDate.text.trim());
+        DateTime? deliveryValue = DateTime.tryParse(deliveryDate.text.trim());
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) => Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 8,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Counter offer',
+                    style: Theme.of(
+                      ctx,
+                    ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: price,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Counter price *',
+                      hintText: 'e.g. 960.00',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: vehicleType,
+                    decoration: const InputDecoration(
+                      labelText: 'Required vehicle type (optional)',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: vehicleNumber,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Required vehicle number (optional)',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await _pickDateTime(
+                        initial: loadingValue ?? shipment.placedAt,
+                      );
+                      if (picked == null) return;
+                      setSheetState(() {
+                        loadingValue = picked;
+                        loadingDate.text = picked.toUtc().toIso8601String();
+                      });
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Loading date & time',
+                        suffixIcon: Icon(Icons.schedule_rounded),
+                      ),
+                      child: Text(
+                        loadingValue == null
+                            ? 'Select loading date & time'
+                            : displayFmt.format(loadingValue!.toLocal()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  InkWell(
+                    onTap: () async {
+                      final initialDate = deliveryValue ??
+                          loadingValue ??
+                          shipment.estimatedDelivery ??
+                          shipment.placedAt.add(const Duration(days: 2));
+                      final picked = await _pickDateTime(initial: initialDate);
+                      if (picked == null) return;
+                      setSheetState(() {
+                        deliveryValue = picked;
+                        deliveryDate.text = picked.toUtc().toIso8601String();
+                      });
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Delivery date & time',
+                        suffixIcon: Icon(Icons.event_available_rounded),
+                      ),
+                      child: Text(
+                        deliveryValue == null
+                            ? 'Select delivery date & time'
+                            : displayFmt.format(deliveryValue!.toLocal()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: reason,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Reason (optional)',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  GlPrimaryButton(
+                    label: 'Send counter offer',
+                    onPressed: () {
+                      final parsedPrice = double.tryParse(price.text.trim());
+                      if (parsedPrice == null) return;
+                      final parsedVehicleCount = int.tryParse(
+                        vehicleNumber.text.trim(),
+                      );
+                      final normalizedVehicleType = vehicleType.text.trim().isEmpty
+                          ? shipment.vehicleType
+                          : vehicleType.text.trim();
+                      final normalizedLoadingDate = loadingDate.text.trim().isEmpty
+                          ? shipment.placedAt.toUtc().toIso8601String()
+                          : loadingDate.text.trim();
+                      final normalizedDeliveryDate =
+                          deliveryDate.text.trim().isEmpty
+                          ? (shipment.estimatedDelivery ??
+                                    shipment.placedAt.add(const Duration(days: 2)))
+                                .toUtc()
+                                .toIso8601String()
+                          : deliveryDate.text.trim();
 
-                  Navigator.pop(ctx, {
-                    'shipmentId': widget.shipmentId,
-                    'counterPrice': parsedPrice,
-                    'requiredVehicleType': normalizedVehicleType,
-                    'requiredVehicleNumber': parsedVehicleCount ?? 1,
-                    'loadingDate': normalizedLoadingDate,
-                    'deliveryDate': normalizedDeliveryDate,
-                    if (reason.text.trim().isNotEmpty)
-                      'reason': reason.text.trim(),
-                  });
-                },
+                      Navigator.pop(ctx, {
+                        'shipmentId': widget.shipmentId,
+                        'counterPrice': parsedPrice,
+                        'requiredVehicleType': normalizedVehicleType,
+                        'requiredVehicleNumber': parsedVehicleCount ?? 1,
+                        'loadingDate': normalizedLoadingDate,
+                        'deliveryDate': normalizedDeliveryDate,
+                        if (reason.text.trim().isNotEmpty)
+                          'reason': reason.text.trim(),
+                      });
+                    },
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
+    );
+  }
+
+  Future<DateTime?> _pickDateTime({required DateTime initial}) async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (date == null || !mounted) return null;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial),
+    );
+    if (time == null) return null;
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
     );
   }
 
@@ -311,6 +375,8 @@ class _ConsignorNegotiationScreenState
           final hasAdminEvent = events.any(
             (e) => e.actor == _TimelineActor.admin,
           );
+          final isSettled =
+              _isNegotiationSettled(status) || shipment.status == ShipmentStatus.completed;
 
           return Column(
             children: [
@@ -364,10 +430,10 @@ class _ConsignorNegotiationScreenState
                           final e = events[index];
                           final mine = e.actor == _TimelineActor.consignor;
                           final bubbleColor = mine
-                              ? AppColors.primary
+                              ? AppColors.primarySoft
                               : AppColors.surface;
                           final textColor = mine
-                              ? Colors.white
+                              ? AppColors.primaryDark
                               : AppColors.textPrimary;
                           return Align(
                             alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
@@ -386,7 +452,7 @@ class _ConsignorNegotiationScreenState
                                     bottomRight: Radius.circular(mine ? 4 : 16),
                                   ),
                                   border: Border.all(
-                                    color: mine ? AppColors.primary : AppColors.borderLight,
+                                    color: mine ? AppColors.primary.withValues(alpha: 0.2) : AppColors.borderLight,
                                     width: 1,
                                   ),
                                   boxShadow: [
@@ -406,11 +472,11 @@ class _ConsignorNegotiationScreenState
                                         Icon(
                                           mine ? Icons.person_rounded : Icons.admin_panel_settings_rounded,
                                           size: 14,
-                                          color: mine ? Colors.white.withValues(alpha: 0.9) : AppColors.primary,
+                                          color: AppColors.primary,
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
-                                          e.title,
+                                          _timelineActorTitle(e.actor),
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w800,
@@ -432,19 +498,12 @@ class _ConsignorNegotiationScreenState
                                     ],
                                     if (e.price != null) ...[
                                       const SizedBox(height: 6),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: mine ? Colors.white.withValues(alpha: 0.15) : AppColors.primarySoft,
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          'Price: ${e.price}',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w800,
-                                            color: mine ? Colors.white : AppColors.primaryDark,
-                                          ),
+                                      Text(
+                                        'Price: ${e.price}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w800,
+                                          color: textColor,
                                         ),
                                       ),
                                     ],
@@ -458,7 +517,7 @@ class _ConsignorNegotiationScreenState
                                           fontWeight: FontWeight.w600,
                                         ).copyWith(
                                           color: mine
-                                              ? Colors.white.withValues(alpha: 0.7)
+                                              ? AppColors.primary.withValues(alpha: 0.6)
                                               : AppColors.textTertiary,
                                         ),
                                       ),
@@ -473,9 +532,13 @@ class _ConsignorNegotiationScreenState
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: OutlinedButton.icon(
+                child: FilledButton.icon(
                   onPressed: () => context.push(
                     '/consignor/shipment/${shipment.id}/history',
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
                   ),
                   icon: const Icon(Icons.history_rounded),
                   label: const Text('Open shipment history'),
@@ -487,51 +550,46 @@ class _ConsignorNegotiationScreenState
                   color: AppColors.surface,
                   border: Border(top: BorderSide(color: AppColors.border)),
                 ),
-                child: hasAdminEvent
-                    ? Column(
+                child: isSettled
+                    ? _buildSettledBanner()
+                    : hasAdminEvent
+                    ? Row(
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: _busy ? null : _rejectOffer,
-                                  icon: const Icon(
-                                    Icons.thumb_down_alt_outlined,
-                                  ),
-                                  label: const Text('Reject'),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: _busy ? null : _cancelShipment,
-                                  icon: const Icon(Icons.cancel_outlined),
-                                  label: const Text('Cancel'),
-                                ),
-                              ),
-                            ],
+                          Expanded(
+                            child: _buildActionBtn(
+                              icon: Icons.thumb_down_alt_outlined,
+                              label: 'Reject',
+                              onPressed: _busy ? null : _rejectOffer,
+                              isPrimary: false,
+                            ),
                           ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: _busy ? null : _counterOffer,
-                                  icon: const Icon(
-                                    Icons.currency_exchange_rounded,
-                                  ),
-                                  label: const Text('Counter offer'),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: GlPrimaryButton(
-                                  label: 'Accept',
-                                  isLoading: _busy,
-                                  onPressed: _acceptOffer,
-                                ),
-                              ),
-                            ],
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: _buildActionBtn(
+                              icon: Icons.cancel_outlined,
+                              label: 'Cancel',
+                              onPressed: _busy ? null : _cancelShipment,
+                              isPrimary: false,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: _buildActionBtn(
+                              icon: Icons.currency_exchange_rounded,
+                              label: 'Counter',
+                              onPressed: _busy ? null : _counterOffer,
+                              isPrimary: false,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: _buildActionBtn(
+                              icon: Icons.check_circle_outline,
+                              label: 'Accept',
+                              onPressed: _busy ? null : _acceptOffer,
+                              isPrimary: true,
+                              isLoading: _busy,
+                            ),
                           ),
                         ],
                       )
@@ -561,7 +619,7 @@ class _ConsignorNegotiationScreenState
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              '$e',
+              userFacingMessage(e),
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -643,10 +701,11 @@ class _ConsignorNegotiationScreenState
         'Vehicle: $vehicleType${vehicleNum != null && vehicleNum.isNotEmpty ? ' x$vehicleNum' : ''}',
       );
     }
-    final loading = offer['loadingDate']?.toString();
-    final delivery = offer['deliveryDate']?.toString();
-    if ((loading ?? '').isNotEmpty || (delivery ?? '').isNotEmpty) {
-      parts.add('Schedule updated');
+    if (parts.isEmpty) {
+      final actor = (offer['actorType']?.toString() ?? '').toUpperCase();
+      if (actor == 'ADMIN') return 'Admin updated the offer details.';
+      if (actor == 'CONSIGNOR') return 'Consignor updated the offer details.';
+      return 'Offer details updated.';
     }
     return parts.join(' • ');
   }
@@ -674,6 +733,111 @@ class _ConsignorNegotiationScreenState
     if (v == 'ADMIN') return _TimelineActor.admin;
     if (v == 'CONSIGNOR') return _TimelineActor.consignor;
     return _TimelineActor.system;
+  }
+
+  String _timelineActorTitle(_TimelineActor actor) {
+    switch (actor) {
+      case _TimelineActor.admin:
+        return 'Admin message';
+      case _TimelineActor.consignor:
+        return 'Consignor message';
+      case _TimelineActor.system:
+        return 'System message';
+    }
+  }
+
+  bool _isNegotiationSettled(String? statusValue) {
+    final status = (statusValue ?? '').toUpperCase();
+    if (status.isEmpty) return false;
+    return status.contains('ACCEPTED') ||
+        status.contains('APPROVED') ||
+        status.contains('ASSIGNED') ||
+        status.contains('SETTLED') ||
+        status.contains('COMPLETED') ||
+        status.contains('CLOSED');
+  }
+
+  Widget _buildSettledBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.goldLight,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.gold.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.verified_rounded, color: AppColors.gold),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Settled',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppColors.gold,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionBtn({
+    required IconData icon,
+    required String label,
+    required VoidCallback? onPressed,
+    bool isPrimary = false,
+    bool isLoading = false,
+  }) {
+    final content = isLoading
+        ? const SizedBox(
+            height: 20,
+            width: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.textPrimary,
+            ),
+          )
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 20),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          );
+
+    if (isPrimary) {
+      return ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.gold,
+          foregroundColor: AppColors.textPrimary,
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+        ),
+        child: content,
+      );
+    } else {
+      return OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.gold,
+          side: const BorderSide(color: AppColors.gold),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: content,
+      );
+    }
   }
 }
 

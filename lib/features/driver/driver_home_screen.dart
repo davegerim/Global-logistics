@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/notifications_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
@@ -221,7 +222,7 @@ class DriverHomeScreen extends ConsumerWidget {
               child: Center(child: CircularProgressIndicator()),
             ),
             error: (e, _) =>
-                SliverFillRemaining(child: Center(child: Text('$e'))),
+                SliverFillRemaining(child: Center(child: Text(userFacingMessage(e)))),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],

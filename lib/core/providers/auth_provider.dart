@@ -1,10 +1,14 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:global_logistics_app/core/network/auth_response_tokens.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/services/device_location_service.dart';
+import 'package:global_logistics_app/data/storage/app_launch_preferences.dart';
 import 'package:global_logistics_app/data/storage/token_cache.dart';
 import 'package:global_logistics_app/data/storage/token_storage.dart';
 
@@ -129,24 +133,57 @@ class AuthNotifier extends Notifier<AuthState> {
         return;
       }
       final api = ref.read(backendApiProvider);
-      final profile = await api.identityGet();
+      late Map<String, dynamic> profile;
+      for (var attempt = 0; attempt < 3; attempt++) {
+        try {
+          profile = await api.identityGet();
+          break;
+        } catch (e) {
+          if (attempt < 2 && _isBootstrapTransientFailure(e)) {
+            await Future<void>.delayed(
+              Duration(milliseconds: 400 * (attempt + 1)),
+            );
+            continue;
+          }
+          rethrow;
+        }
+      }
       _applyProfile(profile);
       await _sendInitialDriverTrackingPing();
       await _registerFcmTokenIfPossible();
       _ensureFcmTokenRefreshListener();
+      await AppLaunchPreferences.instance.setIntroWalkthroughDone();
       state = state.copyWith(
         isAuthenticated: true,
         isLoading: false,
         bootstrapDone: true,
       );
-    } catch (_) {
-      await TokenStorage.instance.clearPersisted();
+    } catch (e) {
+      if (e is DioException && e.response?.statusCode == 401) {
+        await TokenStorage.instance.clearPersisted();
+      }
       await _stopFcmTokenRefreshListener();
       state = state.copyWith(
         isLoading: false,
         bootstrapDone: true,
         isAuthenticated: false,
       );
+    }
+  }
+
+  bool _isBootstrapTransientFailure(Object e) {
+    if (e is! DioException) return false;
+    final code = e.response?.statusCode;
+    if (code != null && code >= 500) return true;
+    if (e.response != null) return false;
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.connectionError:
+        return true;
+      default:
+        return false;
     }
   }
 
@@ -217,8 +254,8 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final api = ref.read(backendApiProvider);
       final data = await api.authLogin(phone: phone, password: password);
-      final access = data['accessToken'] as String?;
-      final refresh = data['refreshToken'] as String?;
+      final access = readAccessTokenFromBody(data);
+      final refresh = readRefreshTokenFromBody(data);
       if (access != null) {
         await TokenStorage.instance.persistTokens(
           access: access,
@@ -236,6 +273,7 @@ class AuthNotifier extends Notifier<AuthState> {
       await _sendInitialDriverTrackingPing();
       await _registerFcmTokenIfPossible();
       _ensureFcmTokenRefreshListener();
+      await AppLaunchPreferences.instance.setIntroWalkthroughDone();
       state = state.copyWith(isAuthenticated: true, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: _formatError(e));
@@ -250,9 +288,9 @@ class AuthNotifier extends Notifier<AuthState> {
       if (assignments.isEmpty || assignments.first is! Map) return;
       final first = (assignments.first as Map).cast<String, dynamic>();
       final assignmentId =
-          (first['publicId'] as String?) ??
-          (first['assignmentId'] as String?) ??
-          (first['id'] as String?);
+          first['publicId']?.toString() ??
+          first['assignmentId']?.toString() ??
+          first['id']?.toString();
       if (assignmentId == null || assignmentId.trim().isEmpty) return;
       final location = await DeviceLocationService.current();
       final recordedAt = DateTime.fromMillisecondsSinceEpoch(
@@ -307,8 +345,8 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final api = ref.read(backendApiProvider);
       final data = await api.authOtpVerify(phone: phone, code: code);
-      final access = data['accessToken'] as String?;
-      final refresh = data['refreshToken'] as String?;
+      final access = readAccessTokenFromBody(data);
+      final refresh = readRefreshTokenFromBody(data);
       if (access != null) {
         await TokenStorage.instance.persistTokens(
           access: access,
@@ -320,6 +358,7 @@ class AuthNotifier extends Notifier<AuthState> {
       await _sendInitialDriverTrackingPing();
       await _registerFcmTokenIfPossible();
       _ensureFcmTokenRefreshListener();
+      await AppLaunchPreferences.instance.setIntroWalkthroughDone();
       state = state.copyWith(isAuthenticated: true, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: _formatError(e));
@@ -327,11 +366,21 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<void> logout() async {
-    final rt = TokenCache.instance.refreshToken;
+  Future<void> refreshProfile() async {
     try {
-      if (rt != null && rt.isNotEmpty) {
-        await ref.read(backendApiProvider).authLogout(rt);
+      final profile = await ref.read(backendApiProvider).identityGet();
+      _applyProfile(profile);
+    } catch (_) {}
+  }
+
+  Future<void> logout() async {
+    final cache = TokenCache.instance;
+    final hasSession =
+        (cache.accessToken != null && cache.accessToken!.isNotEmpty) ||
+        (cache.refreshToken != null && cache.refreshToken!.isNotEmpty);
+    try {
+      if (hasSession) {
+        await ref.read(backendApiProvider).authLogout();
       }
     } catch (_) {}
     await _stopFcmTokenRefreshListener();
@@ -357,21 +406,21 @@ class AuthNotifier extends Notifier<AuthState> {
 
   void _ensureFcmTokenRefreshListener() {
     if (_fcmRefreshSub != null) return;
-    _fcmRefreshSub = FirebaseMessaging.instance.onTokenRefresh.listen(
-      (newToken) async {
-        final userId = state.userPublicId;
-        if (userId == null || userId.trim().isEmpty) return;
-        if (newToken.trim().isEmpty) return;
-        try {
-          await ref
-              .read(backendApiProvider)
-              .fcmTokenRegister(userId: userId, fcmToken: newToken);
-          debugPrint('[FCM] updated token (rotation) for userId=$userId');
-        } catch (e) {
-          debugPrint('[FCM] token rotation update skipped: $e');
-        }
-      },
-    );
+    _fcmRefreshSub = FirebaseMessaging.instance.onTokenRefresh.listen((
+      newToken,
+    ) async {
+      final userId = state.userPublicId;
+      if (userId == null || userId.trim().isEmpty) return;
+      if (newToken.trim().isEmpty) return;
+      try {
+        await ref
+            .read(backendApiProvider)
+            .fcmTokenRegister(userId: userId, fcmToken: newToken);
+        debugPrint('[FCM] updated token (rotation) for userId=$userId');
+      } catch (e) {
+        debugPrint('[FCM] token rotation update skipped: $e');
+      }
+    });
   }
 
   Future<void> _stopFcmTokenRefreshListener() async {
@@ -380,7 +429,7 @@ class AuthNotifier extends Notifier<AuthState> {
     await sub?.cancel();
   }
 
-  String _formatError(Object e) => e.toString();
+  String _formatError(Object e) => userFacingMessage(e);
 }
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(

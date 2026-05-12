@@ -93,8 +93,8 @@ class BackendApi {
     );
   }
 
-  Future<void> authLogout(String refreshToken) async {
-    await _dio.post<void>('/logout', data: {'refreshToken': refreshToken});
+  Future<void> authLogout() async {
+    await _dio.put<void>('/sign-out/all');
   }
 
   // --- identity ---
@@ -117,10 +117,9 @@ class BackendApi {
     String? businessName,
     String? tradeLicence,
   }) async {
-    final payload = {
-      if (businessName != null) 'businessName': businessName,
-      if (tradeLicence != null) 'tradeLicence': tradeLicence,
-    };
+    final payload = <String, dynamic>{};
+    if (businessName != null) payload['businessName'] = businessName;
+    if (tradeLicence != null) payload['tradeLicence'] = tradeLicence;
     debugPrint('[CONSIGNORS_CREATE] request payload: $payload');
     final response = await _dio.post<dynamic>(
       '/consignors/create',
@@ -139,16 +138,13 @@ class BackendApi {
     String? licenceDocument,
     String? preferredLanes,
   }) async {
-    await _dio.post<void>(
-      '/drivers/create',
-      data: {
-        if (profilePic != null) 'profilePic': profilePic,
-        if (nationalId != null) 'nationalId': nationalId,
-        if (licenceNumber != null) 'licenceNumber': licenceNumber,
-        if (licenceDocument != null) 'licenceDocument': licenceDocument,
-        if (preferredLanes != null) 'preferredLanes': preferredLanes,
-      },
-    );
+    final payload = <String, dynamic>{};
+    if (profilePic != null) payload['profilePic'] = profilePic;
+    if (nationalId != null) payload['nationalId'] = nationalId;
+    if (licenceNumber != null) payload['licenceNumber'] = licenceNumber;
+    if (licenceDocument != null) payload['licenceDocument'] = licenceDocument;
+    if (preferredLanes != null) payload['preferredLanes'] = preferredLanes;
+    await _dio.post<void>('/drivers/create', data: payload);
   }
 
   // --- vehicles ---
@@ -250,9 +246,7 @@ class BackendApi {
 
   // --- driver negotiations ---
   Future<List<dynamic>> driverNegotiationsList() async {
-    final r = await _dio.get<List<dynamic>>(
-      '/driver-negotiations/driver-negotiations',
-    );
+    final r = await _dio.get<List<dynamic>>('/driver-negotiations');
     return r.data ?? [];
   }
 
@@ -401,7 +395,10 @@ class BackendApi {
     return r.data ?? [];
   }
 
-  Future<Map<String, dynamic>> notificationsPage({int page = 0, int size = 10}) async {
+  Future<Map<String, dynamic>> notificationsPage({
+    int page = 0,
+    int size = 10,
+  }) async {
     final r = await _dio.get<Map<String, dynamic>>(
       '/notifications/page',
       queryParameters: {'page': page, 'size': size},

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/consignor_active_provider.dart';
 import 'package:intl/intl.dart';
 
@@ -86,7 +87,7 @@ class ConsignorShipmentHistoryScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, stackTrace) => Center(child: Text('$e')),
+        error: (e, stackTrace) => Center(child: Text(userFacingMessage(e))),
       ),
     );
   }

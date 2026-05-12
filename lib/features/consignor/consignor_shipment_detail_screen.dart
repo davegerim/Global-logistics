@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/consignor_active_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
@@ -23,6 +24,10 @@ class ConsignorShipmentDetailScreen extends ConsumerStatefulWidget {
 class _ConsignorShipmentDetailScreenState
     extends ConsumerState<ConsignorShipmentDetailScreen> {
   static const Set<String> _assignedOrLaterStatuses = {
+    'SELECTED',
+    'ASSIGNED',
+    'CONSIGNOR_ACCEPTED',
+    'ADMIN_APPROVED',
     'DRIVER_ASSIGNED',
     'GDN_GENERATED',
     'LOADED',
@@ -50,7 +55,17 @@ class _ConsignorShipmentDetailScreenState
     setState(() => _resolvingAssignment = true);
     try {
       final api = ref.read(backendApiProvider);
-      final assignments = await api.assignmentsConsignorOfShipment(s.id);
+      final candidates = <String>{
+        s.id,
+        s.publicId,
+        if (s.bookingId != null && s.bookingId!.trim().isNotEmpty)
+          s.bookingId!.trim(),
+      };
+      List<dynamic> assignments = const [];
+      for (final candidate in candidates) {
+        assignments = await api.assignmentsConsignorOfShipment(candidate);
+        if (assignments.isNotEmpty) break;
+      }
       String? found;
       String? resolvedAssignmentStatus;
       if (assignments.isNotEmpty && assignments.first is Map) {
@@ -65,6 +80,7 @@ class _ConsignorShipmentDetailScreenState
           resolvedAssignmentStatus = rawStatus.trim().toUpperCase();
         }
       }
+      found ??= await _assignmentIdFromActiveShipment(s);
       if (!mounted) return;
       setState(() {
         _assignmentId = found;
@@ -146,6 +162,28 @@ class _ConsignorShipmentDetailScreenState
         return map;
       }
     }
+    return null;
+  }
+
+  Future<String?> _assignmentIdFromActiveShipment(ShipmentModel s) async {
+    try {
+      final payload = await ref.read(consignorActiveProvider.future);
+      final active = _findActiveShipment(payload, s);
+      if (active == null) return null;
+      final selectedDrivers = active['selectedDrivers'];
+      if (selectedDrivers is! List) return null;
+      for (final item in selectedDrivers) {
+        if (item is! Map) continue;
+        final row = item.cast<String, dynamic>();
+        final assignmentId =
+            row['assignmentId']?.toString().trim() ??
+            row['publicId']?.toString().trim() ??
+            row['id']?.toString().trim();
+        if (assignmentId != null && assignmentId.isNotEmpty) {
+          return assignmentId;
+        }
+      }
+    } catch (_) {}
     return null;
   }
 
@@ -237,7 +275,7 @@ class _ConsignorShipmentDetailScreenState
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
     } finally {
       if (mounted && _confirmingHandover) {
         setState(() => _confirmingHandover = false);
@@ -256,7 +294,10 @@ class _ConsignorShipmentDetailScreenState
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () => context.pop(),
         ),
         title: const Text(
@@ -274,7 +315,10 @@ class _ConsignorShipmentDetailScreenState
               ref.invalidate(consignorShipmentsProvider);
               ref.invalidate(consignorActiveProvider);
             },
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.textPrimary),
+            icon: const Icon(
+              Icons.refresh_rounded,
+              color: AppColors.textPrimary,
+            ),
           ),
         ],
       ),
@@ -316,7 +360,7 @@ class _ConsignorShipmentDetailScreenState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  s.publicId,
+                                  s.displayId,
                                   style: const TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w900,
@@ -337,7 +381,10 @@ class _ConsignorShipmentDetailScreenState
                             ),
                           ),
                           const SizedBox(width: 12),
-                          StatusChip(status: s.status, labelOverride: s.apiStatusLabel),
+                          StatusChip(
+                            status: s.status,
+                            labelOverride: s.apiStatusLabel,
+                          ),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -435,12 +482,18 @@ class _ConsignorShipmentDetailScreenState
                   else if (!gdnControlEnabled)
                     const Text(
                       'GDN control becomes available once admin selects and assigns a driver.',
-                      style: TextStyle(color: AppColors.textSecondary, height: 1.4),
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        height: 1.4,
+                      ),
                     )
                   else if (_assignmentId == null)
                     const Text(
                       'Waiting for driver assignment. Once assigned, create GDN before driver can continue status updates.',
-                      style: TextStyle(color: AppColors.textSecondary, height: 1.4),
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        height: 1.4,
+                      ),
                     )
                   else ...[
                     _kv('ASSIGNMENT', _assignmentId!),
@@ -476,12 +529,18 @@ class _ConsignorShipmentDetailScreenState
                   else if (_assignmentId == null)
                     const Text(
                       'GRN control becomes available after driver assignment is active.',
-                      style: TextStyle(color: AppColors.textSecondary, height: 1.4),
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        height: 1.4,
+                      ),
                     )
                   else if (!grnControlEnabled)
                     const Text(
                       'GRN can be created after the driver confirms offloaded status.',
-                      style: TextStyle(color: AppColors.textSecondary, height: 1.4),
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        height: 1.4,
+                      ),
                     )
                   else ...[
                     _kv('ASSIGNMENT', _assignmentId!),
@@ -521,11 +580,16 @@ class _ConsignorShipmentDetailScreenState
                         decoration: BoxDecoration(
                           color: AppColors.success.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                          border: Border.all(
+                            color: AppColors.success.withValues(alpha: 0.3),
+                          ),
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.verified_rounded, color: AppColors.success),
+                            Icon(
+                              Icons.verified_rounded,
+                              color: AppColors.success,
+                            ),
                             SizedBox(width: 10),
                             Text(
                               'Handover confirmed',
@@ -540,7 +604,10 @@ class _ConsignorShipmentDetailScreenState
                     else ...[
                       const Text(
                         'After GRN is recorded, confirm final receipt here.',
-                        style: TextStyle(color: AppColors.textSecondary, height: 1.4),
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          height: 1.4,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       GlPrimaryButton(
@@ -562,8 +629,9 @@ class _ConsignorShipmentDetailScreenState
                     child: GlPrimaryButton(
                       label: 'Negotiation Room',
                       icon: Icons.forum_rounded,
-                      onPressed: () =>
-                          context.push('/consignor/shipment/${s.id}/negotiation'),
+                      onPressed: () => context.push(
+                        '/consignor/shipment/${s.id}/negotiation',
+                      ),
                     ),
                   ),
                 ],
@@ -590,7 +658,7 @@ class _ConsignorShipmentDetailScreenState
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, stackTrace) => Center(child: Text('$e')),
+        error: (e, stackTrace) => Center(child: Text(userFacingMessage(e))),
       ),
     );
   }
@@ -667,7 +735,10 @@ class _ProgressCard extends StatelessWidget {
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -737,11 +808,7 @@ Widget _kv(String k, String v) {
 }
 
 Widget _docDivider() {
-  return const Divider(
-    color: AppColors.borderLight,
-    height: 1,
-    thickness: 1,
-  );
+  return const Divider(color: AppColors.borderLight, height: 1, thickness: 1);
 }
 
 class _InfoCard extends StatelessWidget {
@@ -795,7 +862,11 @@ class _InfoCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Divider(height: 1, color: AppColors.borderLight, thickness: 1.5),
+            const Divider(
+              height: 1,
+              color: AppColors.borderLight,
+              thickness: 1.5,
+            ),
           ],
           Padding(
             padding: const EdgeInsets.all(20),
@@ -848,7 +919,11 @@ class _TimelineCard extends StatelessWidget {
                     color: AppColors.primarySoft,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.alt_route_rounded, color: AppColors.primary, size: 20),
+                  child: const Icon(
+                    Icons.alt_route_rounded,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 const Text(
@@ -863,20 +938,34 @@ class _TimelineCard extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: 1, color: AppColors.borderLight, thickness: 1.5),
+          const Divider(
+            height: 1,
+            color: AppColors.borderLight,
+            thickness: 1.5,
+          ),
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _dotLine(Icons.upload_rounded, 'Pickup Location', loading, isStart: true),
+                _dotLine(
+                  Icons.upload_rounded,
+                  'Pickup Location',
+                  loading,
+                  isStart: true,
+                ),
                 Container(
                   margin: const EdgeInsets.only(left: 17),
                   height: 24,
                   width: 2,
                   color: AppColors.borderLight,
                 ),
-                _dotLine(Icons.flag_rounded, 'Delivery Destination', offloading, isStart: false),
+                _dotLine(
+                  Icons.flag_rounded,
+                  'Delivery Destination',
+                  offloading,
+                  isStart: false,
+                ),
                 const SizedBox(height: 24),
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -912,7 +1001,11 @@ class _TimelineCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Container(width: 1, height: 30, color: AppColors.borderLight),
+                      Container(
+                        width: 1,
+                        height: 30,
+                        color: AppColors.borderLight,
+                      ),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -949,14 +1042,21 @@ class _TimelineCard extends StatelessWidget {
     );
   }
 
-  Widget _dotLine(IconData icon, String label, String value, {required bool isStart}) {
+  Widget _dotLine(
+    IconData icon,
+    String label,
+    String value, {
+    required bool isStart,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: isStart ? AppColors.surfaceMuted : AppColors.success.withValues(alpha: 0.1),
+            color: isStart
+                ? AppColors.surfaceMuted
+                : AppColors.success.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -1096,7 +1196,10 @@ class _DriverCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceMuted,
                       borderRadius: BorderRadius.circular(6),

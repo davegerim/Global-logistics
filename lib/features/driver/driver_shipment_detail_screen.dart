@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/repository_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
@@ -104,288 +105,13 @@ class _DriverShipmentDetailScreenState
   Future<({String comment, int rating})?> _showFeedbackToConsignorSheet(
     BuildContext context,
   ) async {
-    final commentCtrl = TextEditingController();
-    var rating = 4;
-    String? errorText;
-
-    try {
-      return await showModalBottomSheet<({String comment, int rating})>(
-        context: context,
-        isScrollControlled: true,
-        showDragHandle: true,
-        backgroundColor: Colors.transparent,
-        builder: (ctx) {
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.viewInsetsOf(ctx).bottom,
-            ),
-            child: StatefulBuilder(
-              builder: (ctx, setModalState) {
-                void submit() {
-                  final text = commentCtrl.text.trim();
-                  if (text.isEmpty) {
-                    setModalState(
-                      () => errorText = 'Please enter your feedback.',
-                    );
-                    return;
-                  }
-                  Navigator.pop(ctx, (comment: text, rating: rating));
-                }
-
-                return Container(
-                  decoration: const BoxDecoration(
-                    color: AppColors.backgroundWarm,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-                  ),
-                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-                  child: SafeArea(
-                    top: false,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(alpha: 0.06),
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Container(
-                                  height: 8,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.primary,
-                                    borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(16),
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(24),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            width: 48,
-                                            height: 48,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: AppColors.primarySoft,
-                                              border: Border.all(
-                                                color: AppColors.gold
-                                                    .withValues(alpha: 0.35),
-                                              ),
-                                            ),
-                                            child: const Icon(
-                                              Icons.chat_rounded,
-                                              color: AppColors.primary,
-                                              size: 24,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 14),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Feedback to consignor',
-                                                  style: Theme.of(ctx)
-                                                      .textTheme
-                                                      .titleLarge
-                                                      ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w800,
-                                                        color:
-                                                            AppColors.primaryDark,
-                                                        height: 1.2,
-                                                      ),
-                                                ),
-                                                const SizedBox(height: 6),
-                                                Text(
-                                                  'Your message helps improve '
-                                                  'service and keeps the shipper '
-                                                  'informed.',
-                                                  style: Theme.of(ctx)
-                                                      .textTheme
-                                                      .bodySmall
-                                                      ?.copyWith(
-                                                        color: AppColors
-                                                            .textSecondary,
-                                                        height: 1.45,
-                                                      ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 24),
-                                      Text(
-                                        'Experience rating',
-                                        style: Theme.of(ctx)
-                                            .textTheme
-                                            .labelLarge
-                                            ?.copyWith(
-                                              color: AppColors.textPrimary,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: List.generate(5, (i) {
-                                          final idx = i + 1;
-                                          return IconButton(
-                                            onPressed: () => setModalState(
-                                              () => rating = idx,
-                                            ),
-                                            icon: Icon(
-                                              idx <= rating
-                                                  ? Icons.star_rounded
-                                                  : Icons.star_outline_rounded,
-                                              color: idx <= rating
-                                                  ? AppColors.gold
-                                                  : AppColors.textTertiary,
-                                              size: 36,
-                                            ),
-                                          );
-                                        }),
-                                      ),
-                                      Center(
-                                        child: Text(
-                                          _feedbackRatingCaption(rating),
-                                          style: Theme.of(ctx)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                color: AppColors.primary,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      TextField(
-                                        controller: commentCtrl,
-                                        maxLines: 5,
-                                        minLines: 4,
-                                        textCapitalization:
-                                            TextCapitalization.sentences,
-                                        onChanged: (_) {
-                                          if (errorText != null) {
-                                            setModalState(() => errorText = null);
-                                          }
-                                        },
-                                        decoration: InputDecoration(
-                                          labelText: 'Your message',
-                                          hintText:
-                                              'Describe handover, condition, '
-                                              'timing, or appreciation…',
-                                          alignLabelWithHint: true,
-                                          errorText: errorText,
-                                          filled: true,
-                                          fillColor: AppColors.surfaceHighlight,
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(14),
-                                            borderSide: const BorderSide(
-                                              color: AppColors.border,
-                                            ),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(14),
-                                            borderSide: const BorderSide(
-                                              color: AppColors.border,
-                                            ),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(14),
-                                            borderSide: BorderSide(
-                                              color: AppColors.primary
-                                                  .withValues(alpha: 0.65),
-                                              width: 1.5,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 24),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: OutlinedButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(ctx),
-                                              style: OutlinedButton.styleFrom(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                  vertical: 14,
-                                                ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(14),
-                                                ),
-                                              ),
-                                              child: const Text('Cancel'),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            flex: 2,
-                                            child: FilledButton(
-                                              onPressed: submit,
-                                              style: FilledButton.styleFrom(
-                                                backgroundColor:
-                                                    AppColors.primary,
-                                                foregroundColor: Colors.white,
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                  vertical: 14,
-                                                ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(14),
-                                                ),
-                                              ),
-                                              child: const Text('Send feedback'),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      );
-    } finally {
-      commentCtrl.dispose();
-    }
+    return showModalBottomSheet<({String comment, int rating})>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _FeedbackToConsignorSheet(),
+    );
   }
 
   Future<void> _putStatus(
@@ -419,7 +145,7 @@ class _DriverShipmentDetailScreenState
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('$e')));
+        ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
       }
     }
   }
@@ -605,26 +331,19 @@ class _DriverShipmentDetailScreenState
                 children: [
                   Expanded(
                     child: Text(
-                      s.publicId,
+                      s.displayId,
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                   ),
                   StatusChip(status: s.status, labelOverride: s.apiStatusLabel),
                 ],
               ),
-              if (aid != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    'assignmentId: $aid',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ),
               const SizedBox(height: 12),
-              Text(
-                s.goodsDescription,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
+              if (s.goodsDescription.trim().toLowerCase() != 'assignment')
+                Text(
+                  s.goodsDescription,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
               const SizedBox(height: 20),
               _block('Pickup', s.loadingAddress, Icons.north_east),
               const SizedBox(height: 12),
@@ -682,7 +401,7 @@ class _DriverShipmentDetailScreenState
               ),
               const SizedBox(height: 18),
               Text(
-                'Assignment actions',
+                'Actions',
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               const SizedBox(height: 10),
@@ -809,8 +528,9 @@ class _DriverShipmentDetailScreenState
                 onPressed: aid == null
                     ? null
                     : () async {
-                        final result =
-                            await _showFeedbackToConsignorSheet(context);
+                        final result = await _showFeedbackToConsignorSheet(
+                          context,
+                        );
                         if (!context.mounted || result == null) {
                           return;
                         }
@@ -822,16 +542,14 @@ class _DriverShipmentDetailScreenState
                           });
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Feedback sent.'),
-                              ),
+                              const SnackBar(content: Text('Feedback sent.')),
                             );
                           }
                         } catch (e) {
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('$e')),
-                            );
+                            ScaffoldMessenger.of(
+                              context,
+                            ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
                           }
                         }
                       },
@@ -840,7 +558,7 @@ class _DriverShipmentDetailScreenState
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('$e')),
+        error: (e, _) => Center(child: Text(userFacingMessage(e))),
       ),
     );
   }
@@ -886,7 +604,9 @@ class _DriverShipmentDetailScreenState
                         height: 8,
                         decoration: const BoxDecoration(
                           color: AppColors.primary,
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(16),
+                          ),
                         ),
                       ),
                       Padding(
@@ -912,11 +632,20 @@ class _DriverShipmentDetailScreenState
                                 ),
                                 const SizedBox(width: 16),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.success.withValues(alpha: 0.1),
+                                    color: AppColors.success.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
+                                    border: Border.all(
+                                      color: AppColors.success.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                    ),
                                   ),
                                   child: Text(
                                     (d.status ?? 'ISSUED').toUpperCase(),
@@ -933,9 +662,15 @@ class _DriverShipmentDetailScreenState
                             const SizedBox(height: 32),
                             _docField('DOCUMENT TYPE', d.type),
                             _docDivider(),
-                            _docField('DOCUMENT NUMBER', d.documentNumber ?? 'N/A'),
+                            _docField(
+                              'DOCUMENT NUMBER',
+                              d.documentNumber ?? 'N/A',
+                            ),
                             _docDivider(),
-                            _docField('DATE OF ISSUE', fmt.format(d.availableAt)),
+                            _docField(
+                              'DATE OF ISSUE',
+                              fmt.format(d.availableAt),
+                            ),
                             _docDivider(),
                             _docField('REFERENCE ID', d.id),
                             if ((d.qrCodeValue ?? '').isNotEmpty) ...[
@@ -946,7 +681,9 @@ class _DriverShipmentDetailScreenState
                                 decoration: BoxDecoration(
                                   color: AppColors.surfaceHighlight,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: AppColors.borderLight),
+                                  border: Border.all(
+                                    color: AppColors.borderLight,
+                                  ),
                                 ),
                                 child: Row(
                                   children: [
@@ -955,14 +692,21 @@ class _DriverShipmentDetailScreenState
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: AppColors.borderLight),
+                                        border: Border.all(
+                                          color: AppColors.borderLight,
+                                        ),
                                       ),
-                                      child: const Icon(Icons.qr_code_2_rounded, size: 32, color: AppColors.textPrimary),
+                                      child: const Icon(
+                                        Icons.qr_code_2_rounded,
+                                        size: 32,
+                                        color: AppColors.textPrimary,
+                                      ),
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Text(
                                             'VERIFICATION LINK',
@@ -1001,12 +745,17 @@ class _DriverShipmentDetailScreenState
                 FilledButton.icon(
                   onPressed: () => Navigator.of(ctx).pop(),
                   icon: const Icon(Icons.check_circle_outline),
-                  label: const Text('Done', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  label: const Text(
+                    'Done',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     minimumSize: const Size.fromHeight(56),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     elevation: 0,
                   ),
                 ),
@@ -1056,11 +805,7 @@ class _DriverShipmentDetailScreenState
   Widget _docDivider() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Divider(
-        color: AppColors.borderLight,
-        height: 1,
-        thickness: 1,
-      ),
+      child: Divider(color: AppColors.borderLight, height: 1, thickness: 1),
     );
   }
 
@@ -1386,9 +1131,9 @@ class _StepTracker extends StatelessWidget {
     final gold = AppColors.gold;
     final dim = Colors.white.withValues(alpha: 0.22);
     final labelStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        );
+      color: Colors.white,
+      fontWeight: FontWeight.w600,
+    );
 
     // Icons + connectors share one row; labels use a separate row so each label
     // gets the full column width (pairing label with connector in one Row halved
@@ -1400,10 +1145,12 @@ class _StepTracker extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: List.generate(steps.length, (i) {
             final active = i <= currentIndex;
-            final leftLineColor =
-                i > 0 ? ((i - 1) < currentIndex ? gold : dim) : null;
-            final rightLineColor =
-                i < steps.length - 1 ? (i < currentIndex ? gold : dim) : null;
+            final leftLineColor = i > 0
+                ? ((i - 1) < currentIndex ? gold : dim)
+                : null;
+            final rightLineColor = i < steps.length - 1
+                ? (i < currentIndex ? gold : dim)
+                : null;
 
             return Expanded(
               child: SizedBox(
@@ -1514,10 +1261,7 @@ class _FeedbackToConsignorCard extends StatelessWidget {
                         gradient: const LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [
-                            AppColors.gold,
-                            AppColors.primary,
-                          ],
+                          colors: [AppColors.gold, AppColors.primary],
                         ),
                       ),
                     ),
@@ -1553,7 +1297,8 @@ class _FeedbackToConsignorCard extends StatelessWidget {
                         children: [
                           Text(
                             'Feedback to consignor',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
                                   fontWeight: FontWeight.w700,
                                   color: enabled
                                       ? AppColors.textPrimary
@@ -1565,7 +1310,8 @@ class _FeedbackToConsignorCard extends StatelessWidget {
                             enabled
                                 ? 'Share delivery notes or appreciation with the shipper.'
                                 : 'Available once your assignment is active.',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
                                   color: AppColors.textSecondary,
                                   height: 1.35,
                                 ),
@@ -1584,6 +1330,257 @@ class _FeedbackToConsignorCard extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedbackToConsignorSheet extends StatefulWidget {
+  const _FeedbackToConsignorSheet();
+
+  @override
+  State<_FeedbackToConsignorSheet> createState() =>
+      _FeedbackToConsignorSheetState();
+}
+
+class _FeedbackToConsignorSheetState extends State<_FeedbackToConsignorSheet> {
+  final TextEditingController _commentCtrl = TextEditingController();
+  int _rating = 4;
+  String? _errorText;
+
+  @override
+  void dispose() {
+    _commentCtrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final text = _commentCtrl.text.trim();
+    if (text.isEmpty) {
+      setState(() => _errorText = 'Please enter your feedback.');
+      return;
+    }
+    Navigator.of(context).pop((comment: text, rating: _rating));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.backgroundWarm,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.06),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.primarySoft,
+                                border: Border.all(
+                                  color: AppColors.gold.withValues(alpha: 0.35),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.chat_rounded,
+                                color: AppColors.primary,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Feedback to consignor',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.primaryDark,
+                                          height: 1.2,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Your message helps improve service and '
+                                    'keeps the shipper informed.',
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: AppColors.textSecondary,
+                                          height: 1.45,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Experience rating',
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(5, (i) {
+                            final idx = i + 1;
+                            return IconButton(
+                              onPressed: () => setState(() => _rating = idx),
+                              icon: Icon(
+                                idx <= _rating
+                                    ? Icons.star_rounded
+                                    : Icons.star_outline_rounded,
+                                color: idx <= _rating
+                                    ? AppColors.gold
+                                    : AppColors.textTertiary,
+                                size: 36,
+                              ),
+                            );
+                          }),
+                        ),
+                        Center(
+                          child: Text(
+                            _feedbackRatingCaption(_rating),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextField(
+                          controller: _commentCtrl,
+                          maxLines: 5,
+                          minLines: 4,
+                          textCapitalization: TextCapitalization.sentences,
+                          onChanged: (_) {
+                            if (_errorText != null) {
+                              setState(() => _errorText = null);
+                            }
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Your message',
+                            hintText:
+                                'Describe handover, condition, timing, '
+                                'or appreciation...',
+                            alignLabelWithHint: true,
+                            errorText: _errorText,
+                            filled: true,
+                            fillColor: AppColors.surfaceHighlight,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: AppColors.border,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: AppColors.border,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.65,
+                                ),
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                child: const Text('Cancel'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 2,
+                              child: FilledButton(
+                                onPressed: _submit,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                child: const Text('Send feedback'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

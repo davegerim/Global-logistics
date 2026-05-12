@@ -33,10 +33,7 @@ class ShipmentCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppColors.border,
-              width: 1.5,
-            ),
+            border: Border.all(color: AppColors.border, width: 1.5),
           ),
           child: Stack(
             clipBehavior: Clip.none,
@@ -50,7 +47,7 @@ class ShipmentCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            shipment.publicId,
+                            shipment.displayId,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: t.titleMedium?.copyWith(

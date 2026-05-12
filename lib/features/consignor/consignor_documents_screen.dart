@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/repository_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
@@ -12,10 +13,12 @@ class ConsignorDocumentsScreen extends ConsumerStatefulWidget {
   const ConsignorDocumentsScreen({super.key});
 
   @override
-  ConsumerState<ConsignorDocumentsScreen> createState() => _ConsignorDocumentsScreenState();
+  ConsumerState<ConsignorDocumentsScreen> createState() =>
+      _ConsignorDocumentsScreenState();
 }
 
-class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScreen> {
+class _ConsignorDocumentsScreenState
+    extends ConsumerState<ConsignorDocumentsScreen> {
   String? _assignmentId;
   String? _shipmentId;
   bool _loadingAssignment = false;
@@ -28,8 +31,9 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
       _shipmentId = shipmentPublicId;
     });
     try {
-      final list =
-          await ref.read(backendApiProvider).assignmentsConsignorOfShipment(shipmentPublicId);
+      final list = await ref
+          .read(backendApiProvider)
+          .assignmentsConsignorOfShipment(shipmentPublicId);
       String? aid;
       if (list.isNotEmpty && list.first is Map) {
         aid = ((list.first as Map)['assignmentId'] as String?);
@@ -39,7 +43,9 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
           _assignmentId = aid;
           _documentsFuture = aid == null
               ? null
-              : ref.read(logisticsRepositoryProvider).fetchDocumentsForAssignment(aid);
+              : ref
+                    .read(logisticsRepositoryProvider)
+                    .fetchDocumentsForAssignment(aid);
           _loadingAssignment = false;
         });
       }
@@ -63,13 +69,13 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Documents'),
-      ),
+      appBar: AppBar(title: const Text('Documents')),
       body: shipmentsAsync.when(
         data: (List<ShipmentModel> shipments) {
           if (shipments.isEmpty) {
-            return const Center(child: Text('No shipments — create a booking first.'));
+            return const Center(
+              child: Text('No shipments — create a booking first.'),
+            );
           }
           ShipmentModel selected = shipments.first;
           if (_shipmentId != null) {
@@ -116,15 +122,20 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                                 color: Colors.white.withValues(alpha: 0.16),
                                 borderRadius: BorderRadius.circular(14),
                               ),
-                              child: const Icon(Icons.description_rounded, color: Colors.white),
+                              child: const Icon(
+                                Icons.description_rounded,
+                                color: Colors.white,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 'GDN & GRN Hub',
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                               ),
                             ),
                           ],
@@ -134,10 +145,11 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                           padding: const EdgeInsets.only(right: 90),
                           child: Text(
                             'View all shipping documents for the selected shipment assignment.',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              height: 1.4,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  height: 1.4,
+                                ),
                           ),
                         ),
                       ],
@@ -180,14 +192,22 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                         color: AppColors.primarySoft,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.local_shipping_rounded, color: AppColors.primary, size: 20),
+                      child: const Icon(
+                        Icons.local_shipping_rounded,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: selected.id,
+                        key: ValueKey(selected.id),
+                        initialValue: selected.id,
                         isExpanded: true,
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary),
+                        icon: const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: AppColors.primary,
+                        ),
                         decoration: const InputDecoration(
                           labelText: 'Select Shipment',
                           labelStyle: TextStyle(
@@ -202,7 +222,7 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                               (s) => DropdownMenuItem(
                                 value: s.id,
                                 child: Text(
-                                  s.publicId,
+                                  s.displayId,
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
                                   style: const TextStyle(
@@ -229,7 +249,8 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                 _emptyStateCard(
                   context: context,
                   title: 'No assignment yet',
-                  subtitle: 'This shipment has no active assignment, so no GDN/GRN is available yet.',
+                  subtitle:
+                      'This shipment has no active assignment, so no GDN/GRN is available yet.',
                   icon: Icons.assignment_late_outlined,
                 )
               else
@@ -250,7 +271,8 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                       return _emptyStateCard(
                         context: context,
                         title: 'No documents found',
-                        subtitle: 'No GDN or GRN records were returned for this assignment.',
+                        subtitle:
+                            'No GDN or GRN records were returned for this assignment.',
                         icon: Icons.folder_open_outlined,
                       );
                     }
@@ -262,16 +284,24 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                           runSpacing: 8,
                           children: [
                             _typeChip('ALL', docs.length),
-                            _typeChip('GDN', docs.where((d) => d.type == 'GDN').length),
-                            _typeChip('GRN', docs.where((d) => d.type == 'GRN').length),
+                            _typeChip(
+                              'GDN',
+                              docs.where((d) => d.type == 'GDN').length,
+                            ),
+                            _typeChip(
+                              'GRN',
+                              docs.where((d) => d.type == 'GRN').length,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 14),
                         if (filtered.isEmpty)
                           _emptyStateCard(
                             context: context,
-                            title: 'No ${_selectedType.toUpperCase()} documents',
-                            subtitle: 'Try switching the filter to see all available documents.',
+                            title:
+                                'No ${_selectedType.toUpperCase()} documents',
+                            subtitle:
+                                'Try switching the filter to see all available documents.',
                             icon: Icons.filter_alt_off_outlined,
                           )
                         else
@@ -289,7 +319,7 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('$e')),
+        error: (e, _) => Center(child: Text(userFacingMessage(e))),
       ),
     );
   }
@@ -309,7 +339,9 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color: selected ? AppColors.primary.withValues(alpha: 0.3) : AppColors.border,
+          color: selected
+              ? AppColors.primary.withValues(alpha: 0.3)
+              : AppColors.border,
         ),
       ),
     );
@@ -348,7 +380,9 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                       : AppColors.primarySoft,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isGdn ? AppColors.gold.withValues(alpha: 0.3) : AppColors.primary.withValues(alpha: 0.1),
+                    color: isGdn
+                        ? AppColors.gold.withValues(alpha: 0.3)
+                        : AppColors.primary.withValues(alpha: 0.1),
                   ),
                 ),
                 child: Icon(
@@ -363,7 +397,7 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      d.title, 
+                      d.title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.2,
@@ -373,9 +407,7 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                     const SizedBox(height: 4),
                     Text(
                       '${d.type} • ${fmt.format(d.availableAt)}',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
@@ -384,9 +416,7 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                       const SizedBox(height: 4),
                       Text(
                         'No: ${d.documentNumber}',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textTertiary,
                           fontWeight: FontWeight.w600,
                         ),
@@ -403,7 +433,11 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                   color: AppColors.surfaceMuted,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textSecondary, size: 16),
+                child: const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: AppColors.textSecondary,
+                  size: 16,
+                ),
               ),
             ],
           ),
@@ -412,7 +446,11 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
     );
   }
 
-  Future<void> _showDocumentViewer(BuildContext context, DocumentRef d, DateFormat fmt) async {
+  Future<void> _showDocumentViewer(
+    BuildContext context,
+    DocumentRef d,
+    DateFormat fmt,
+  ) async {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -449,7 +487,9 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                         height: 8,
                         decoration: const BoxDecoration(
                           color: AppColors.primary,
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(16),
+                          ),
                         ),
                       ),
                       Padding(
@@ -475,11 +515,20 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                                 ),
                                 const SizedBox(width: 16),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.success.withValues(alpha: 0.1),
+                                    color: AppColors.success.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
+                                    border: Border.all(
+                                      color: AppColors.success.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                    ),
                                   ),
                                   child: Text(
                                     (d.status ?? 'ISSUED').toUpperCase(),
@@ -496,9 +545,15 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                             const SizedBox(height: 32),
                             _docField('DOCUMENT TYPE', d.type),
                             _docDivider(),
-                            _docField('DOCUMENT NUMBER', d.documentNumber ?? 'N/A'),
+                            _docField(
+                              'DOCUMENT NUMBER',
+                              d.documentNumber ?? 'N/A',
+                            ),
                             _docDivider(),
-                            _docField('DATE OF ISSUE', fmt.format(d.availableAt)),
+                            _docField(
+                              'DATE OF ISSUE',
+                              fmt.format(d.availableAt),
+                            ),
                             _docDivider(),
                             _docField('REFERENCE ID', d.id),
                             if ((d.qrCodeValue ?? '').isNotEmpty) ...[
@@ -509,7 +564,9 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                                 decoration: BoxDecoration(
                                   color: AppColors.surfaceHighlight,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: AppColors.borderLight),
+                                  border: Border.all(
+                                    color: AppColors.borderLight,
+                                  ),
                                 ),
                                 child: Row(
                                   children: [
@@ -518,14 +575,21 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: AppColors.borderLight),
+                                        border: Border.all(
+                                          color: AppColors.borderLight,
+                                        ),
                                       ),
-                                      child: const Icon(Icons.qr_code_2_rounded, size: 32, color: AppColors.textPrimary),
+                                      child: const Icon(
+                                        Icons.qr_code_2_rounded,
+                                        size: 32,
+                                        color: AppColors.textPrimary,
+                                      ),
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Text(
                                             'VERIFICATION LINK',
@@ -564,12 +628,17 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
                 FilledButton.icon(
                   onPressed: () => Navigator.of(ctx).pop(),
                   icon: const Icon(Icons.check_circle_outline),
-                  label: const Text('Done', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  label: const Text(
+                    'Done',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     minimumSize: const Size.fromHeight(56),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     elevation: 0,
                   ),
                 ),
@@ -619,11 +688,7 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
   Widget _docDivider() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Divider(
-        color: AppColors.borderLight,
-        height: 1,
-        thickness: 1,
-      ),
+      child: Divider(color: AppColors.borderLight, height: 1, thickness: 1),
     );
   }
 
@@ -657,7 +722,10 @@ class _ConsignorDocumentsScreenState extends ConsumerState<ConsignorDocumentsScr
             decoration: BoxDecoration(
               color: AppColors.primarySoft,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.1), width: 2),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                width: 2,
+              ),
             ),
             child: Icon(icon, color: AppColors.primary, size: 32),
           ),

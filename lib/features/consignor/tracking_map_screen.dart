@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:latlong2/latlong.dart';
@@ -52,7 +53,9 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final assignment = GoRouterState.of(context).uri.queryParameters['assignment'];
+    final assignment = GoRouterState.of(
+      context,
+    ).uri.queryParameters['assignment'];
     if (assignment != null &&
         assignment.isNotEmpty &&
         assignment != _loadedForAssignment) {
@@ -98,11 +101,11 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
         }
       }
     } catch (e) {
-      if (mounted) setState(() => _error = '$e');
+      if (mounted) setState(() => _error = userFacingMessage(e));
     } finally {
       _isLoading = false;
     }
-  }
+  } 
 
   Map<String, dynamic>? _extractLatestPoint(List<dynamic> points) {
     for (var i = points.length - 1; i >= 0; i--) {
@@ -134,23 +137,12 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
     return LatLng(lat, lon);
   }
 
-  List<LatLng> _polylinePoints() {
-    final path = <LatLng>[];
-    for (final item in _points) {
-      if (item is! Map) continue;
-      final p = item.cast<String, dynamic>();
-      final latLng = _toLatLng(p);
-      if (latLng != null) {
-        path.add(latLng);
-      }
-    }
-    return path;
-  }
-
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(shipmentDetailProvider(widget.shipmentId));
-    final assignment = GoRouterState.of(context).uri.queryParameters['assignment'];
+    final assignment = GoRouterState.of(
+      context,
+    ).uri.queryParameters['assignment'];
 
     return Scaffold(
       body: async.when(
@@ -177,19 +169,11 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                 ),
                 children: [
                   TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.globallogistics.global_logistics_app',
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName:
+                        'com.globallogistics.global_logistics_app',
                   ),
-                  if (_polylinePoints().length > 1)
-                    PolylineLayer(
-                      polylines: [
-                        Polyline(
-                          points: _polylinePoints(),
-                          color: AppColors.primary,
-                          strokeWidth: 4,
-                        ),
-                      ],
-                    ),
                   if (_toLatLng(_latest) != null)
                     MarkerLayer(
                       markers: [
@@ -236,7 +220,10 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                             ? 'Add assignment in the URL to load tracking'
                             : 'Status: viewing live route and driver position for this shipment',
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.surface,
                             borderRadius: BorderRadius.circular(99),
@@ -250,13 +237,18 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.straighten, size: 18, color: AppColors.primary),
+                              const Icon(
+                                Icons.straighten,
+                                size: 18,
+                                color: AppColors.primary,
+                              ),
                               const SizedBox(width: 6),
                               Text(
-                                assignment == null ? 'No assignment id' : 'Tracking',
-                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                      color: AppColors.textPrimary,
-                                    ),
+                                assignment == null
+                                    ? 'No assignment id'
+                                    : 'Tracking',
+                                style: Theme.of(context).textTheme.labelLarge
+                                    ?.copyWith(color: AppColors.textPrimary),
                               ),
                             ],
                           ),
@@ -274,7 +266,9 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                   return Container(
                     decoration: const BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(28),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black12,
@@ -299,7 +293,7 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          s.publicId,
+                          s.displayId,
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
                         const SizedBox(height: 8),
@@ -309,7 +303,12 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         if (_error != null)
-                          Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                          Text(
+                            _error!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
                         if (_latest != null) ...[
                           const SizedBox(height: 12),
                           Text(
@@ -319,13 +318,12 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                           const SizedBox(height: 10),
                           FilledButton.icon(
                             onPressed: () {
-                              final lat = (_latest!['latitude'] as num?)?.toDouble();
-                              final lon = (_latest!['longitude'] as num?)?.toDouble();
+                              final lat = (_latest!['latitude'] as num?)
+                                  ?.toDouble();
+                              final lon = (_latest!['longitude'] as num?)
+                                  ?.toDouble();
                               if (lat == null || lon == null) return;
-                              _openExternalMap(
-                                lat: lat,
-                                lon: lon,
-                              );
+                              _openExternalMap(lat: lat, lon: lon);
                             },
                             icon: const Icon(Icons.location_searching_rounded),
                             label: const Text('Open live location in Maps'),
@@ -362,10 +360,7 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Text(
-                          '',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
+                        Text('', style: Theme.of(context).textTheme.bodySmall),
                       ],
                     ),
                   );
@@ -374,10 +369,10 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
             ],
           );
         },
-        loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-        error: (e, _) => Scaffold(body: Center(child: Text('$e'))),
+        loading: () =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
+        error: (e, _) => Scaffold(body: Center(child: Text(userFacingMessage(e)))),
       ),
     );
   }
 }
-

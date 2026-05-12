@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/payments_provider.dart';
@@ -163,9 +164,10 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
           base['firstName'] = fn.text.trim();
           base['lastName'] = ln.text.trim();
           await ref.read(backendApiProvider).identityPut(base);
+          await ref.read(authProvider.notifier).refreshProfile();
           await _load();
         } catch (e) {
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
         }
       },
     );
@@ -230,7 +232,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
           });
           ref.invalidate(paymentsProvider);
         } catch (e) {
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
         }
       },
     );

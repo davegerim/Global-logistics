@@ -55,11 +55,32 @@ class ApiLogisticsRepository implements LogisticsRepository {
 
   @override
   Future<List<ShipmentModel>> fetchDriverAssignedShipments() async {
-    final raw = await _api.assignmentsDriver();
+    final results = await Future.wait([
+      _api.assignmentsDriver(),
+      _api.driverNegotiationsList().catchError((_) => <dynamic>[]),
+    ]);
+    final raw = results[0];
+    final negotiations = results[1];
+
+    final negByShipment = <String, Map<String, dynamic>>{};
+    for (final n in negotiations) {
+      if (n is! Map) continue;
+      final m = n.cast<String, dynamic>();
+      final sid = m['shipmentId']?.toString();
+      if (sid != null && sid.isNotEmpty) {
+        negByShipment[sid] = m;
+      }
+    }
+
     final out = <ShipmentModel>[];
     for (final e in raw) {
       if (e is Map) {
-        out.add(shipmentFromAssignmentDriverView(e.cast<String, dynamic>()));
+        final j = e.cast<String, dynamic>();
+        final sid = j['shipmentId']?.toString() ?? '';
+        out.add(shipmentFromAssignmentDriverView(
+          j,
+          negotiationData: negByShipment[sid],
+        ));
       }
     }
     return out;

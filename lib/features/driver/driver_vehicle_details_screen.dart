@@ -77,9 +77,42 @@ class _DriverVehicleDetailsScreenState
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
+  Future<void> _showDocumentValue(String label, String value) async {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty || !mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(label),
+        content: SelectableText(trimmed),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+          if (_looksLikeUrl(trimmed))
+            FilledButton.icon(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await _openUrl(trimmed);
+              },
+              icon: const Icon(Icons.open_in_new_rounded),
+              label: const Text('Open link'),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final v = _vehicle;
+    final libriDocument = v == null
+        ? ''
+        : _pick(v, ['libriDocument', 'libri_document']);
+    final insuranceDocument = v == null
+        ? ''
+        : _pick(v, ['insuranceDocument', 'insurance_document']);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundWarm,
@@ -143,13 +176,11 @@ class _DriverVehicleDetailsScreenState
                         ),
                         _DetailRowLink(
                           label: 'Libri document',
-                          value: _pick(v, ['libriDocument', 'libri_document']),
-                          onOpen:
-                              _looksLikeUrl(_pick(v, ['libriDocument', 'libri_document']))
-                                  ? () => _openUrl(
-                                        _pick(v, ['libriDocument', 'libri_document']),
-                                      )
-                                  : null,
+                          value: libriDocument,
+                          onOpen: () => _showDocumentValue(
+                            'Libri document',
+                            libriDocument,
+                          ),
                         ),
                         _DetailRow(
                           label: 'Insurance number',
@@ -159,20 +190,11 @@ class _DriverVehicleDetailsScreenState
                         ),
                         _DetailRowLink(
                           label: 'Insurance document',
-                          value: _pick(
-                            v,
-                            ['insuranceDocument', 'insurance_document'],
+                          value: insuranceDocument,
+                          onOpen: () => _showDocumentValue(
+                            'Insurance document',
+                            insuranceDocument,
                           ),
-                          onOpen: _looksLikeUrl(
-                            _pick(v, ['insuranceDocument', 'insurance_document']),
-                          )
-                              ? () => _openUrl(
-                                    _pick(
-                                      v,
-                                      ['insuranceDocument', 'insurance_document'],
-                                    ),
-                                  )
-                              : null,
                         ),
                       ],
                     ),

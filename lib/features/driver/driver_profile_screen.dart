@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
@@ -237,7 +238,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
           if (mounted)
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(SnackBar(content: Text('$e')));
+            ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
         }
       },
     );
@@ -395,11 +396,15 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      gradient: const LinearGradient(
+                        colors: AppColors.heroCardGradient,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       borderRadius: BorderRadius.circular(32),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
+                          color: AppColors.primary.withValues(alpha: 0.2),
                           blurRadius: 24,
                           offset: const Offset(0, 12),
                         ),
@@ -407,17 +412,24 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                     ),
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          radius: 36,
-                          backgroundColor: AppColors.primarySoft,
-                          child: Text(
-                            (auth.displayName ?? 'D')
-                                .substring(0, 1)
-                                .toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.primary,
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.gold, width: 2),
+                          ),
+                          child: CircleAvatar(
+                            radius: 32,
+                            backgroundColor: AppColors.gold.withValues(alpha: 0.2),
+                            child: Text(
+                              (auth.displayName ?? 'D')
+                                  .substring(0, 1)
+                                  .toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.gold,
+                              ),
                             ),
                           ),
                         ),
@@ -429,9 +441,9 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                               Text(
                                 auth.displayName ?? 'Driver',
                                 style: const TextStyle(
-                                  fontSize: 20,
+                                  fontSize: 22,
                                   fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
+                                  color: Colors.white,
                                 ),
                               ),
                               const SizedBox(height: 6),
@@ -441,15 +453,18 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: statusColor.withValues(alpha: 0.1),
+                                  color: AppColors.gold.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: AppColors.gold.withValues(alpha: 0.3),
+                                  ),
                                 ),
                                 child: Text(
                                   statusLabel.toUpperCase(),
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
-                                    color: statusColor,
+                                    color: AppColors.gold,
                                     letterSpacing: 0.5,
                                   ),
                                 ),

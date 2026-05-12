@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
@@ -193,7 +194,7 @@ class _ConsignorGrnFormScreenState
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _stateMessage = '$e');
+      setState(() => _stateMessage = userFacingMessage(e));
     } finally {
       if (mounted) setState(() => _loadingState = false);
     }
@@ -246,7 +247,7 @@ class _ConsignorGrnFormScreenState
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
     } finally {
       if (mounted) setState(() => _creating = false);
     }

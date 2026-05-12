@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/driver_offers_provider.dart';
@@ -11,7 +12,24 @@ import 'package:intl/intl.dart';
 class DriverOffersScreen extends ConsumerWidget {
   const DriverOffersScreen({super.key});
 
-  Future<void> _accept(BuildContext context, WidgetRef ref, String negotiationId) async {
+  static bool _isNegotiationSettled(String? apiStatus) {
+    final status = (apiStatus ?? '').toUpperCase();
+    if (status.isEmpty) return false;
+    return status.contains('ACCEPTED') ||
+        status.contains('APPROVED') ||
+        status.contains('ASSIGNED') ||
+        status.contains('SELECTED') ||
+        status.contains('AGREED') ||
+        status.contains('SETTLED') ||
+        status.contains('COMPLETED') ||
+        status.contains('CLOSED');
+  }
+
+  Future<void> _accept(
+    BuildContext context,
+    WidgetRef ref,
+    String negotiationId,
+  ) async {
     try {
       final location = await DeviceLocationService.current();
       final payload = {
@@ -21,21 +39,29 @@ class DriverOffersScreen extends ConsumerWidget {
         'locationText':
             'GPS(${location.latitude.toStringAsFixed(6)}, ${location.longitude.toStringAsFixed(6)})',
       };
-      await ref.read(backendApiProvider).driverNegotiationsDriverAccepts(payload);
+      await ref
+          .read(backendApiProvider)
+          .driverNegotiationsDriverAccepts(payload);
       ref.invalidate(driverOffersProvider);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Offer accepted.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Offer accepted.')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
       }
     }
   }
 
-  Future<void> _reject(BuildContext context, WidgetRef ref, String negotiationId) async {
+  Future<void> _reject(
+    BuildContext context,
+    WidgetRef ref,
+    String negotiationId,
+  ) async {
     final reason = await _prompt(context, 'Reject', 'Reason (optional)');
     if (!context.mounted) return;
     try {
@@ -45,18 +71,24 @@ class DriverOffersScreen extends ConsumerWidget {
       });
       ref.invalidate(driverOffersProvider);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Offer declined.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Offer declined.')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
       }
     }
   }
 
-  Future<void> _cancel(BuildContext context, WidgetRef ref, String negotiationId) async {
+  Future<void> _cancel(
+    BuildContext context,
+    WidgetRef ref,
+    String negotiationId,
+  ) async {
     final reason = await _prompt(context, 'Cancel offer', 'Reason (optional)');
     if (!context.mounted) return;
     try {
@@ -66,27 +98,42 @@ class DriverOffersScreen extends ConsumerWidget {
       });
       ref.invalidate(driverOffersProvider);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Offer cancelled.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Offer cancelled.')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
       }
     }
   }
 
-  static Future<String?> _prompt(BuildContext context, String title, String hint) {
+  static Future<String?> _prompt(
+    BuildContext context,
+    String title,
+    String hint,
+  ) {
     final c = TextEditingController();
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(title),
-        content: TextField(controller: c, decoration: InputDecoration(hintText: hint)),
+        content: TextField(
+          controller: c,
+          decoration: InputDecoration(hintText: hint),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, c.text.trim()), child: const Text('OK')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, c.text.trim()),
+            child: const Text('OK'),
+          ),
         ],
       ),
     );
@@ -96,7 +143,9 @@ class DriverOffersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
     if (!auth.canViewDriverOffers) {
-      final statusText = (auth.accountStatus ?? 'VERIFIED').trim().toUpperCase();
+      final statusText = (auth.accountStatus ?? 'VERIFIED')
+          .trim()
+          .toUpperCase();
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(title: const Text('Shipment offers')),
@@ -114,7 +163,11 @@ class DriverOffersScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.lock_clock_rounded, color: AppColors.primary, size: 36),
+                  const Icon(
+                    Icons.lock_clock_rounded,
+                    color: AppColors.primary,
+                    size: 36,
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     'Admin approval pending',
@@ -163,9 +216,10 @@ class DriverOffersScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(20),
             itemCount: offers.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 14),
+            separatorBuilder: (_, _) => const SizedBox(height: 14),
             itemBuilder: (context, i) {
               final o = offers[i];
+              final isSettled = _isNegotiationSettled(o.apiStatus);
               return Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -186,14 +240,18 @@ class DriverOffersScreen extends ConsumerWidget {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.goldLight,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             o.apiStatus ?? 'Offer',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -212,7 +270,10 @@ class DriverOffersScreen extends ConsumerWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     if (o.goodType != null)
-                      Text(o.goodType!, style: Theme.of(context).textTheme.bodySmall),
+                      Text(
+                        o.goodType!,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     const SizedBox(height: 6),
                     Text(
                       '${o.price.toStringAsFixed(0)} ${o.currency}',
@@ -233,51 +294,138 @@ class DriverOffersScreen extends ConsumerWidget {
                     ),
                     _OfferDetailRow(
                       label: 'Negotiation ID',
-                      value: o.negotiationId,
+                      value: o.displayNegotiationId,
                     ),
                     const SizedBox(height: 10),
                     SizedBox(
                       width: double.infinity,
-                      child: OutlinedButton.icon(
+                      child: FilledButton.icon(
                         onPressed: () => context.push(
-                          '/driver/offers/${o.negotiationId}/negotiation',
+                          '/driver/offers/${o.apiNegotiationId}/negotiation',
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          foregroundColor: AppColors.textPrimary,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                         icon: const Icon(Icons.forum_rounded),
                         label: const Text('Open negotiation'),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      'Quick actions',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        OutlinedButton(
-                          onPressed: () => _reject(context, ref, o.negotiationId),
-                          child: const Text('Decline'),
+                    if (isSettled)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
                         ),
-                        OutlinedButton(
-                          onPressed: () => _cancel(context, ref, o.negotiationId),
-                          child: const Text('Cancel'),
-                        ),
-                        OutlinedButton(
-                          onPressed: () => context.push(
-                            '/driver/offers/${o.negotiationId}/negotiation',
+                        decoration: BoxDecoration(
+                          color: AppColors.primarySoft,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.primary.withValues(alpha: 0.18),
                           ),
-                          child: const Text('Negotiate'),
                         ),
-                        FilledButton(
-                          onPressed: () => _accept(context, ref, o.negotiationId),
-                          child: const Text('Accept'),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.verified_rounded,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Settled',
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    color: AppColors.primaryDark,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      )
+                    else ...[
+                      Text(
+                        'Quick actions',
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () =>
+                                  _reject(context, ref, o.apiNegotiationId),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 4,
+                                ),
+                                textStyle: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              child: const Text(
+                                'Decline',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () =>
+                                  _cancel(context, ref, o.apiNegotiationId),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 4,
+                                ),
+                                textStyle: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              child: const Text(
+                                'Cancel',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: FilledButton(
+                              onPressed: () =>
+                                  _accept(context, ref, o.apiNegotiationId),
+                              style: FilledButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 4,
+                                ),
+                                textStyle: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              child: const Text(
+                                'Accept',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               );
@@ -285,7 +433,7 @@ class DriverOffersScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('$e')),
+        error: (e, _) => Center(child: Text(userFacingMessage(e))),
       ),
     );
   }

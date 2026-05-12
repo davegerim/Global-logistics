@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
+import 'package:global_logistics_app/data/storage/app_launch_preferences.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -38,7 +39,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
       if (auth.isAuthenticated) {
         context.go(auth.role == AppRole.driver ? '/driver/home' : '/consignor/home');
       } else {
-        context.go('/onboarding');
+        final introDone =
+            await AppLaunchPreferences.instance.isIntroWalkthroughDone();
+        if (!mounted) return;
+        if (introDone) {
+          context.go('/login');
+        } else {
+          context.go('/onboarding');
+        }
       }
     });
   }

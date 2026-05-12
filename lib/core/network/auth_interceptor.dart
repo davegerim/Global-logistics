@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:global_logistics_app/core/config/api_config.dart';
+import 'package:global_logistics_app/core/network/auth_response_tokens.dart';
 import 'package:global_logistics_app/data/storage/token_cache.dart';
 import 'package:global_logistics_app/data/storage/token_storage.dart';
 
@@ -96,20 +97,24 @@ class AuthInterceptor extends Interceptor {
         },
       ),
     );
-    final res = await bare.post<Map<String, dynamic>>(
-      '/auth/refresh',
-      data: {'refreshToken': refreshToken},
-    );
-    final data = res.data;
-    if (data == null) return null;
-    final access = data['accessToken'] as String?;
-    final nextRefresh = data['refreshToken'] as String? ?? refreshToken;
-    if (access != null) {
-      await TokenStorage.instance.persistTokens(
-        access: access,
-        refresh: nextRefresh,
+    try {
+      final res = await bare.post<Map<String, dynamic>>(
+        '/auth/refresh',
+        data: {'refreshToken': refreshToken},
       );
+      final data = res.data;
+      final access = readAccessTokenFromBody(data);
+      final nextRefresh =
+          readRefreshTokenFromBody(data) ?? refreshToken;
+      if (access != null) {
+        await TokenStorage.instance.persistTokens(
+          access: access,
+          refresh: nextRefresh,
+        );
+      }
+      return access;
+    } catch (_) {
+      return null;
     }
-    return access;
   }
 }

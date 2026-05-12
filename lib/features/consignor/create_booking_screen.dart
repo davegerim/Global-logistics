@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
@@ -28,7 +29,6 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
   final _vehicleCount = TextEditingController(text: '1');
   final _timeline = TextEditingController();
   final _price = TextEditingController();
-  String _priceType = 'FIXED';
 
   bool _busy = false;
 
@@ -83,7 +83,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
         'deliveryDate': deliveryDate.toUtc().toIso8601String(),
         'details': _timeline.text.trim(),
         'price': double.tryParse(_price.text.trim()) ?? 0,
-        'priceType': _priceType,
+        'priceType': 'FIXED',
       });
       ref.invalidate(consignorShipmentsProvider);
       if (mounted) {
@@ -98,7 +98,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('$e')));
+        ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -155,54 +155,6 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
             vertical: (maxLines != null && maxLines > 1) ? 12 : 10,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDropdown() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceHighlight.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderLight, width: 1.0),
-      ),
-      child: DropdownButtonFormField<String>(
-        initialValue: _priceType,
-        icon: const Icon(
-          Icons.keyboard_arrow_down_rounded,
-          color: AppColors.textTertiary,
-          size: 20,
-        ),
-        decoration: InputDecoration(
-          isDense: true,
-          labelText: 'Price Type',
-          labelStyle: TextStyle(
-            color: AppColors.textSecondary.withValues(alpha: 0.8),
-            fontWeight: FontWeight.w500,
-            fontSize: 14,
-          ),
-          prefixIcon: Icon(
-            Icons.sell_outlined,
-            color: AppColors.primary.withValues(alpha: 0.8),
-            size: 20,
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        ),
-        style: const TextStyle(
-          fontWeight: FontWeight.w500,
-          color: AppColors.textPrimary,
-          fontSize: 14,
-        ),
-        dropdownColor: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        items: const [
-          DropdownMenuItem(value: 'FIXED', child: Text('Fixed Rate')),
-          DropdownMenuItem(value: 'PER_TON', child: Text('Per Ton')),
-          DropdownMenuItem(value: 'PER_KM', child: Text('Per KM')),
-        ],
-        onChanged: (v) => setState(() => _priceType = v ?? _priceType),
       ),
     );
   }
@@ -520,7 +472,6 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                   ),
                 ],
               ),
-              _buildDropdown(),
               _buildInput(
                 controller: _price,
                 label: 'Offer Price',

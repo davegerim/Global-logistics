@@ -7,12 +7,14 @@ class DriverOfferModel {
     required this.distanceKm,
     required this.expiresAt,
     this.shipmentId,
+    this.publicId,
     this.apiStatus,
     this.goodType,
     this.rounds = const [],
   });
 
   final String negotiationId;
+  final String? publicId;
   final String? shipmentId;
   final String routeSummary;
   final double price;
@@ -22,6 +24,18 @@ class DriverOfferModel {
   final String? apiStatus;
   final String? goodType;
   final List<DriverNegotiationRound> rounds;
+
+  String get apiNegotiationId {
+    final normalized = publicId?.trim();
+    if (normalized != null && normalized.isNotEmpty) return normalized;
+    return negotiationId;
+  }
+
+  String get displayNegotiationId {
+    final normalized = negotiationId.trim();
+    if (normalized.isEmpty) return '—';
+    return normalized;
+  }
 }
 
 class DriverNegotiationRound {

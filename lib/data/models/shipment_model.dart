@@ -38,15 +38,21 @@ class ShipmentModel {
     this.priceOffer,
     this.apiStatusLabel,
     this.assignmentId,
+    this.assignmentDisplayId,
+    this.bookingId,
   });
 
   final String id;
   final String publicId;
+  final String? bookingId;
   final ShipmentStatus status;
+
   /// Raw `currentStatus` / assignment status from API (for debugging / tooltips).
   final String? apiStatusLabel;
+
   /// Assignment public UUID when known (driver flows, tracking).
   final String? assignmentId;
+  final String? assignmentDisplayId;
   final String loadingAddress;
   final String offloadingAddress;
   final String goodsDescription;
@@ -60,6 +66,26 @@ class ShipmentModel {
   final double? progress01;
   final String? paymentMethod;
   final double? priceOffer;
+
+  String get displayId {
+    final normalized = bookingId?.trim();
+    if (normalized != null && normalized.isNotEmpty) {
+      return 'Booking #$normalized';
+    }
+    final normalizedAssignment = assignmentDisplayId?.trim();
+    if (normalizedAssignment != null && normalizedAssignment.isNotEmpty) {
+      return 'Assignment #$normalizedAssignment';
+    }
+    return publicId;
+  }
+
+  String get assignmentLabel {
+    final normalized = assignmentDisplayId?.trim();
+    if (normalized != null && normalized.isNotEmpty) {
+      return 'Assignment #$normalized';
+    }
+    return 'assignmentId: ${assignmentId ?? publicId}';
+  }
 }
 
 class DocumentRef {
