@@ -6,11 +6,19 @@ import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/driver_offers_provider.dart';
+import 'package:global_logistics_app/data/models/driver_offer_model.dart';
 import 'package:global_logistics_app/core/services/device_location_service.dart';
 import 'package:intl/intl.dart';
 
-class DriverOffersScreen extends ConsumerWidget {
+class DriverOffersScreen extends ConsumerStatefulWidget {
   const DriverOffersScreen({super.key});
+
+  @override
+  ConsumerState<DriverOffersScreen> createState() => _DriverOffersScreenState();
+}
+
+class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
+  String _filter = 'all';
 
   static bool _isNegotiationSettled(String? apiStatus) {
     final status = (apiStatus ?? '').toUpperCase();
@@ -139,8 +147,16 @@ class DriverOffersScreen extends ConsumerWidget {
     );
   }
 
+  List<DriverOfferModel> _applyFilter(List<DriverOfferModel> list, String filter) {
+    return switch (filter) {
+      'active' => list.where((o) => !_isNegotiationSettled(o.apiStatus)).toList(),
+      'settled' => list.where((o) => _isNegotiationSettled(o.apiStatus)).toList(),
+      _ => list,
+    };
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
     if (!auth.canViewDriverOffers) {
       final statusText = (auth.accountStatus ?? 'VERIFIED')
@@ -204,23 +220,77 @@ class DriverOffersScreen extends ConsumerWidget {
       ),
       body: async.when(
         data: (offers) {
-          if (offers.isEmpty) {
-            return Center(
-              child: Text(
-                'No offers available right now.',
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
+          final filtered = _applyFilter(offers, _filter);
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                child: Row(
+                  children: [
+                    _CategoryTab(
+                      label: 'All offers',
+                      icon: Icons.all_inbox_rounded,
+                      isSelected: _filter == 'all',
+                      onTap: () => setState(() => _filter = 'all'),
+                    ),
+                    const SizedBox(width: 8),
+                    _CategoryTab(
+                      label: 'Active',
+                      icon: Icons.local_shipping_rounded,
+                      isSelected: _filter == 'active',
+                      onTap: () => setState(() => _filter = 'active'),
+                    ),
+                    const SizedBox(width: 8),
+                    _CategoryTab(
+                      label: 'Settled',
+                      icon: Icons.verified_rounded,
+                      isSelected: _filter == 'settled',
+                      onTap: () => setState(() => _filter = 'settled'),
+                    ),
+                  ],
+                ),
               ),
-            );
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.all(20),
-            itemCount: offers.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 14),
-            itemBuilder: (context, i) {
-              final o = offers[i];
-              final isSettled = _isNegotiationSettled(o.apiStatus);
-              return Container(
+              Expanded(
+                child: filtered.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.inbox_rounded,
+                              size: 48,
+                              color: AppColors.textSecondary.withValues(alpha: 0.5),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No offers found',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'There are no offers in this category right now.',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 14),
+                        itemBuilder: (context, i) {
+                          final o = filtered[i];
+                          final isSettled = _isNegotiationSettled(o.apiStatus);
+                          return Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
@@ -351,9 +421,8 @@ class DriverOffersScreen extends ConsumerWidget {
                     else ...[
                       Text(
                         'Quick actions',
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(color: AppColors.textSecondary),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -430,8 +499,11 @@ class DriverOffersScreen extends ConsumerWidget {
                 ),
               );
             },
-          );
-        },
+          ),
+        ),
+      ],
+    );
+  },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(userFacingMessage(e))),
       ),
@@ -470,6 +542,69 @@ class _OfferDetailRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CategoryTab extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CategoryTab({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+            width: 1.5,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.25),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : [],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? Colors.white : AppColors.textSecondary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : AppColors.textSecondary,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

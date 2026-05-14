@@ -499,29 +499,31 @@ class _DriverShipmentDetailScreenState
                     'Offload confirmed',
                   ),
                 ),
-                const SizedBox(height: 8),
-                OutlinedButton(
-                  onPressed: () async {
-                    final remark = await _prompt(
-                      context,
-                      'Cancel assignment',
-                      'Reason (optional)',
-                    );
-                    if (!context.mounted) return;
-                    await _putStatus(
-                      context,
-                      ref,
-                      aid,
-                      () => api.assignmentsCancel({
-                        'assignmentId': aid,
-                        if (remark != null && remark.isNotEmpty)
-                          'remark': remark,
-                      }),
-                      'Assignment cancelled',
-                    );
-                  },
-                  child: const Text('Cancel assignment'),
-                ),
+                if (!_hasGdn && !_checkingGdn && _gdnInfo != null) ...[
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    onPressed: () async {
+                      final remark = await _prompt(
+                        context,
+                        'Cancel assignment',
+                        'Reason (optional)',
+                      );
+                      if (!context.mounted) return;
+                      await _putStatus(
+                        context,
+                        ref,
+                        aid,
+                        () => api.assignmentsCancel({
+                          'assignmentId': aid,
+                          if (remark != null && remark.isNotEmpty)
+                            'remark': remark,
+                        }),
+                        'Assignment cancelled',
+                      );
+                    },
+                    child: const Text('Cancel assignment'),
+                  ),
+                ],
               ],
               const SizedBox(height: 20),
               _FeedbackToConsignorCard(

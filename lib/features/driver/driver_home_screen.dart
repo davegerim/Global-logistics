@@ -20,7 +20,7 @@ class DriverHomeScreen extends ConsumerWidget {
     final approvalPending = !auth.canViewDriverOffers;
     final statusLabel = approvalPending ? 'Pending admin approval' : rawStatus;
     final statusColor = approvalPending ? AppColors.warning : AppColors.success;
-    final assigned = ref.watch(driverAssignedShipmentsProvider);
+    final assigned = ref.watch(driverActiveAssignmentsProvider);
     final unreadAsync = ref.watch(unreadNotificationsCountProvider);
 
     return Scaffold(
@@ -173,6 +173,8 @@ class DriverHomeScreen extends ConsumerWidget {
             sliver: SliverToBoxAdapter(
               child: SectionHeader(
                 title: 'Active assignments',
+                secondaryActionLabel: 'History',
+                onSecondaryAction: () => context.push('/driver/assignments/history'),
                 actionLabel: 'Open offers',
                 onAction: () {
                   if (auth.canViewDriverOffers) {

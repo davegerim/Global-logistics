@@ -365,7 +365,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
     final approvalPending = !auth.canViewDriverOffers;
     final statusLabel = approvalPending ? 'Pending Approval' : rawStatus;
     final statusColor = approvalPending ? AppColors.warning : AppColors.success;
-    final assignments = ref.watch(driverAssignedShipmentsProvider);
+    final assignments = ref.watch(driverActiveAssignmentsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundWarm,

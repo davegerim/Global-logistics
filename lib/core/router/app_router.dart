@@ -23,6 +23,7 @@ import 'package:global_logistics_app/features/consignor/consignor_shipments_scre
 import 'package:global_logistics_app/features/consignor/consignor_shell.dart';
 import 'package:global_logistics_app/features/consignor/create_booking_screen.dart';
 import 'package:global_logistics_app/features/consignor/tracking_map_screen.dart';
+import 'package:global_logistics_app/features/driver/driver_assignment_history_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_home_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_license_details_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_offer_negotiation_screen.dart';
@@ -361,6 +362,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               final id = state.pathParameters['id']!;
               return DriverShipmentDetailScreen(shipmentId: id);
             },
+          ),
+          GoRoute(
+            parentNavigatorKey: _rootNavigatorKey,
+            path: 'assignments/history',
+            builder: (context, state) => const DriverAssignmentHistoryScreen(),
           ),
           GoRoute(
             parentNavigatorKey: _rootNavigatorKey,

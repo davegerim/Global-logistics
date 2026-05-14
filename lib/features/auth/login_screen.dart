@@ -16,35 +16,87 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
+  static final _tenDigits = RegExp(r'^\d{10}$');
+
   final _phone = TextEditingController();
   final _password = TextEditingController();
+  final _phoneFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+  final _passwordFieldKey = GlobalKey();
   bool _obscure = true;
+  String? _phoneError;
+  String? _passwordError;
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordFocus.addListener(_onPasswordFocusChanged);
+    _phone.addListener(_onPhoneTextChanged);
+  }
+
+  void _onPhoneTextChanged() {
+    if (_phoneError != null && mounted) {
+      setState(() => _phoneError = null);
+    }
+    if (_phone.text.length != 10 || !_phoneFocus.hasFocus || !mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _phone.text.length != 10) return;
+      _passwordFocus.requestFocus();
+    });
+  }
+
+  void _onPasswordFocusChanged() {
+    if (!_passwordFocus.hasFocus) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final ctx = _passwordFieldKey.currentContext;
+      if (ctx == null) return;
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+        alignment: 0.12,
+      );
+    });
+  }
 
   @override
   void dispose() {
+    _phone.removeListener(_onPhoneTextChanged);
+    _passwordFocus.removeListener(_onPasswordFocusChanged);
+    _phoneFocus.dispose();
+    _passwordFocus.dispose();
     _phone.dispose();
     _password.dispose();
     super.dispose();
   }
 
+  bool _isValidTenDigitPhone(String raw) {
+    final digits = raw.trim();
+    return _tenDigits.hasMatch(digits);
+  }
+
   Future<void> _submit(AppRole role) async {
     final phone = _phone.text.trim();
     final password = _password.text;
-    if (phone.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter phone and password.'), backgroundColor: AppColors.error),
-      );
+    final phoneOk = _isValidTenDigitPhone(phone);
+    final passwordOk = password.trim().isNotEmpty;
+    if (!phoneOk || !passwordOk) {
+      setState(() {
+        _phoneError = phoneOk ? null : 'Enter a valid 10-digit phone number.';
+        _passwordError = passwordOk ? null : 'Enter your password.';
+      });
       return;
     }
-    await ref.read(authProvider.notifier).login(
-          phone: phone,
-          password: password,
-          intendedRole: role,
-        );
+    await ref
+        .read(authProvider.notifier)
+        .login(phone: phone, password: password, intendedRole: role);
     if (!mounted) return;
     final err = ref.read(authProvider).errorMessage;
     if (err != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err), backgroundColor: AppColors.error));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(err), backgroundColor: AppColors.error),
+      );
     }
   }
 
@@ -59,7 +111,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         // Using a subtly warm background so the pure white login box becomes distinctly visible
-        backgroundColor: AppColors.backgroundWarm, 
+        backgroundColor: AppColors.backgroundWarm,
         body: SafeArea(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -79,27 +131,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           color: AppColors.surfaceMuted,
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
+                        child: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: AppColors.textPrimary,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 10),
-                
+
                 // Animated Truck firmly anchored over the road
                 const Center(child: DrivingTruck()),
-                
+
                 // Form Card - Shrunk to provide maximum whitespace
                 Center(
                   child: Container(
                     constraints: const BoxConstraints(maxWidth: 320),
-                    margin: const EdgeInsets.symmetric(horizontal: 48.0, vertical: 20.0),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 48.0,
+                      vertical: 20.0,
+                    ),
                     padding: const EdgeInsets.all(24.0),
                     decoration: BoxDecoration(
-                      color: Colors.white, // Pure white makes it pop against backgroundWarm
+                      color: Colors
+                          .white, // Pure white makes it pop against backgroundWarm
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: AppColors.borderLight, width: 1.0),
+                      border: Border.all(
+                        color: AppColors.borderLight,
+                        width: 1.0,
+                      ),
                       // Added a very soft, elegant shadow so the box is clearly visible and floating
                       boxShadow: [
                         BoxShadow(
@@ -115,7 +178,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         // Greeting
                         Text(
                           'Welcome Back',
-                          style: t.headlineMedium?.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+                          style: t.headlineMedium?.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w800,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 4),
@@ -123,29 +189,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           role == AppRole.driver
                               ? 'Sign in to access your routes.'
                               : 'Sign in to manage shipments.',
-                          style: t.bodySmall?.copyWith(color: AppColors.textSecondary),
+                          style: t.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                           textAlign: TextAlign.center,
                         ),
-                        
+
                         const SizedBox(height: 28),
-                        
+
                         // Form
                         Text(
                           'Phone Number',
-                          style: t.labelMedium?.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w700),
+                          style: t.labelMedium?.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         TextField(
                           controller: _phone,
+                          focusNode: _phoneFocus,
                           keyboardType: TextInputType.phone,
                           textInputAction: TextInputAction.next,
+                          onSubmitted: (_) => _passwordFocus.requestFocus(),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(10),
+                          ],
                           style: t.bodyMedium,
                           decoration: InputDecoration(
                             hintText: 'Enter phone',
-                            prefixIcon: const Icon(Icons.phone_outlined, color: AppColors.textSecondary, size: 18),
+                            errorText: _phoneError,
+                            prefixIcon: const Icon(
+                              Icons.phone_outlined,
+                              color: AppColors.textSecondary,
+                              size: 18,
+                            ),
                             filled: true,
-                            fillColor: AppColors.backgroundWarm, // Slight contrast inside the white box
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            fillColor: AppColors
+                                .backgroundWarm, // Slight contrast inside the white box
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide.none,
@@ -156,38 +242,77 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                              borderSide: const BorderSide(
+                                color: AppColors.primary,
+                                width: 1.5,
+                              ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: AppColors.error,
+                                width: 1,
+                              ),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: AppColors.error,
+                                width: 1.5,
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(height: 16),
-                        
+
                         Text(
                           'Password',
-                          style: t.labelMedium?.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w700),
+                          style: t.labelMedium?.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         TextField(
+                          key: _passwordFieldKey,
                           controller: _password,
+                          focusNode: _passwordFocus,
                           obscureText: _obscure,
                           textInputAction: TextInputAction.done,
+                          onChanged: (_) {
+                            if (_passwordError != null && mounted) {
+                              setState(() => _passwordError = null);
+                            }
+                          },
                           style: t.bodyMedium,
                           decoration: InputDecoration(
                             hintText: 'Enter password',
-                            prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.textSecondary, size: 18),
+                            errorText: _passwordError,
+                            prefixIcon: const Icon(
+                              Icons.lock_outline_rounded,
+                              color: AppColors.textSecondary,
+                              size: 18,
+                            ),
                             suffixIcon: IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
-                              onPressed: () => setState(() => _obscure = !_obscure),
+                              onPressed: () =>
+                                  setState(() => _obscure = !_obscure),
                               icon: Icon(
-                                _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                _obscure
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
                                 color: AppColors.textSecondary,
                                 size: 18,
                               ),
                             ),
                             filled: true,
-                            fillColor: AppColors.backgroundWarm, // Slight contrast inside the white box
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            fillColor: AppColors
+                                .backgroundWarm, // Slight contrast inside the white box
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide.none,
@@ -198,11 +323,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                              borderSide: const BorderSide(
+                                color: AppColors.primary,
+                                width: 1.5,
+                              ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: AppColors.error,
+                                width: 1,
+                              ),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: AppColors.error,
+                                width: 1.5,
+                              ),
                             ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 8),
                         Align(
                           alignment: Alignment.centerRight,
@@ -210,9 +352,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             onPressed: auth.isLoading
                                 ? null
                                 : () => context.push(
-                                      '/forgot-password',
-                                      extra: {'phone': _phone.text.trim()},
-                                    ),
+                                    '/forgot-password',
+                                    extra: {'phone': _phone.text.trim()},
+                                  ),
                             style: TextButton.styleFrom(
                               foregroundColor: AppColors.primary,
                               padding: EdgeInsets.zero,
@@ -229,29 +371,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         GlPrimaryButton(
                           label: 'Sign In',
                           isLoading: auth.isLoading,
-                          showShadow: true, // Bringing the button shadow back to make it pop
+                          showShadow:
+                              true, // Bringing the button shadow back to make it pop
                           onPressed: () => _submit(role),
                         ),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               'Don\'t have an account? ',
-                              style: t.bodySmall?.copyWith(color: AppColors.textSecondary, fontSize: 11),
+                              style: t.bodySmall?.copyWith(
+                                color: AppColors.textSecondary,
+                                fontSize: 11,
+                              ),
                             ),
                             TextButton(
                               style: TextButton.styleFrom(
                                 foregroundColor: AppColors.primary,
-                                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                  vertical: 0,
+                                ),
                                 minimumSize: const Size(0, 0),
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
@@ -295,7 +444,8 @@ class DrivingTruck extends StatefulWidget {
   State<DrivingTruck> createState() => _DrivingTruckState();
 }
 
-class _DrivingTruckState extends State<DrivingTruck> with SingleTickerProviderStateMixin {
+class _DrivingTruckState extends State<DrivingTruck>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -324,7 +474,7 @@ class _DrivingTruckState extends State<DrivingTruck> with SingleTickerProviderSt
         final wobble = math.cos(_controller.value * math.pi * 4) * 0.015;
         // Shadow scales inversely to bounce
         final shadowScale = 1.0 - (bounce.clamp(0, 4) / 15.0);
-        
+
         return SizedBox(
           height: 230, // Taller bounds to contain the overlap
           width: double.infinity,
@@ -343,7 +493,7 @@ class _DrivingTruckState extends State<DrivingTruck> with SingleTickerProviderSt
                   ),
                 ),
               ),
-              
+
               // 2. Dynamic shadow anchored directly ON the road
               Positioned(
                 bottom: 20, // Exact same level as the road
@@ -354,15 +504,19 @@ class _DrivingTruckState extends State<DrivingTruck> with SingleTickerProviderSt
                     height: 6,
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.3),
-                      borderRadius: const BorderRadius.all(Radius.elliptical(140, 6)),
+                      borderRadius: const BorderRadius.all(
+                        Radius.elliptical(140, 6),
+                      ),
                     ),
                   ),
                 ),
               ),
-              
+
               // 3. The moving truck pushed DOWN relative to the road to firmly anchor it
               Positioned(
-                bottom: -8 + bounce, // Negative value physically forces the tires over the road
+                bottom:
+                    -8 +
+                    bounce, // Negative value physically forces the tires over the road
                 child: Transform(
                   alignment: Alignment.bottomCenter,
                   transform: Matrix4.identity()..rotateZ(wobble),
@@ -399,11 +553,12 @@ class _RealisticRoadPainter extends CustomPainter {
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
-      
+
     final roadPaint = Paint()
-      ..color = const Color(0xFFE8ECEB) // Light asphalt matching the app theme
+      ..color =
+          const Color(0xFFE8ECEB) // Light asphalt matching the app theme
       ..style = PaintingStyle.fill;
-    
+
     canvas.drawPath(roadPath, roadPaint);
 
     // 2. Draw Moving dashed line in the center
@@ -416,7 +571,7 @@ class _RealisticRoadPainter extends CustomPainter {
     const dashWidth = 28.0;
     const dashSpace = 24.0;
     const totalDash = dashWidth + dashSpace;
-    
+
     // Animate moving to the left (assuming the truck is facing right)
     final startX = -(animationValue * totalDash);
     final centerY = size.height / 2;
@@ -425,17 +580,22 @@ class _RealisticRoadPainter extends CustomPainter {
     canvas.clipPath(roadPath);
 
     // Draw lines covering the entire width of the road
-    for (double x = startX - totalDash; x < size.width + totalDash; x += totalDash) {
+    for (
+      double x = startX - totalDash;
+      x < size.width + totalDash;
+      x += totalDash
+    ) {
       canvas.drawLine(
-        Offset(x, centerY), 
-        Offset(x + dashWidth, centerY), 
-        dashPaint
+        Offset(x, centerY),
+        Offset(x + dashWidth, centerY),
+        dashPaint,
       );
     }
-    
+
     canvas.restore();
   }
 
   @override
-  bool shouldRepaint(covariant _RealisticRoadPainter oldDelegate) => oldDelegate.animationValue != animationValue;
+  bool shouldRepaint(covariant _RealisticRoadPainter oldDelegate) =>
+      oldDelegate.animationValue != animationValue;
 }
