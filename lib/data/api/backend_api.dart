@@ -435,4 +435,37 @@ class BackendApi {
     );
     return r.data ?? {};
   }
+
+  // --- object storage (presigned URLs) ---
+  /// Body: `folder` (`shipment_payments` | `profile`), `fileName`, `contentType`.
+  Future<Map<String, dynamic>> s3GeneratePresignedUrl({
+    required String folder,
+    required String fileName,
+    required String contentType,
+  }) async {
+    final r = await _dio.post<Map<String, dynamic>>(
+      '/s3/generate-presigned-url',
+      data: {
+        'folder': folder,
+        'fileName': fileName,
+        'contentType': contentType,
+      },
+    );
+    return r.data ?? {};
+  }
+
+  /// Query: `folder`, `fileName`.
+  Future<Map<String, dynamic>> s3PresignedDeleteUrl({
+    required String folder,
+    required String fileName,
+  }) async {
+    final r = await _dio.get<Map<String, dynamic>>(
+      '/s3/presigned-delete-url',
+      queryParameters: {
+        'folder': folder,
+        'fileName': fileName,
+      },
+    );
+    return r.data ?? {};
+  }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
-import 'package:global_logistics_app/data/models/shipment_status.dart';
 import 'package:global_logistics_app/shared/widgets/status_chip.dart';
 import 'package:intl/intl.dart';
 
@@ -10,12 +9,10 @@ class ShipmentCard extends StatelessWidget {
     super.key,
     required this.shipment,
     this.onTap,
-    this.showTimeline = true,
   });
 
   final ShipmentModel shipment;
   final VoidCallback? onTap;
-  final bool showTimeline;
 
   @override
   Widget build(BuildContext context) {
@@ -116,14 +113,6 @@ class ShipmentCard extends StatelessWidget {
                         ],
                       ],
                     ),
-                    if (showTimeline) ...[
-                      const SizedBox(height: 18),
-                      _ProgressStrip(
-                        progress:
-                            shipment.progress01 ??
-                            _fallbackProgress(shipment.status),
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -180,55 +169,6 @@ class ShipmentCard extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  static double _fallbackProgress(ShipmentStatus s) => switch (s) {
-    ShipmentStatus.completed => 1,
-    ShipmentStatus.inTransit => 0.55,
-    ShipmentStatus.pendingReview => 0.1,
-    _ => 0.35,
-  };
-}
-
-class _ProgressStrip extends StatelessWidget {
-  const _ProgressStrip({required this.progress});
-
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = Theme.of(context).textTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Progress',
-              style: t.labelMedium?.copyWith(color: AppColors.textSecondary),
-            ),
-            Text(
-              '${(progress * 100).round()}%',
-              style: t.labelLarge?.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(99),
-          child: LinearProgressIndicator(
-            value: progress.clamp(0, 1),
-            minHeight: 10,
-            backgroundColor: AppColors.surfaceMuted,
-            color: AppColors.primary,
           ),
         ),
       ],

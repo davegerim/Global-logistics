@@ -50,8 +50,39 @@ class _ConsignorShipmentDetailScreenState
   bool _driverSelected = false;
   String? _selectionResolvedForShipment;
 
+  /// After one completed resolution (success or failure), do not auto-retry until refresh.
+  bool _assignmentResolutionAttempted = false;
+  bool _resolveAssignmentScheduled = false;
+
+  void _scheduleAssignmentResolutionIfNeeded(
+    ShipmentModel s, {
+    required bool eligible,
+  }) {
+    if (!eligible || !mounted) return;
+    if (_assignmentId != null ||
+        _assignmentResolutionAttempted ||
+        _resolvingAssignment ||
+        _resolveAssignmentScheduled) {
+      return;
+    }
+    _resolveAssignmentScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        _resolveAssignmentScheduled = false;
+        return;
+      }
+      _resolveAssignmentScheduled = false;
+      _resolveAssignmentIfNeeded(s);
+    });
+  }
+
   Future<void> _resolveAssignmentIfNeeded(ShipmentModel s) async {
-    if (_resolvingAssignment || _assignmentId != null || !mounted) return;
+    if (_resolvingAssignment ||
+        _assignmentId != null ||
+        !mounted ||
+        _assignmentResolutionAttempted) {
+      return;
+    }
     setState(() => _resolvingAssignment = true);
     try {
       final api = ref.read(backendApiProvider);
@@ -92,7 +123,12 @@ class _ConsignorShipmentDetailScreenState
       }
     } catch (_) {
     } finally {
-      if (mounted) setState(() => _resolvingAssignment = false);
+      if (mounted) {
+        setState(() {
+          _resolvingAssignment = false;
+          _assignmentResolutionAttempted = true;
+        });
+      }
     }
   }
 
@@ -249,6 +285,17 @@ class _ConsignorShipmentDetailScreenState
     return value;
   }
 
+  @override
+  void didUpdateWidget(covariant ConsignorShipmentDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.shipmentId != widget.shipmentId) {
+      _assignmentResolutionAttempted = false;
+      _resolveAssignmentScheduled = false;
+      _assignmentId = null;
+      _assignmentApiStatus = null;
+    }
+  }
+
   Future<void> _confirmHandover(String shipmentId) async {
     if (_confirmingHandover || _assignmentId == null) return;
     final remark = await _promptConfirmRemark();
@@ -312,6 +359,8 @@ class _ConsignorShipmentDetailScreenState
           IconButton(
             onPressed: () {
               _selectionResolvedForShipment = null;
+              _assignmentResolutionAttempted = false;
+              _resolveAssignmentScheduled = false;
               ref.invalidate(consignorShipmentsProvider);
               ref.invalidate(consignorActiveProvider);
             },
@@ -330,9 +379,10 @@ class _ConsignorShipmentDetailScreenState
           }
           _resolveDriverSelectionIfNeeded(s);
           final assignedByStatus = _isAssignedOrLater(s.apiStatusLabel);
-          if (_driverSelected || assignedByStatus) {
-            _resolveAssignmentIfNeeded(s);
-          }
+          _scheduleAssignmentResolutionIfNeeded(
+            s,
+            eligible: _driverSelected || assignedByStatus,
+          );
           final assignmentStatus =
               (_assignmentApiStatus ?? s.apiStatusLabel ?? '')
                   .trim()

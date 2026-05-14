@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
+import 'package:global_logistics_app/core/services/presigned_storage_service.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
+import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
 
 class RegisterConsignorProfileScreen extends ConsumerStatefulWidget {
   const RegisterConsignorProfileScreen({super.key});
@@ -164,10 +166,16 @@ class _RegisterConsignorProfileScreenState
                 label: 'Business Name (Optional)',
                 icon: Icons.storefront_rounded,
               ),
-              _buildInput(
+              PresignedUrlUploadRow(
+                urlController: _tradeLicence,
+                folder: S3Folder.profile,
+                borderRadius: 12,
+                buttonLabel: 'Upload trade licence (image or PDF)',
+                successMessage: 'Trade licence uploaded.',
+              ),
+              PresignedUploadAttachedHint(
                 controller: _tradeLicence,
-                label: 'Trade Licence URL (Optional)',
-                icon: Icons.link_rounded,
+                message: 'Trade licence attached',
               ),
               const SizedBox(height: 24),
 

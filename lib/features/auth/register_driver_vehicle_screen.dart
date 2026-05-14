@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
+import 'package:global_logistics_app/core/services/presigned_storage_service.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
+import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
 
 class RegisterDriverVehicleScreen extends ConsumerStatefulWidget {
   const RegisterDriverVehicleScreen({super.key});
@@ -181,10 +183,16 @@ class _RegisterDriverVehicleScreenState
                 label: 'Libri Number',
                 icon: Icons.pin_outlined,
               ),
-              _buildInput(
+              PresignedUrlUploadRow(
+                urlController: _libriDocument,
+                folder: S3Folder.profile,
+                borderRadius: 12,
+                buttonLabel: 'Upload libri document (image or PDF)',
+                successMessage: 'Libri document uploaded.',
+              ),
+              PresignedUploadAttachedHint(
                 controller: _libriDocument,
-                label: 'Libri Document URL',
-                icon: Icons.link_rounded,
+                message: 'Libri document attached',
               ),
               _buildInput(
                 controller: _plateNumber,
@@ -196,10 +204,16 @@ class _RegisterDriverVehicleScreenState
                 label: 'Insurance Number',
                 icon: Icons.security_rounded,
               ),
-              _buildInput(
+              PresignedUrlUploadRow(
+                urlController: _insuranceDocument,
+                folder: S3Folder.profile,
+                borderRadius: 12,
+                buttonLabel: 'Upload insurance document (image or PDF)',
+                successMessage: 'Insurance document uploaded.',
+              ),
+              PresignedUploadAttachedHint(
                 controller: _insuranceDocument,
-                label: 'Insurance Document URL',
-                icon: Icons.link_rounded,
+                message: 'Insurance document attached',
               ),
               _buildInput(
                 controller: _type,
@@ -211,10 +225,19 @@ class _RegisterDriverVehicleScreenState
                 label: 'Details',
                 icon: Icons.info_outline_rounded,
               ),
-              _buildInput(
+              PresignedUrlUploadRow(
+                urlController: _photo,
+                folder: S3Folder.profile,
+                allowPdf: false,
+                borderRadius: 12,
+                buttonLabel: 'Upload vehicle photo (JPG, PNG, or WebP)',
+                invalidTypeMessage:
+                    'Please choose a JPG, PNG, or WebP image for the vehicle photo.',
+                successMessage: 'Vehicle photo uploaded.',
+              ),
+              PresignedUploadAttachedHint(
                 controller: _photo,
-                label: 'Photo URL',
-                icon: Icons.image_outlined,
+                message: 'Vehicle photo attached',
               ),
               const SizedBox(height: 24),
 

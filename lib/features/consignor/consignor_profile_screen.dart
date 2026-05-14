@@ -8,6 +8,8 @@ import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/payments_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
+import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
+import 'package:global_logistics_app/shared/widgets/shipment_receipt_upload_row.dart';
 
 class ConsignorProfileScreen extends ConsumerStatefulWidget {
   const ConsignorProfileScreen({super.key});
@@ -209,7 +211,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
     final fid = TextEditingController();
     final amt = TextEditingController();
     final refNo = TextEditingController();
-    final slip = TextEditingController(text: 'https://example.com/slip.png');
+    final slip = TextEditingController();
     await _showPremiumSheet(
       title: 'Record Payment',
       subtitle: 'Submit a new payment record for your financial ledger.',
@@ -218,7 +220,11 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
         _buildInput(fid, 'Finance ID'),
         _buildInput(amt, 'Amount', type: TextInputType.number),
         _buildInput(refNo, 'Reference Number'),
-        _buildInput(slip, 'Receipt URL'),
+        ShipmentReceiptUploadRow(slipController: slip),
+        PresignedUploadAttachedHint(
+          controller: slip,
+          message: 'Payment receipt attached',
+        ),
       ],
       actionLabel: 'Submit Record',
       onAction: () async {

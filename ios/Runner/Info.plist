@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We use your location when accepting offers to share pickup status.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library when you attach a payment receipt image.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

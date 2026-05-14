@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
+import 'package:global_logistics_app/core/services/presigned_storage_service.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
+import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
 
 class RegisterDriverProfileScreen extends ConsumerStatefulWidget {
   const RegisterDriverProfileScreen({super.key});
@@ -169,10 +171,16 @@ class _RegisterDriverProfileScreenState
                 label: 'Licence Number',
                 icon: Icons.pin_outlined,
               ),
-              _buildInput(
+              PresignedUrlUploadRow(
+                urlController: _licenceDocument,
+                folder: S3Folder.profile,
+                borderRadius: 12,
+                buttonLabel: 'Upload licence document (image or PDF)',
+                successMessage: 'Licence document uploaded.',
+              ),
+              PresignedUploadAttachedHint(
                 controller: _licenceDocument,
-                label: 'Licence Document URL',
-                icon: Icons.link_rounded,
+                message: 'Licence document attached',
               ),
               _buildInput(
                 controller: _preferredLanes,

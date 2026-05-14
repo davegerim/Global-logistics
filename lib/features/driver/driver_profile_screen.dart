@@ -6,6 +6,8 @@ import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
+import 'package:global_logistics_app/shared/widgets/shipment_receipt_upload_row.dart';
 
 class DriverProfileScreen extends ConsumerStatefulWidget {
   const DriverProfileScreen({super.key});
@@ -207,7 +209,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
     final af = TextEditingController();
     final amt = TextEditingController();
     final refNo = TextEditingController();
-    final slip = TextEditingController(text: 'https://example.com/slip.png');
+    final slip = TextEditingController();
     await _showPremiumSheet(
       title: 'Record Payout',
       subtitle: 'Submit proof of payout for an assigned logistics route.',
@@ -216,7 +218,11 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
         _buildInput(af, 'Assignment Finance ID'),
         _buildInput(amt, 'Amount', type: TextInputType.number),
         _buildInput(refNo, 'Reference Number'),
-        _buildInput(slip, 'Receipt URL'),
+        ShipmentReceiptUploadRow(slipController: slip),
+        PresignedUploadAttachedHint(
+          controller: slip,
+          message: 'Payment receipt attached',
+        ),
       ],
       actionLabel: 'Submit Proof',
       onAction: () async {

@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:global_logistics_app/core/network/auth_response_tokens.dart';
+import 'package:global_logistics_app/core/network/token_refresh_executor.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/services/device_location_service.dart';
@@ -123,14 +124,28 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       await TokenStorage.instance.loadIntoCache();
-      if (TokenCache.instance.accessToken == null ||
-          TokenCache.instance.accessToken!.isEmpty) {
-        state = state.copyWith(
-          isLoading: false,
-          bootstrapDone: true,
-          isAuthenticated: false,
-        );
-        return;
+      final cache = TokenCache.instance;
+      if (cache.accessToken == null || cache.accessToken!.isEmpty) {
+        final rt = cache.refreshToken;
+        if (rt != null && rt.isNotEmpty) {
+          final newAccess = await executeTokenRefresh(rt);
+          if (newAccess == null || newAccess.isEmpty) {
+            await TokenStorage.instance.clearPersisted();
+            state = state.copyWith(
+              isLoading: false,
+              bootstrapDone: true,
+              isAuthenticated: false,
+            );
+            return;
+          }
+        } else {
+          state = state.copyWith(
+            isLoading: false,
+            bootstrapDone: true,
+            isAuthenticated: false,
+          );
+          return;
+        }
       }
       final api = ref.read(backendApiProvider);
       late Map<String, dynamic> profile;
@@ -159,7 +174,8 @@ class AuthNotifier extends Notifier<AuthState> {
         bootstrapDone: true,
       );
     } catch (e) {
-      if (e is DioException && e.response?.statusCode == 401) {
+      final code = e is DioException ? e.response?.statusCode : null;
+      if (code == 401 || code == 403) {
         await TokenStorage.instance.clearPersisted();
       }
       await _stopFcmTokenRefreshListener();
@@ -256,11 +272,18 @@ class AuthNotifier extends Notifier<AuthState> {
       final data = await api.authLogin(phone: phone, password: password);
       final access = readAccessTokenFromBody(data);
       final refresh = readRefreshTokenFromBody(data);
-      if (access != null) {
+      if (access != null || refresh != null) {
         await TokenStorage.instance.persistTokens(
           access: access,
           refresh: refresh,
         );
+      }
+      if (TokenCache.instance.accessToken == null ||
+          TokenCache.instance.accessToken!.isEmpty) {
+        final rt = TokenCache.instance.refreshToken;
+        if (rt != null && rt.isNotEmpty) {
+          await executeTokenRefresh(rt);
+        }
       }
       final profile = await api.identityGet();
       _applyProfile(profile);
@@ -347,11 +370,18 @@ class AuthNotifier extends Notifier<AuthState> {
       final data = await api.authOtpVerify(phone: phone, code: code);
       final access = readAccessTokenFromBody(data);
       final refresh = readRefreshTokenFromBody(data);
-      if (access != null) {
+      if (access != null || refresh != null) {
         await TokenStorage.instance.persistTokens(
           access: access,
           refresh: refresh,
         );
+      }
+      if (TokenCache.instance.accessToken == null ||
+          TokenCache.instance.accessToken!.isEmpty) {
+        final rt = TokenCache.instance.refreshToken;
+        if (rt != null && rt.isNotEmpty) {
+          await executeTokenRefresh(rt);
+        }
       }
       final profile = await api.identityGet();
       _applyProfile(profile);

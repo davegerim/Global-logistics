@@ -1,15 +1,20 @@
 import 'package:dio/dio.dart';
-import 'package:global_logistics_app/core/config/api_config.dart';
-import 'package:global_logistics_app/core/network/auth_response_tokens.dart';
+import 'package:global_logistics_app/core/network/jwt_access_expiry.dart';
+import 'package:global_logistics_app/core/network/token_refresh_executor.dart';
 import 'package:global_logistics_app/data/storage/token_cache.dart';
-import 'package:global_logistics_app/data/storage/token_storage.dart';
 
-/// Attaches Bearer token and refreshes once on 401 using `/auth/refresh`.
+/// Attaches Bearer token; **proactively** refreshes when JWT `exp` is near;
+/// **reactively** refreshes on 401/403 using `/auth/refresh` if proactive did not help.
 class AuthInterceptor extends Interceptor {
   AuthInterceptor({required Dio dio}) : _dio = dio;
 
   final Dio _dio;
+
+  /// Single in-flight refresh for proactive + reactive deduplication.
   static Future<String?>? _refreshFuture;
+
+  /// Prevents refresh+retry loops when the server returns a persistent 403/401.
+  static const _retryExtraKey = 'gl_auth_refresh_retried';
 
   static const _publicPathSuffixes = <String>[
     '/auth/login',
@@ -29,28 +34,81 @@ class AuthInterceptor extends Interceptor {
     return false;
   }
 
-  @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+  void _attachBearer(RequestOptions options) {
     final t = TokenCache.instance.accessToken;
-    if (t != null && !_isPublic(options)) {
+    if (t != null && t.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $t';
     }
-    handler.next(options);
+  }
+
+  /// Shared refresh queue — proactive [onRequest] and reactive [onError] use the same future.
+  static Future<String?> _coordinatedRefresh(String refreshToken) {
+    _refreshFuture ??= _refreshSingleFlight(refreshToken);
+    return _refreshFuture!;
+  }
+
+  static Future<String?> _refreshSingleFlight(String refreshToken) async {
+    try {
+      return await executeTokenRefresh(refreshToken);
+    } finally {
+      _refreshFuture = null;
+    }
+  }
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (_isPublic(options)) {
+      handler.next(options);
+      return;
+    }
+    final access = TokenCache.instance.accessToken;
+    if (access == null || access.isEmpty) {
+      handler.next(options);
+      return;
+    }
+    if (!isAccessTokenExpiringSoon(access)) {
+      options.headers['Authorization'] = 'Bearer $access';
+      handler.next(options);
+      return;
+    }
+    final rt = TokenCache.instance.refreshToken;
+    if (rt == null || rt.isEmpty) {
+      options.headers['Authorization'] = 'Bearer $access';
+      handler.next(options);
+      return;
+    }
+    _coordinatedRefresh(rt).then((_) {
+      _attachBearer(options);
+      handler.next(options);
+    }).catchError((_) {
+      options.headers['Authorization'] = 'Bearer $access';
+      handler.next(options);
+    });
+  }
+
+  bool _isUnauthorizedOrForbidden(DioException err) {
+    final code = err.response?.statusCode;
+    return code == 401 || code == 403;
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    if (err.response?.statusCode != 401) {
+    if (!_isUnauthorizedOrForbidden(err)) {
       handler.next(err);
       return;
     }
-    final path = err.requestOptions.uri.path;
+    final req = err.requestOptions;
+    if (req.extra[_retryExtraKey] == true) {
+      handler.next(err);
+      return;
+    }
+    final path = req.uri.path;
     if (path.endsWith('/auth/refresh') || path.endsWith('/auth/login')) {
       handler.next(err);
       return;
     }
     final refresh = TokenCache.instance.refreshToken;
-    if (refresh == null) {
+    if (refresh == null || refresh.isEmpty) {
       handler.next(err);
       return;
     }
@@ -62,59 +120,22 @@ class AuthInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
     String refresh,
   ) {
-    _refreshFuture ??= _doRefresh(refresh);
-    _refreshFuture!
-        .then((newAccess) async {
-          _refreshFuture = null;
-          if (newAccess == null || newAccess.isEmpty) {
-            handler.next(err);
-            return;
-          }
-          try {
-            final req = err.requestOptions;
-            req.headers['Authorization'] = 'Bearer $newAccess';
-            final clone = await _dio.fetch(req);
-            handler.resolve(clone);
-          } catch (_) {
-            handler.next(err);
-          }
-        })
-        .catchError((_) {
-          _refreshFuture = null;
-          handler.next(err);
-        });
-  }
-
-  Future<String?> _doRefresh(String refreshToken) async {
-    final bare = Dio(
-      BaseOptions(
-        baseUrl: ApiConfig.baseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ),
-    );
-    try {
-      final res = await bare.post<Map<String, dynamic>>(
-        '/auth/refresh',
-        data: {'refreshToken': refreshToken},
-      );
-      final data = res.data;
-      final access = readAccessTokenFromBody(data);
-      final nextRefresh =
-          readRefreshTokenFromBody(data) ?? refreshToken;
-      if (access != null) {
-        await TokenStorage.instance.persistTokens(
-          access: access,
-          refresh: nextRefresh,
-        );
+    _coordinatedRefresh(refresh).then((newAccess) async {
+      if (newAccess == null || newAccess.isEmpty) {
+        handler.next(err);
+        return;
       }
-      return access;
-    } catch (_) {
-      return null;
-    }
+      try {
+        final req = err.requestOptions;
+        req.extra[_retryExtraKey] = true;
+        req.headers['Authorization'] = 'Bearer $newAccess';
+        final clone = await _dio.fetch(req);
+        handler.resolve(clone);
+      } catch (_) {
+        handler.next(err);
+      }
+    }).catchError((_) {
+      handler.next(err);
+    });
   }
 }
