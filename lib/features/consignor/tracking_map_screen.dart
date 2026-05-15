@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -46,7 +47,7 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
     if (!ok && mounted) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Could not open map app.')));
+      ).showSnackBar(SnackBar(content: Text(context.l10n.couldNotOpenMapApp)));
     }
   }
 
@@ -148,7 +149,7 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
       body: async.when(
         data: (s) {
           if (s == null) {
-            return const Center(child: Text('Shipment not found'));
+            return Center(child: Text(context.l10n.shipmentNotFound));
           }
           final progress = s.progress01 ?? 0.55;
           return Stack(
@@ -326,7 +327,7 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                               _openExternalMap(lat: lat, lon: lon);
                             },
                             icon: const Icon(Icons.location_searching_rounded),
-                            label: const Text('Open live location in Maps'),
+                            label: Text(context.l10n.openLiveLocationInMaps),
                           ),
                         ],
                         if (_points.isNotEmpty) ...[
@@ -346,7 +347,7 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                               );
                             },
                             icon: const Icon(Icons.alt_route_rounded),
-                            label: const Text('Open route start in Maps'),
+                            label: Text(context.l10n.openRouteStartInMaps),
                           ),
                         ],
                         const SizedBox(height: 16),

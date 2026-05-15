@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -66,26 +67,26 @@ class ConsignorShell extends ConsumerWidget {
             children: [
               _NavItem(
                 icon: Icons.home_rounded,
-                label: 'Home',
+                label: context.l10n.home,
                 selected: navigationShell.currentIndex == 0,
                 onTap: () => _goBranch(0),
               ),
               _NavItem(
                 icon: Icons.list_alt_rounded,
-                label: 'Shipments',
+                label: context.l10n.shipments,
                 selected: navigationShell.currentIndex == 1,
                 onTap: () => _goBranch(1),
               ),
               const SizedBox(width: 64),
               _NavItem(
                 icon: Icons.folder_open_rounded,
-                label: 'Docs',
+                label: context.l10n.docs,
                 selected: navigationShell.currentIndex == 2,
                 onTap: () => _goBranch(2),
               ),
               _NavItem(
                 icon: Icons.person_outline_rounded,
-                label: 'Profile',
+                label: context.l10n.profile,
                 selected: navigationShell.currentIndex == 3,
                 onTap: () => _goBranch(3),
               ),

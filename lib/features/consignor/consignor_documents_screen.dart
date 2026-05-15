@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
@@ -70,12 +71,12 @@ class _ConsignorDocumentsScreenState
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Documents')),
+      appBar: AppBar(title: Text(context.l10n.documents)),
       body: shipmentsAsync.when(
         data: (List<ShipmentModel> shipments) {
           if (shipments.isEmpty) {
-            return const Center(
-              child: Text('No shipments — create a booking first.'),
+            return Center(
+              child: Text(context.l10n.noShipmentsCreateBookingFirst),
             );
           }
           ShipmentModel selected = shipments.first;
@@ -249,7 +250,7 @@ class _ConsignorDocumentsScreenState
               else if (_assignmentId == null)
                 _emptyStateCard(
                   context: context,
-                  title: 'No assignment yet',
+                  title: context.l10n.noAssignmentYet,
                   subtitle:
                       'This shipment has no active assignment, so no GDN/GRN is available yet.',
                   icon: Icons.assignment_late_outlined,
@@ -271,7 +272,7 @@ class _ConsignorDocumentsScreenState
                     if (docs.isEmpty) {
                       return _emptyStateCard(
                         context: context,
-                        title: 'No documents found',
+                        title: context.l10n.noDocumentsFound,
                         subtitle:
                             'No GDN or GRN records were returned for this assignment.',
                         icon: Icons.folder_open_outlined,

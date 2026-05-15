@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,7 +58,7 @@ class DriverHomeScreen extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        auth.displayName ?? 'Driver',
+                        auth.displayName ?? context.l10n.driver,
                         style: Theme.of(context).textTheme.titleMedium,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -172,8 +173,8 @@ class DriverHomeScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
             sliver: SliverToBoxAdapter(
               child: SectionHeader(
-                title: 'Active assignments',
-                secondaryActionLabel: 'History',
+                title: context.l10n.activeAssignments,
+                secondaryActionLabel: context.l10n.history,
                 onSecondaryAction: () => context.push('/driver/assignments/history'),
                 actionLabel: 'Open offers',
                 onAction: () {
@@ -209,7 +210,7 @@ class DriverHomeScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 sliver: SliverList.separated(
                   itemCount: list.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 14),
+                  separatorBuilder: (_, __) => SizedBox(height: 14),
                   itemBuilder: (context, i) {
                     final s = list[i];
                     return ShipmentCard(

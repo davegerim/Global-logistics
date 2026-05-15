@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
@@ -48,7 +49,7 @@ class RoleSelectionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 28),
               _RoleCard(
-                title: 'Consignor',
+                title: context.l10n.consignor,
                 subtitle:
                     'Ship goods, track loads, pay, and receive delivery notes.',
                 icon: Icons.inventory_2_outlined,
@@ -57,7 +58,7 @@ class RoleSelectionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               _RoleCard(
-                title: 'Driver',
+                title: context.l10n.driver,
                 subtitle:
                     'Receive offers, accept routes, and confirm delivery.',
                 icon: Icons.local_shipping_outlined,
@@ -95,7 +96,7 @@ class RoleSelectionScreen extends StatelessWidget {
                                 Navigator.pop(context);
                                 context.push('/register-consignor');
                               },
-                              child: const Text('Register as consignor'),
+                              child: Text(context.l10n.registerAsConsignor),
                             ),
                             const SizedBox(height: 10),
                             OutlinedButton(
@@ -103,7 +104,7 @@ class RoleSelectionScreen extends StatelessWidget {
                                 Navigator.pop(context);
                                 context.push('/register-driver');
                               },
-                              child: const Text('Register as driver'),
+                              child: Text(context.l10n.registerAsDriver),
                             ),
                           ],
                         ),

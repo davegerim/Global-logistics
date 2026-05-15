@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -38,7 +39,7 @@ class _RegisterConsignorScreenState
     if (_password.text != _confirm.text) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Passwords do not match.')));
+      ).showSnackBar(SnackBar(content: Text(context.l10n.passwordsDoNotMatch)));
       return;
     }
     setState(() => _busy = true);
@@ -181,29 +182,29 @@ class _RegisterConsignorScreenState
               // Form Section
               _buildInput(
                 controller: _firstName,
-                label: 'First Name',
+                label: context.l10n.firstName,
                 icon: Icons.person_outline_rounded,
               ),
               _buildInput(
                 controller: _lastName,
-                label: 'Last Name',
+                label: context.l10n.lastName,
                 icon: Icons.person_outline_rounded,
               ),
               _buildInput(
                 controller: _phone,
-                label: 'Phone Number',
+                label: context.l10n.phoneNumber,
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
               ),
               _buildInput(
                 controller: _password,
-                label: 'Password',
+                label: context.l10n.password,
                 icon: Icons.lock_outline_rounded,
                 isPassword: true,
               ),
               _buildInput(
                 controller: _confirm,
-                label: 'Confirm Password',
+                label: context.l10n.confirmPassword,
                 icon: Icons.lock_outline_rounded,
                 isPassword: true,
               ),
@@ -214,7 +215,7 @@ class _RegisterConsignorScreenState
                 width: double.infinity,
                 height: 52,
                 child: GlPrimaryButton(
-                  label: 'Continue & Send OTP',
+                  label: context.l10n.continueAndSendOtp,
                   isLoading: _busy,
                   onPressed: _registerAccount,
                 ),

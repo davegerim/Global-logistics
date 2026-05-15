@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -154,7 +155,7 @@ class _DriverLicenseDetailsScreenState
                   else ...[
                     _LicenseHero(
                       statusLabel: rawStatus,
-                      name: auth.displayName ?? 'Driver',
+                      name: auth.displayName ?? context.l10n.driver,
                     ),
                     const SizedBox(height: 24),
                     const _SectionLabel('Verification & credentials'),
@@ -394,7 +395,7 @@ class _LicenseFieldTile extends StatelessWidget {
             TextButton.icon(
               onPressed: onOpenUrl,
               icon: const Icon(Icons.open_in_new_rounded, size: 18),
-              label: const Text('Open link'),
+              label: Text(context.l10n.openLink),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.primary,
                 visualDensity: VisualDensity.compact,

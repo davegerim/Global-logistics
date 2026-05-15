@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,7 @@ import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/payments_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
+import 'package:global_logistics_app/shared/widgets/app_language_picker_sheet.dart';
 import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
 import 'package:global_logistics_app/shared/widgets/shipment_receipt_upload_row.dart';
 
@@ -152,12 +154,12 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
     final fn = TextEditingController(text: _profile?['firstName'] as String? ?? '');
     final ln = TextEditingController(text: _profile?['lastName'] as String? ?? '');
     await _showPremiumSheet(
-      title: 'Personal Details',
-      subtitle: 'Update your corporate identity and contact information.',
+      title: context.l10n.personalDetails,
+      subtitle: context.l10n.updateCorporateIdentity,
       icon: Icons.person_outline_rounded,
       children: [
-        _buildInput(fn, 'First Name'),
-        _buildInput(ln, 'Last Name'),
+        _buildInput(fn, context.l10n.firstName),
+        _buildInput(ln, context.l10n.lastName),
       ],
       actionLabel: 'Save Changes',
       onAction: () async {
@@ -177,8 +179,8 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
 
   Future<void> _changePassword() async {
     await _showPremiumSheet(
-      title: 'Security & Access',
-      subtitle: 'For your protection, password changes require multi-factor authentication.',
+      title: context.l10n.securityAndAccess,
+      subtitle: context.l10n.passwordChangesRequireMfa,
       icon: Icons.shield_outlined,
       children: [
         Container(
@@ -213,8 +215,8 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
     final refNo = TextEditingController();
     final slip = TextEditingController();
     await _showPremiumSheet(
-      title: 'Record Payment',
-      subtitle: 'Submit a new payment record for your financial ledger.',
+      title: context.l10n.recordPayment,
+      subtitle: context.l10n.submitNewPaymentRecord,
       icon: Icons.receipt_long_rounded,
       children: [
         _buildInput(fid, 'Finance ID'),
@@ -223,7 +225,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
         ShipmentReceiptUploadRow(slipController: slip),
         PresignedUploadAttachedHint(
           controller: slip,
-          message: 'Payment receipt attached',
+          message: context.l10n.paymentReceiptAttached,
         ),
       ],
       actionLabel: 'Submit Record',
@@ -245,47 +247,14 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
   }
 
   Future<void> _showLanguagePicker() async {
-    await _showPremiumSheet(
-      title: 'App Language',
-      subtitle: 'Choose your preferred language for the interface.',
-      icon: Icons.language_rounded,
-      children: [
-        _buildLanguageOption('🇺🇸', 'English (US)', true),
-        _buildLanguageOption('🇪🇹', 'Amharic', false),
-      ],
-      actionLabel: 'Confirm Selection',
-      onAction: () {},
-    );
-  }
-
-  Widget _buildLanguageOption(String flag, String name, bool selected) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: selected ? AppColors.primarySoft : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: selected ? AppColors.primary : AppColors.borderLight, width: 2),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        leading: Text(flag, style: const TextStyle(fontSize: 28)),
-        title: Text(
-          name,
-          style: TextStyle(
-            fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-            color: selected ? AppColors.primary : AppColors.textPrimary,
-            fontSize: 16,
-          ),
-        ),
-        trailing: selected ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : null,
-      ),
-    );
+    await showAppLanguagePickerSheet(context, ref);
+    if (mounted) setState(() {});
   }
 
   Future<void> _showLegal() async {
     await _showPremiumSheet(
-      title: 'Legal & Privacy',
-      subtitle: 'Global Logistics PLC policies.',
+      title: context.l10n.legalAndPrivacy,
+      subtitle: context.l10n.consignorPolicies,
       icon: Icons.policy_outlined,
       children: [
         const Text(
@@ -300,8 +269,8 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
 
   Future<void> _showSupport() async {
     await _showPremiumSheet(
-      title: 'Contact Support',
-      subtitle: '24/7 priority help desk for consignors.',
+      title: context.l10n.contactSupport,
+      subtitle: context.l10n.contactSupportConsignorSubtitle,
       icon: Icons.support_agent_rounded,
       children: [
         ListTile(
@@ -311,7 +280,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
             decoration: BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
             child: const Icon(Icons.phone_rounded, color: AppColors.primary),
           ),
-          title: const Text('Phone Support', style: TextStyle(fontWeight: FontWeight.w700)),
+          title: Text(context.l10n.phoneSupport, style: TextStyle(fontWeight: FontWeight.w700)),
           subtitle: const Text('+251 900 000 000'),
         ),
         const SizedBox(height: 16),
@@ -322,11 +291,11 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
             decoration: BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
             child: const Icon(Icons.email_rounded, color: AppColors.primary),
           ),
-          title: const Text('Email Support', style: TextStyle(fontWeight: FontWeight.w700)),
+          title: Text(context.l10n.emailSupport, style: TextStyle(fontWeight: FontWeight.w700)),
           subtitle: const Text('support@global-logistics.com'),
         ),
       ],
-      actionLabel: 'Close',
+      actionLabel: context.l10n.close,
       onAction: () {},
     );
   }
@@ -362,7 +331,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               title: Text(
-                'Profile',
+                context.l10n.profile,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w900,
                       color: AppColors.textPrimary,
@@ -403,7 +372,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                auth.displayName ?? 'Consignor',
+                                auth.displayName ?? context.l10n.consignor,
                                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
                               ),
                               const SizedBox(height: 6),
@@ -435,7 +404,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                   Row(
                     children: [
                       _buildStatCard(
-                        title: 'Active Orders',
+                        title: context.l10n.activeOrders,
                         value: shipments.maybeWhen(
                           data: (list) => list
                               .where(
@@ -450,7 +419,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                       ),
                       const SizedBox(width: 16),
                       _buildStatCard(
-                        title: 'Payments',
+                        title: context.l10n.payments,
                         value: payments.maybeWhen(
                           data: (list) => list.length.toString(),
                           orElse: () => '-',
@@ -463,7 +432,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                   // Grouped Settings Lists
                   const _ListHeader('Account Details'),
                   _buildListGroup([
-                    _buildListItem(Icons.person_outline_rounded, 'Personal Details', 'Corporate info', onTap: _editProfile),
+                    _buildListItem(Icons.person_outline_rounded, context.l10n.personalDetails, 'Corporate info', onTap: _editProfile),
                     _buildListItem(Icons.shield_outlined, 'Security', 'Password & 2FA', onTap: _changePassword),
                     _buildListItem(Icons.account_balance_wallet_outlined, 'Financial Ledger', 'Records & invoices', onTap: _addShipmentPayment),
                   ]),
@@ -475,14 +444,19 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
 
                   const _ListHeader('Preferences & Support'),
                   _buildListGroup([
-                    _buildListItem(Icons.language_rounded, 'Language', 'English (US)', onTap: _showLanguagePicker),
-                    _buildListItem(Icons.notifications_none_rounded, 'Notifications', 'Push alerts', trailing: Switch.adaptive(
+                    _buildListItem(
+                      Icons.language_rounded,
+                      'Language',
+                      currentAppLanguageLabel(context, ref),
+                      onTap: _showLanguagePicker,
+                    ),
+                    _buildListItem(Icons.notifications_none_rounded, context.l10n.notifications, 'Push alerts', trailing: Switch.adaptive(
                       value: _notificationsEnabled,
                       onChanged: (v) => setState(() => _notificationsEnabled = v),
                       activeTrackColor: AppColors.primary.withValues(alpha: 0.45),
                       activeThumbColor: AppColors.surface,
                     )),
-                    _buildListItem(Icons.support_agent_rounded, 'Help Desk', '24/7 priority support', onTap: _showSupport),
+                    _buildListItem(Icons.support_agent_rounded, context.l10n.helpDesk, '24/7 priority support', onTap: _showSupport),
                     _buildListItem(Icons.policy_outlined, 'Legal', 'Privacy & terms', onTap: _showLegal),
                   ]),
 
@@ -504,7 +478,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                         foregroundColor: AppColors.error,
                       ),
                       icon: const Icon(Icons.logout_rounded),
-                      label: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                      label: Text(context.l10n.signOut, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                     ),
                   ),
                   SizedBox(height: bottomNavClearance),

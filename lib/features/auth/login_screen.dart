@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -199,7 +200,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                         // Form
                         Text(
-                          'Phone Number',
+                          context.l10n.phoneNumber,
                           style: t.labelMedium?.copyWith(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w700,
@@ -218,7 +219,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ],
                           style: t.bodyMedium,
                           decoration: InputDecoration(
-                            hintText: 'Enter phone',
+                            hintText: context.l10n.enterPhone,
                             errorText: _phoneError,
                             prefixIcon: const Icon(
                               Icons.phone_outlined,
@@ -266,7 +267,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 16),
 
                         Text(
-                          'Password',
+                          context.l10n.password,
                           style: t.labelMedium?.copyWith(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w700,
@@ -286,7 +287,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           },
                           style: t.bodyMedium,
                           decoration: InputDecoration(
-                            hintText: 'Enter password',
+                            hintText: context.l10n.enterPassword,
                             errorText: _passwordError,
                             prefixIcon: const Icon(
                               Icons.lock_outline_rounded,
@@ -375,7 +376,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 24),
 
                         GlPrimaryButton(
-                          label: 'Sign In',
+                          label: context.l10n.signIn,
                           isLoading: auth.isLoading,
                           showShadow:
                               true, // Bringing the button shadow back to make it pop

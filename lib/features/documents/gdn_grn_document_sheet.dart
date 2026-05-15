@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -281,7 +282,7 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                     children: [
                                       Expanded(
                                         child: _DocInfoCard(
-                                          title: 'Consignor',
+                                          title: context.l10n.consignor,
                                           lines: [
                                             vm.consignorName,
                                             if (vm.consignorPhone.isNotEmpty) vm.consignorPhone,
@@ -291,7 +292,7 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: _DocInfoCard(
-                                          title: 'Consignee',
+                                          title: context.l10n.consignee,
                                           lines: [
                                             vm.consigneeName,
                                             if (vm.consigneePhone.isNotEmpty) vm.consigneePhone,
@@ -305,7 +306,7 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                     children: [
                                       Expanded(
                                         child: _DocInfoCard(
-                                          title: 'Driver',
+                                          title: context.l10n.driver,
                                           lines: [
                                             if (vm.driverName.isNotEmpty) vm.driverName else '—',
                                             if (vm.driverId.isNotEmpty) 'ID: ${vm.driverId}',
@@ -317,7 +318,7 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: _DocInfoCard(
-                                          title: 'Vehicle',
+                                          title: context.l10n.vehicle,
                                           lines: [
                                             if (vm.vehicleType.isNotEmpty)
                                               'Type: ${vm.vehicleType}'
@@ -354,14 +355,14 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                     children: [
                                       Expanded(
                                         child: _LocationBlock(
-                                          label: 'Loading Location',
+                                          label: context.l10n.loadingLocation,
                                           value: vm.loadingLocation,
                                         ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: _LocationBlock(
-                                          label: 'Offloading Location',
+                                          label: context.l10n.offloadingLocation,
                                           value: vm.offloadingLocation,
                                         ),
                                       ),
@@ -565,7 +566,7 @@ class _GoodsTable extends StatelessWidget {
             ['—', '—', '—', '—', '—'],
           ]
         : rows;
-    const headers = ['Type', 'Quantity', 'Weight', 'Volume', 'Packaging'];
+    final headers = ['Type', context.l10n.quantity, context.l10n.weight, context.l10n.volume, 'Packaging'];
     return Table(
       border: TableBorder.all(color: AppColors.borderLight, width: 1),
       columnWidths: const {

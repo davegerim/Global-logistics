@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
+import 'package:intl/intl.dart';
 
 class ConsignorGrnFormScreen extends ConsumerStatefulWidget {
   const ConsignorGrnFormScreen({
@@ -204,6 +206,28 @@ class _ConsignorGrnFormScreenState
     return int.tryParse(raw.trim()) ?? 0;
   }
 
+  Future<DateTime?> _pickDateTime({required DateTime initial}) async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (date == null || !mounted) return null;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial),
+    );
+    if (time == null) return null;
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+  }
+
   Future<void> _createGrn() async {
     if (_creating || !_canCreateGrn) return;
     if (_receiverNameCtrl.text.trim().isEmpty ||
@@ -243,7 +267,7 @@ class _ConsignorGrnFormScreenState
       ref.invalidate(consignorShipmentsProvider);
       ref.invalidate(shipmentDetailProvider(widget.shipmentId));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('GRN created successfully.')),
+        SnackBar(content: Text(context.l10n.grnCreatedSuccessfully)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -255,6 +279,9 @@ class _ConsignorGrnFormScreenState
 
   @override
   Widget build(BuildContext context) {
+    final receivedFmt = DateFormat.yMMMd().add_jm();
+    final receivedAt = DateTime.tryParse(_receivedAtCtrl.text.trim());
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -262,7 +289,7 @@ class _ConsignorGrnFormScreenState
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Create GRN'),
+        title: Text(context.l10n.createGrn),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
@@ -381,17 +408,38 @@ class _ConsignorGrnFormScreenState
                   ),
                 ),
                 const SizedBox(height: 10),
-                TextField(
-                  controller: _receivedAtCtrl,
-                  enabled: _canCreateGrn,
-                  decoration: const InputDecoration(
-                    labelText: 'Received at (ISO8601 UTC)',
-                    prefixIcon: Icon(Icons.schedule_rounded),
+                IgnorePointer(
+                  ignoring: !_canCreateGrn,
+                  child: Opacity(
+                    opacity: _canCreateGrn ? 1 : 0.6,
+                    child: InkWell(
+                      onTap: () async {
+                        final picked = await _pickDateTime(
+                          initial: receivedAt?.toLocal() ?? DateTime.now(),
+                        );
+                        if (picked == null || !mounted) return;
+                        setState(() {
+                          _receivedAtCtrl.text =
+                              picked.toUtc().toIso8601String();
+                        });
+                      },
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Received at',
+                          prefixIcon: Icon(Icons.schedule_rounded),
+                        ),
+                        child: Text(
+                          receivedAt == null
+                              ? 'Select received date & time'
+                              : receivedFmt.format(receivedAt.toLocal()),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 14),
                 GlPrimaryButton(
-                  label: _grnCreated ? 'GRN already created' : 'Create GRN',
+                  label: _grnCreated ? 'GRN already created' : context.l10n.createGrn,
                   icon: _grnCreated
                       ? Icons.lock_rounded
                       : Icons.inventory_2_rounded,

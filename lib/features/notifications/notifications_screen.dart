@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
@@ -102,12 +103,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(context.l10n.notifications),
         actions: [
           IconButton(
             onPressed: _isLoadingInitial ? null : _loadInitial,
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh',
+            tooltip: context.l10n.refresh,
           ),
         ],
       ),
@@ -131,7 +132,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
                       itemCount: _items.length + (_isLoadingMore ? 1 : 0),
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, __) => SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         if (index >= _items.length) {
                           return const Padding(
@@ -273,7 +274,7 @@ class _EmptyState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRefresh,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Refresh'),
+              label: Text(context.l10n.refresh),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.surface,
@@ -323,7 +324,7 @@ class _ErrorState extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try again'),
+              label: Text(context.l10n.tryAgain),
             ),
           ],
         ),

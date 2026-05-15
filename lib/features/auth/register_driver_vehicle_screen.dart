@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -180,7 +181,7 @@ class _RegisterDriverVehicleScreenState
               // Form Section
               _buildInput(
                 controller: _libriNumber,
-                label: 'Libri Number',
+                label: context.l10n.libriNumber,
                 icon: Icons.pin_outlined,
               ),
               PresignedUrlUploadRow(
@@ -192,16 +193,16 @@ class _RegisterDriverVehicleScreenState
               ),
               PresignedUploadAttachedHint(
                 controller: _libriDocument,
-                message: 'Libri document attached',
+                message: context.l10n.libriDocumentAttached,
               ),
               _buildInput(
                 controller: _plateNumber,
-                label: 'Plate Number',
+                label: context.l10n.plateNumber,
                 icon: Icons.numbers_rounded,
               ),
               _buildInput(
                 controller: _insuranceNumber,
-                label: 'Insurance Number',
+                label: context.l10n.insuranceNumber,
                 icon: Icons.security_rounded,
               ),
               PresignedUrlUploadRow(
@@ -213,16 +214,16 @@ class _RegisterDriverVehicleScreenState
               ),
               PresignedUploadAttachedHint(
                 controller: _insuranceDocument,
-                message: 'Insurance document attached',
+                message: context.l10n.insuranceDocumentAttached,
               ),
               _buildInput(
                 controller: _type,
-                label: 'Vehicle Type',
+                label: context.l10n.vehicleType,
                 icon: Icons.local_shipping_outlined,
               ),
               _buildInput(
                 controller: _details,
-                label: 'Details',
+                label: context.l10n.details,
                 icon: Icons.info_outline_rounded,
               ),
               PresignedUrlUploadRow(
@@ -237,7 +238,7 @@ class _RegisterDriverVehicleScreenState
               ),
               PresignedUploadAttachedHint(
                 controller: _photo,
-                message: 'Vehicle photo attached',
+                message: context.l10n.vehiclePhotoAttached,
               ),
               const SizedBox(height: 24),
 
@@ -246,7 +247,7 @@ class _RegisterDriverVehicleScreenState
                 width: double.infinity,
                 height: 52,
                 child: GlPrimaryButton(
-                  label: 'Complete Registration',
+                  label: context.l10n.completeRegistration,
                   isLoading: _busy,
                   onPressed: _createVehicleProfile,
                 ),

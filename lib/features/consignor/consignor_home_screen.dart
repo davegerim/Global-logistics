@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -65,7 +66,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        auth.displayName ?? 'Consignor',
+                        auth.displayName ?? context.l10n.consignor,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -199,7 +200,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
                             child: GlPrimaryButton(
                               useGoldAccent: true,
                               showShadow: false,
-                              label: 'New booking',
+                              label: context.l10n.newBooking,
                               icon: Icons.arrow_forward_rounded,
                               onPressed: canBook
                                   ? () => context.push('/consignor/create')
@@ -232,7 +233,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 28, 20, 8),
             sliver: SliverToBoxAdapter(
               child: SectionHeader(
-                title: 'Active & recent',
+                title: context.l10n.activeAndRecent,
                 actionLabel: 'View all',
                 onAction: () => context.go('/consignor/shipments'),
               ),

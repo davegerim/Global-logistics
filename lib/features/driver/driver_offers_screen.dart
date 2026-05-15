@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -54,7 +55,7 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Offer accepted.')));
+        ).showSnackBar(SnackBar(content: Text(context.l10n.offerAccepted)));
       }
     } catch (e) {
       if (context.mounted) {
@@ -70,7 +71,7 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
     WidgetRef ref,
     String negotiationId,
   ) async {
-    final reason = await _prompt(context, 'Reject', 'Reason (optional)');
+    final reason = await _prompt(context, 'Reject', context.l10n.reasonOptional);
     if (!context.mounted) return;
     try {
       await ref.read(backendApiProvider).driverNegotiationsDriverRejects({
@@ -81,7 +82,7 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Offer declined.')));
+        ).showSnackBar(SnackBar(content: Text(context.l10n.offerDeclined)));
       }
     } catch (e) {
       if (context.mounted) {
@@ -97,7 +98,7 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
     WidgetRef ref,
     String negotiationId,
   ) async {
-    final reason = await _prompt(context, 'Cancel offer', 'Reason (optional)');
+    final reason = await _prompt(context, context.l10n.cancelOffer, context.l10n.reasonOptional);
     if (!context.mounted) return;
     try {
       await ref.read(backendApiProvider).driverNegotiationsDriverCancel({
@@ -108,7 +109,7 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Offer cancelled.')));
+        ).showSnackBar(SnackBar(content: Text(context.l10n.offerCancelled)));
       }
     } catch (e) {
       if (context.mounted) {
@@ -136,11 +137,11 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, c.text.trim()),
-            child: const Text('OK'),
+            child: Text(context.l10n.ok),
           ),
         ],
       ),
@@ -164,7 +165,7 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
           .toUpperCase();
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(title: const Text('Shipment offers')),
+        appBar: AppBar(title: Text(context.l10n.shipmentOffers)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -210,7 +211,7 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Shipment offers'),
+        title: Text(context.l10n.shipmentOffers),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -231,21 +232,21 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                 child: Row(
                   children: [
                     _CategoryTab(
-                      label: 'All offers',
+                      label: context.l10n.allOffers,
                       icon: Icons.all_inbox_rounded,
                       isSelected: _filter == 'all',
                       onTap: () => setState(() => _filter = 'all'),
                     ),
                     const SizedBox(width: 8),
                     _CategoryTab(
-                      label: 'Active',
+                      label: context.l10n.active,
                       icon: Icons.local_shipping_rounded,
                       isSelected: _filter == 'active',
                       onTap: () => setState(() => _filter = 'active'),
                     ),
                     const SizedBox(width: 8),
                     _CategoryTab(
-                      label: 'Settled',
+                      label: context.l10n.settled,
                       icon: Icons.verified_rounded,
                       isSelected: _filter == 'settled',
                       onTap: () => setState(() => _filter = 'settled'),
@@ -351,19 +352,19 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                     ),
                     const SizedBox(height: 8),
                     _OfferDetailRow(
-                      label: 'Goods',
+                      label: context.l10n.goods,
                       value: o.goodType?.isNotEmpty == true
                           ? o.goodType!
                           : 'Not specified',
                     ),
                     _OfferDetailRow(
-                      label: 'Distance',
+                      label: context.l10n.distance,
                       value: o.distanceKm > 0
                           ? '${o.distanceKm.toStringAsFixed(0)} km'
                           : 'Not specified',
                     ),
                     _OfferDetailRow(
-                      label: 'Negotiation ID',
+                      label: context.l10n.negotiationId,
                       value: o.displayNegotiationId,
                     ),
                     const SizedBox(height: 10),
@@ -382,7 +383,7 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                           ),
                         ),
                         icon: const Icon(Icons.forum_rounded),
-                        label: const Text('Open negotiation'),
+                        label: Text(context.l10n.openNegotiation),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -408,7 +409,7 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Settled',
+                              context.l10n.settled,
                               style: Theme.of(context).textTheme.titleSmall
                                   ?.copyWith(
                                     color: AppColors.primaryDark,
@@ -441,8 +442,8 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              child: const Text(
-                                'Decline',
+                              child: Text(
+                                context.l10n.decline,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -463,8 +464,8 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              child: const Text(
-                                'Cancel',
+                              child: Text(
+                                context.l10n.cancel,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -485,8 +486,8 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              child: const Text(
-                                'Accept',
+                              child: Text(
+                                context.l10n.accept,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),

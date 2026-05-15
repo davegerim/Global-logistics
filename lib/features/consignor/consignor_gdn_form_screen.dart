@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -177,7 +178,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
         _contactCtrl.text.trim().isEmpty ||
         _quantityCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Issuer, consignee, contact and quantity are required.')),
+        SnackBar(content: Text(context.l10n.gdnRequiredFields)),
       );
       return;
     }
@@ -203,7 +204,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
       ref.invalidate(consignorShipmentsProvider);
       ref.invalidate(shipmentDetailProvider(widget.shipmentId));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('GDN created. Driver can now confirm loading.')),
+        SnackBar(content: Text(context.l10n.gdnCreatedSuccess)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -222,7 +223,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Create GDN'),
+        title: Text(context.l10n.createGdn),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
@@ -244,7 +245,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                       color: AppColors.primary.withValues(alpha: 0.85),
                     ),
                     const SizedBox(width: 8),
-                    Text('GDN Form', style: Theme.of(context).textTheme.titleSmall),
+                    Text(context.l10n.gdnForm, style: Theme.of(context).textTheme.titleSmall),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -313,7 +314,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                       child: TextField(
                         controller: _weightCtrl,
                         enabled: !_locked,
-                        decoration: const InputDecoration(labelText: 'Weight'),
+                        decoration: InputDecoration(labelText: context.l10n.weight),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -321,7 +322,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                       child: TextField(
                         controller: _volumeCtrl,
                         enabled: !_locked,
-                        decoration: const InputDecoration(labelText: 'Volume'),
+                        decoration: InputDecoration(labelText: context.l10n.volume),
                       ),
                     ),
                   ],
@@ -338,7 +339,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                 ),
                 const SizedBox(height: 14),
                 GlPrimaryButton(
-                  label: _locked ? 'GDN already created' : 'Create GDN',
+                  label: _locked ? 'GDN already created' : context.l10n.createGdn,
                   icon: _locked ? Icons.lock_rounded : Icons.description_outlined,
                   onPressed: (_locked || _creating || _loadingState) ? null : _createGdn,
                 ),

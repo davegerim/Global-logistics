@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -30,12 +31,12 @@ class _ConsignorNegotiationScreenState
       await ref
           .read(backendApiProvider)
           .shipmentsConsignorAcceptOffer(widget.shipmentId);
-    }, success: 'Offer accepted.');
+    }, success: context.l10n.offerAccepted);
   }
 
   Future<void> _rejectOffer() async {
     final reason = await _promptText(
-      title: 'Reject offer',
+      title: context.l10n.rejectOffer,
       hint: 'Reason',
       requiredField: true,
     );
@@ -125,7 +126,7 @@ class _ConsignorNegotiationScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -265,13 +266,13 @@ class _ConsignorNegotiationScreenState
                   TextField(
                     controller: reason,
                     maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Reason (optional)',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.reasonOptional,
                     ),
                   ),
                   const SizedBox(height: 16),
                   GlPrimaryButton(
-                    label: 'Send counter offer',
+                    label: context.l10n.sendCounterOffer,
                     onPressed: () {
                       final parsedPrice = double.tryParse(price.text.trim());
                       if (parsedPrice == null) return;
@@ -363,7 +364,7 @@ class _ConsignorNegotiationScreenState
         data: (list) {
           final shipment = _findShipment(list);
           if (shipment == null) {
-            return const Center(child: Text('Shipment not found'));
+            return Center(child: Text(context.l10n.shipmentNotFound));
           }
           final activeShipment = activeAsync.maybeWhen(
             data: (data) => _findActiveShipment(data, shipment),
@@ -567,7 +568,7 @@ class _ConsignorNegotiationScreenState
                           Expanded(
                             child: _buildActionBtn(
                               icon: Icons.cancel_outlined,
-                              label: 'Cancel',
+                              label: context.l10n.cancel,
                               onPressed: _busy ? null : _cancelShipment,
                               isPrimary: false,
                             ),
@@ -576,7 +577,7 @@ class _ConsignorNegotiationScreenState
                           Expanded(
                             child: _buildActionBtn(
                               icon: Icons.currency_exchange_rounded,
-                              label: 'Counter',
+                              label: context.l10n.counter,
                               onPressed: _busy ? null : _counterOffer,
                               isPrimary: false,
                             ),
@@ -585,7 +586,7 @@ class _ConsignorNegotiationScreenState
                           Expanded(
                             child: _buildActionBtn(
                               icon: Icons.check_circle_outline,
-                              label: 'Accept',
+                              label: context.l10n.accept,
                               onPressed: _busy ? null : _acceptOffer,
                               isPrimary: true,
                               isLoading: _busy,
@@ -772,7 +773,7 @@ class _ConsignorNegotiationScreenState
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Settled',
+              context.l10n.settled,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 color: AppColors.gold,
                 fontWeight: FontWeight.w800,

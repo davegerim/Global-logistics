@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -88,7 +89,7 @@ class _DriverVehicleDetailsScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
+            child: Text(context.l10n.close),
           ),
           if (_looksLikeUrl(trimmed))
             FilledButton.icon(
@@ -97,7 +98,7 @@ class _DriverVehicleDetailsScreenState
                 await _openUrl(trimmed);
               },
               icon: const Icon(Icons.open_in_new_rounded),
-              label: const Text('Open link'),
+              label: Text(context.l10n.openLink),
             ),
         ],
       ),
@@ -175,10 +176,10 @@ class _DriverVehicleDetailsScreenState
                           emptyHint: '—',
                         ),
                         _DetailRowLink(
-                          label: 'Libri document',
+                          label: context.l10n.libriDocument,
                           value: libriDocument,
                           onOpen: () => _showDocumentValue(
-                            'Libri document',
+                            context.l10n.libriDocument,
                             libriDocument,
                           ),
                         ),
@@ -189,10 +190,10 @@ class _DriverVehicleDetailsScreenState
                           emptyHint: '—',
                         ),
                         _DetailRowLink(
-                          label: 'Insurance document',
+                          label: context.l10n.insuranceDocument,
                           value: insuranceDocument,
                           onOpen: () => _showDocumentValue(
-                            'Insurance document',
+                            context.l10n.insuranceDocument,
                             insuranceDocument,
                           ),
                         ),
@@ -250,7 +251,7 @@ class _HeroVehicleSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayType = type.isEmpty ? 'Vehicle' : type;
+    final displayType = type.isEmpty ? context.l10n.vehicle : type;
     final displayPlate = plate.isEmpty ? '—' : plate;
 
     return Container(
@@ -501,7 +502,7 @@ class _DetailRowLink extends StatelessWidget {
                     TextButton.icon(
                       onPressed: onOpen,
                       icon: const Icon(Icons.open_in_new_rounded, size: 18),
-                      label: const Text('Open link'),
+                      label: Text(context.l10n.openLink),
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.primary,
                         visualDensity: VisualDensity.compact,

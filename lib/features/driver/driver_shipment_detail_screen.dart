@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -91,11 +92,11 @@ class _DriverShipmentDetailScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, c.text.trim()),
-            child: const Text('OK'),
+            child: Text(context.l10n.ok),
           ),
         ],
       ),
@@ -292,12 +293,12 @@ class _DriverShipmentDetailScreenState
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Assignment'),
+        title: Text(context.l10n.assignment),
       ),
       body: async.when(
         data: (s) {
           if (s == null) {
-            return const Center(child: Text('Not found'));
+            return Center(child: Text(context.l10n.notFound));
           }
           final aid = s.assignmentId;
           final status = (s.apiStatusLabel ?? '').trim().toUpperCase();
@@ -443,8 +444,8 @@ class _DriverShipmentDetailScreenState
                 ),
                 const SizedBox(height: 12),
                 _ActionTile(
-                  title: 'Confirm loaded',
-                  subtitle: 'Confirm cargo has been loaded.',
+                  title: context.l10n.confirmLoaded,
+                  subtitle: context.l10n.confirmCargoLoaded,
                   icon: Icons.inventory_2_rounded,
                   enabled: _canLoaded(status),
                   onTap: () => _putStatus(
@@ -457,8 +458,8 @@ class _DriverShipmentDetailScreenState
                 ),
                 const SizedBox(height: 8),
                 _ActionTile(
-                  title: 'Confirm in transit',
-                  subtitle: 'Start route tracking to destination.',
+                  title: context.l10n.confirmInTransit,
+                  subtitle: context.l10n.startRouteTracking,
                   icon: Icons.local_shipping_rounded,
                   enabled: _canTransit(status),
                   onTap: () => _putStatus(
@@ -472,8 +473,8 @@ class _DriverShipmentDetailScreenState
                 ),
                 const SizedBox(height: 8),
                 _ActionTile(
-                  title: 'Confirm arrived',
-                  subtitle: 'Mark when vehicle reaches destination.',
+                  title: context.l10n.confirmArrived,
+                  subtitle: context.l10n.markVehicleReachesDestination,
                   icon: Icons.flag_rounded,
                   enabled: _canArrived(status),
                   onTap: () => _putStatus(
@@ -486,8 +487,8 @@ class _DriverShipmentDetailScreenState
                 ),
                 const SizedBox(height: 8),
                 _ActionTile(
-                  title: 'Confirm offloaded',
-                  subtitle: 'Finish unloading and complete handover.',
+                  title: context.l10n.confirmOffloaded,
+                  subtitle: context.l10n.finishUnloadingCompleteHandover,
                   icon: Icons.unarchive_rounded,
                   enabled: _canOffloaded(status),
                   onTap: () => _putStatus(
@@ -505,8 +506,8 @@ class _DriverShipmentDetailScreenState
                     onPressed: () async {
                       final remark = await _prompt(
                         context,
-                        'Cancel assignment',
-                        'Reason (optional)',
+                        context.l10n.cancelAssignment,
+                        context.l10n.reasonOptional,
                       );
                       if (!context.mounted) return;
                       await _putStatus(
@@ -521,7 +522,7 @@ class _DriverShipmentDetailScreenState
                         'Assignment cancelled',
                       );
                     },
-                    child: const Text('Cancel assignment'),
+                    child: Text(context.l10n.cancelAssignment),
                   ),
                 ],
               ],
@@ -545,7 +546,7 @@ class _DriverShipmentDetailScreenState
                           });
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Feedback sent.')),
+                              SnackBar(content: Text(context.l10n.feedbackSent)),
                             );
                           }
                         } catch (e) {
@@ -745,7 +746,7 @@ class _DriverGdnGrnSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (gdn.isNotEmpty) ...[
-          _DriverDocTypeHeader(label: 'Goods Delivery Note', count: gdn.length),
+          _DriverDocTypeHeader(label: context.l10n.goodsDeliveryNote, count: gdn.length),
           ...gdn.map(
             (d) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -759,7 +760,7 @@ class _DriverGdnGrnSection extends StatelessWidget {
         ],
         if (grn.isNotEmpty) ...[
           if (gdn.isNotEmpty) const SizedBox(height: 4),
-          _DriverDocTypeHeader(label: 'Goods Received Note', count: grn.length),
+          _DriverDocTypeHeader(label: context.l10n.goodsReceivedNote, count: grn.length),
           ...grn.map(
             (d) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -1323,7 +1324,7 @@ class _FeedbackToConsignorSheetState extends State<_FeedbackToConsignorSheet> {
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                 ),
-                                child: const Text('Cancel'),
+                                child: Text(context.l10n.cancel),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -1341,7 +1342,7 @@ class _FeedbackToConsignorSheetState extends State<_FeedbackToConsignorSheet> {
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                 ),
-                                child: const Text('Send feedback'),
+                                child: Text(context.l10n.sendFeedback),
                               ),
                             ),
                           ],

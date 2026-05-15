@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -30,8 +31,8 @@ class _RegisterDriverVerifyScreenState
   Future<void> _verifyOtp() async {
     if (widget.phone.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Phone is missing. Please register again.'),
+        SnackBar(
+          content: Text(context.l10n.phoneIsMissing),
         ),
       );
       return;
@@ -145,7 +146,7 @@ class _RegisterDriverVerifyScreenState
               ),
               const SizedBox(height: 16),
               Text(
-                'Verify Phone',
+                context.l10n.verifyPhone,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                   color: AppColors.textPrimary,
@@ -165,7 +166,7 @@ class _RegisterDriverVerifyScreenState
               // Form Section
               _buildInput(
                 controller: _otp,
-                label: 'OTP Code',
+                label: context.l10n.otpCode,
                 icon: Icons.password_rounded,
                 keyboardType: TextInputType.number,
               ),
@@ -176,7 +177,7 @@ class _RegisterDriverVerifyScreenState
                 width: double.infinity,
                 height: 52,
                 child: GlPrimaryButton(
-                  label: 'Verify Phone',
+                  label: context.l10n.verifyPhone,
                   isLoading: _busy,
                   onPressed: _verifyOtp,
                 ),

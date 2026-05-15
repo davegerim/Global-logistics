@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -168,7 +169,7 @@ class _RegisterDriverProfileScreenState
               // Form Section
               _buildInput(
                 controller: _licenceNumber,
-                label: 'Licence Number',
+                label: context.l10n.licenceNumber,
                 icon: Icons.pin_outlined,
               ),
               PresignedUrlUploadRow(
@@ -180,11 +181,11 @@ class _RegisterDriverProfileScreenState
               ),
               PresignedUploadAttachedHint(
                 controller: _licenceDocument,
-                message: 'Licence document attached',
+                message: context.l10n.licenceDocumentAttached,
               ),
               _buildInput(
                 controller: _preferredLanes,
-                label: 'Preferred Lanes (Optional)',
+                label: context.l10n.preferredLanesOptional,
                 icon: Icons.route_outlined,
               ),
               const SizedBox(height: 24),
@@ -194,7 +195,7 @@ class _RegisterDriverProfileScreenState
                 width: double.infinity,
                 height: 52,
                 child: GlPrimaryButton(
-                  label: 'Save Profile & Continue',
+                  label: context.l10n.saveProfileAndContinue,
                   isLoading: _busy,
                   onPressed: _createDriverProfile,
                 ),

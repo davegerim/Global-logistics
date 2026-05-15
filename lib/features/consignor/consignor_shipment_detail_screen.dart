@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -278,7 +279,7 @@ class _ConsignorShipmentDetailScreenState
     if (value.isEmpty) {
       if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Remark is required to confirm.')),
+        SnackBar(content: Text(context.l10n.remarkRequiredToConfirm)),
       );
       return null;
     }
@@ -318,7 +319,7 @@ class _ConsignorShipmentDetailScreenState
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Consignor confirmation completed.')),
+        SnackBar(content: Text(context.l10n.consignorConfirmationCompleted)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -375,7 +376,7 @@ class _ConsignorShipmentDetailScreenState
         data: (shipments) {
           final s = _findShipment(shipments);
           if (s == null) {
-            return const Center(child: Text('Shipment not found'));
+            return Center(child: Text(context.l10n.shipmentNotFound));
           }
           _resolveDriverSelectionIfNeeded(s);
           final assignedByStatus = _isAssignedOrLater(s.apiStatusLabel);
@@ -459,7 +460,7 @@ class _ConsignorShipmentDetailScreenState
               ),
               const SizedBox(height: 20),
               _InfoCard(
-                title: 'Shipment Details',
+                title: context.l10n.shipmentDetails,
                 icon: Icons.inventory_2_outlined,
                 children: [
                   _kv('WEIGHT', _formatMetric(s.weightKg)),
@@ -491,7 +492,7 @@ class _ConsignorShipmentDetailScreenState
               if (s.timelineNote.trim().isNotEmpty) ...[
                 const SizedBox(height: 16),
                 _InfoCard(
-                  title: 'Notes',
+                  title: context.l10n.notes,
                   icon: Icons.note_alt_outlined,
                   children: [
                     Text(
@@ -508,7 +509,7 @@ class _ConsignorShipmentDetailScreenState
               if (s.driver != null) ...[
                 const SizedBox(height: 16),
                 _InfoCard(
-                  title: 'Driver Details',
+                  title: context.l10n.driverDetails,
                   icon: Icons.person_pin_circle_outlined,
                   children: [
                     _DriverCard(
@@ -522,7 +523,7 @@ class _ConsignorShipmentDetailScreenState
               ],
               const SizedBox(height: 16),
               _InfoCard(
-                title: 'GDN Control',
+                title: context.l10n.gdnControl,
                 icon: Icons.assignment_turned_in_outlined,
                 children: [
                   if (_resolvingAssignment)
@@ -571,7 +572,7 @@ class _ConsignorShipmentDetailScreenState
               ),
               const SizedBox(height: 16),
               _InfoCard(
-                title: 'GRN Control',
+                title: context.l10n.grnControl,
                 icon: Icons.inventory_rounded,
                 children: [
                   if (_resolvingAssignment)
@@ -621,7 +622,7 @@ class _ConsignorShipmentDetailScreenState
               if (_grnCreated && _assignmentId != null) ...[
                 const SizedBox(height: 16),
                 _InfoCard(
-                  title: 'Confirm Handover',
+                  title: context.l10n.confirmHandover,
                   icon: Icons.task_alt_rounded,
                   children: [
                     if (_handoverConfirmed(assignmentStatus))
@@ -661,7 +662,7 @@ class _ConsignorShipmentDetailScreenState
                       ),
                       const SizedBox(height: 16),
                       GlPrimaryButton(
-                        label: 'Confirm completed',
+                        label: context.l10n.confirmCompleted,
                         icon: Icons.task_alt_rounded,
                         onPressed: _confirmingHandover
                             ? null
@@ -677,7 +678,7 @@ class _ConsignorShipmentDetailScreenState
                 children: [
                   Expanded(
                     child: GlPrimaryButton(
-                      label: 'Negotiation Room',
+                      label: context.l10n.negotiationRoom,
                       icon: Icons.forum_rounded,
                       onPressed: () => context.push(
                         '/consignor/shipment/${s.id}/negotiation',
@@ -691,7 +692,7 @@ class _ConsignorShipmentDetailScreenState
                 children: [
                   Expanded(
                     child: GlPrimaryButton(
-                      label: 'Live Tracking Map',
+                      label: context.l10n.liveTrackingMap,
                       icon: Icons.map_outlined,
                       useGoldAccent: true,
                       onPressed: _assignmentId == null
@@ -1170,19 +1171,19 @@ class _ConsignorConfirmRemarkDialogState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Confirm Assignment'),
+      title: Text(context.l10n.confirmAssignment),
       content: TextField(
         controller: _ctrl,
         maxLines: 3,
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           labelText: 'Remark *',
-          hintText: 'Add consignor confirmation remark',
+          hintText: context.l10n.addConsignorConfirmationRemark,
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.cancel),
         ),
         FilledButton(
           onPressed: () {
@@ -1193,7 +1194,7 @@ class _ConsignorConfirmRemarkDialogState
             }
             Navigator.of(context).pop(remark);
           },
-          child: const Text('Confirm'),
+          child: Text(context.l10n.confirm),
         ),
       ],
     );

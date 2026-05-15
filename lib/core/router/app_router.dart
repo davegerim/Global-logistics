@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -249,9 +250,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               final goodsDescription =
                   state.uri.queryParameters['goods'] ?? 'Shipment';
               if (assignmentId == null || assignmentId.isEmpty) {
-                return const Scaffold(
+                return Scaffold(
                   body: Center(
-                    child: Text('Assignment is required to create GDN.'),
+                    child: Text(context.l10n.assignmentRequiredGdn),
                   ),
                 );
               }
@@ -271,9 +272,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               final assignmentStatus =
                   state.uri.queryParameters['status'] ?? '';
               if (assignmentId == null || assignmentId.isEmpty) {
-                return const Scaffold(
+                return Scaffold(
                   body: Center(
-                    child: Text('Assignment is required to create GRN.'),
+                    child: Text(context.l10n.assignmentRequiredGrn),
                   ),
                 );
               }

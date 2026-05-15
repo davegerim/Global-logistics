@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,7 +29,7 @@ class _ConsignorShipmentsScreenState extends ConsumerState<ConsignorShipmentsScr
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('My shipments'),
+        title: Text(context.l10n.myShipments),
       ),
       body: async.when(
         data: (list) {
@@ -42,19 +43,19 @@ class _ConsignorShipmentsScreenState extends ConsumerState<ConsignorShipmentsScr
                 child: Row(
                   children: [
                     _FilterChip(
-                      label: 'All',
+                      label: context.l10n.all,
                       selected: _filter == 'all',
                       onTap: () => setState(() => _filter = 'all'),
                     ),
                     const SizedBox(width: 8),
                     _FilterChip(
-                      label: 'In progress',
+                      label: context.l10n.inProgress,
                       selected: _filter == 'progress',
                       onTap: () => setState(() => _filter = 'progress'),
                     ),
                     const SizedBox(width: 8),
                     _FilterChip(
-                      label: 'Delivered',
+                      label: context.l10n.delivered,
                       selected: _filter == 'done',
                       onTap: () => setState(() => _filter = 'done'),
                     ),
@@ -67,7 +68,7 @@ class _ConsignorShipmentsScreenState extends ConsumerState<ConsignorShipmentsScr
                     : ListView.separated(
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
                         itemCount: filtered.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 14),
+                        separatorBuilder: (_, __) => SizedBox(height: 14),
                         itemBuilder: (context, i) {
                           final s = filtered[i];
                           return ShipmentCard(

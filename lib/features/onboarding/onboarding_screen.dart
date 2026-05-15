@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
@@ -15,23 +16,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   late final PageController _pageController;
   int _currentPage = 0;
 
-  static const List<_WalkthroughData> _pages = [
+  List<_WalkthroughData> get _pages => [
     _WalkthroughData(
-      title: 'Global Logistics\nSimplified.',
+      title: context.l10n.globalLogisticsSimplified,
       description:
           'Experience the future of freight management with real-time visibility and trusted execution.',
       imagePath: 'assets/images/shutterstock_1292121985-scaled (1).jpg',
       accentColor: AppColors.primary,
     ),
     _WalkthroughData(
-      title: 'Connected\nOperations.',
+      title: context.l10n.connectedOperations,
       description:
           'Bring your team, drivers, and consignors together on one powerful platform.',
       imagePath: 'assets/images/f94634998aa00df20afd13beb197d04d.jpg',
       accentColor: AppColors.primaryLight,
     ),
     _WalkthroughData(
-      title: 'Track Every\nJourney.',
+      title: context.l10n.trackEveryJourney,
       description:
           'Stay informed with real-time updates and milestone tracking from booking to delivery.',
       imagePath: 'assets/images/54596645_2.webp',

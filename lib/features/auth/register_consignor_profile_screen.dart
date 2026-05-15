@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -163,7 +164,7 @@ class _RegisterConsignorProfileScreenState
               // Form Section
               _buildInput(
                 controller: _businessName,
-                label: 'Business Name (Optional)',
+                label: context.l10n.businessNameOptional,
                 icon: Icons.storefront_rounded,
               ),
               PresignedUrlUploadRow(
@@ -175,7 +176,7 @@ class _RegisterConsignorProfileScreenState
               ),
               PresignedUploadAttachedHint(
                 controller: _tradeLicence,
-                message: 'Trade licence attached',
+                message: context.l10n.tradeLicenceAttached,
               ),
               const SizedBox(height: 24),
 
@@ -184,7 +185,7 @@ class _RegisterConsignorProfileScreenState
                 width: double.infinity,
                 height: 52,
                 child: GlPrimaryButton(
-                  label: 'Complete Registration',
+                  label: context.l10n.completeRegistration,
                   isLoading: _busy,
                   onPressed: _createProfile,
                 ),

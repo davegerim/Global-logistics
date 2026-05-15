@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,7 +20,7 @@ class ConsignorShipmentHistoryScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Shipment history'),
+        title: Text(context.l10n.shipmentHistory),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
@@ -35,11 +36,11 @@ class ConsignorShipmentHistoryScreen extends ConsumerWidget {
         data: (data) {
           final shipment = _findActiveShipment(data);
           if (shipment == null) {
-            return const Center(child: Text('Shipment not found'));
+            return Center(child: Text(context.l10n.shipmentNotFound));
           }
           final history = _statusHistory(shipment);
           if (history.isEmpty) {
-            return const Center(child: Text('No shipment history yet.'));
+            return Center(child: Text(context.l10n.noShipmentHistoryYet));
           }
 
           return ListView.separated(

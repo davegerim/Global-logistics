@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +19,7 @@ class DriverAssignmentHistoryScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
-        title: const Text('History'),
+        title: Text(context.l10n.history),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),

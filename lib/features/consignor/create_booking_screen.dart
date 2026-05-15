@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -88,8 +89,8 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
       ref.invalidate(consignorShipmentsProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Shipment created successfully.'),
+          SnackBar(
+            content: Text(context.l10n.shipmentCreatedSuccessfully),
           ),
         );
         context.pop();
@@ -381,24 +382,24 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
 
           // Form Sections
           _buildSection(
-            title: 'Route & Logistics',
+            title: context.l10n.routeAndLogistics,
             icon: Icons.map_outlined,
             children: [
               _buildInput(
                 controller: _loading,
-                label: 'Loading Location',
+                label: context.l10n.loadingLocation,
                 hint: 'e.g. Addis Ababa, Warehouse A',
                 icon: Icons.upload_rounded,
               ),
               _buildInput(
                 controller: _offloading,
-                label: 'Offloading Location',
+                label: context.l10n.offloadingLocation,
                 hint: 'e.g. Adama, Central Hub',
                 icon: Icons.download_rounded,
               ),
               _buildInput(
                 controller: _route,
-                label: 'Preferred Route (Optional)',
+                label: context.l10n.preferredRouteOptional,
                 hint: 'Specific highways or transit points',
                 icon: Icons.alt_route_rounded,
               ),
@@ -406,12 +407,12 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
           ),
 
           _buildSection(
-            title: 'Cargo Information',
+            title: context.l10n.cargoInformation,
             icon: Icons.inventory_2_outlined,
             children: [
               _buildInput(
                 controller: _goods,
-                label: 'Type of Goods',
+                label: context.l10n.typeOfGoods,
                 hint: 'e.g. Electronics, Textiles, Perishables',
                 icon: Icons.category_outlined,
               ),
@@ -420,7 +421,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                   Expanded(
                     child: _buildInput(
                       controller: _quantity,
-                      label: 'Quantity',
+                      label: context.l10n.quantity,
                       icon: Icons.numbers_rounded,
                       keyboardType: TextInputType.number,
                     ),
@@ -429,7 +430,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                   Expanded(
                     child: _buildInput(
                       controller: _weight,
-                      label: 'Weight',
+                      label: context.l10n.weight,
                       hint: 'e.g. 5000 kg',
                       icon: Icons.scale_rounded,
                     ),
@@ -438,7 +439,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
               ),
               _buildInput(
                 controller: _volume,
-                label: 'Volume',
+                label: context.l10n.volume,
                 hint: 'e.g. 20 cubic meters',
                 icon: Icons.view_in_ar_rounded,
               ),
@@ -446,7 +447,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
           ),
 
           _buildSection(
-            title: 'Vehicle & Pricing',
+            title: context.l10n.vehicleAndPricing,
             icon: Icons.local_shipping_outlined,
             children: [
               Row(
@@ -455,7 +456,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                     flex: 5,
                     child: _buildInput(
                       controller: _vehicle,
-                      label: 'Vehicle Type',
+                      label: context.l10n.vehicleType,
                       hint: 'e.g. Flatbed, Reefer',
                       icon: Icons.fire_truck_outlined,
                     ),
@@ -465,7 +466,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                     flex: 4,
                     child: _buildInput(
                       controller: _vehicleCount,
-                      label: 'Count',
+                      label: context.l10n.count,
                       icon: Icons.tag_rounded,
                       keyboardType: TextInputType.number,
                     ),
@@ -474,7 +475,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
               ),
               _buildInput(
                 controller: _price,
-                label: 'Offer Price',
+                label: context.l10n.offerPrice,
                 hint: 'e.g. 15000',
                 icon: Icons.payments_outlined,
                 keyboardType: TextInputType.number,
@@ -483,12 +484,12 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
           ),
 
           _buildSection(
-            title: 'Additional Details',
+            title: context.l10n.additionalDetails,
             icon: Icons.note_alt_outlined,
             children: [
               _buildInput(
                 controller: _timeline,
-                label: 'Special Instructions',
+                label: context.l10n.specialInstructions,
                 hint: 'Any fragile handling, timeline constraints, or documentation needed...',
                 icon: Icons.edit_note_rounded,
                 maxLines: 3,
@@ -500,7 +501,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
           Container(
             padding: const EdgeInsets.only(top: 8, bottom: 40),
             child: GlPrimaryButton(
-              label: 'Publish Booking Offer',
+              label: context.l10n.publishBookingOffer,
               icon: Icons.rocket_launch_rounded,
               isLoading: _busy,
               onPressed: canBook ? _submit : null,

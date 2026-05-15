@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -51,7 +52,7 @@ class DriverShell extends ConsumerWidget {
             children: [
               _NavItem(
                 icon: Icons.home_rounded,
-                label: 'Home',
+                label: context.l10n.home,
                 selected: navigationShell.currentIndex == 0,
                 onTap: () => _goBranch(context, ref, 0),
               ),
@@ -63,7 +64,7 @@ class DriverShell extends ConsumerWidget {
               ),
               _NavItem(
                 icon: Icons.person_outline_rounded,
-                label: 'Profile',
+                label: context.l10n.profile,
                 selected: navigationShell.currentIndex == 2,
                 onTap: () => _goBranch(context, ref, 2),
               ),

@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:global_logistics_app/shared/widgets/app_language_picker_sheet.dart';
 import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
 import 'package:global_logistics_app/shared/widgets/shipment_receipt_upload_row.dart';
 
@@ -166,9 +168,9 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
 
   Future<void> _changePassword() async {
     await _showPremiumSheet(
-      title: 'Security & Access',
+      title: context.l10n.securityAndAccess,
       subtitle:
-          'For your protection, password changes require multi-factor authentication.',
+          context.l10n.passwordChangesRequireMfa,
       icon: Icons.shield_outlined,
       children: [
         Container(
@@ -211,8 +213,8 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
     final refNo = TextEditingController();
     final slip = TextEditingController();
     await _showPremiumSheet(
-      title: 'Record Payout',
-      subtitle: 'Submit proof of payout for an assigned logistics route.',
+      title: context.l10n.recordPayout,
+      subtitle: context.l10n.submitProofOfPayout,
       icon: Icons.receipt_long_rounded,
       children: [
         _buildInput(af, 'Assignment Finance ID'),
@@ -221,7 +223,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
         ShipmentReceiptUploadRow(slipController: slip),
         PresignedUploadAttachedHint(
           controller: slip,
-          message: 'Payment receipt attached',
+          message: context.l10n.paymentReceiptAttached,
         ),
       ],
       actionLabel: 'Submit Proof',
@@ -236,8 +238,8 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
           });
           if (mounted)
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Payment proof submitted successfully.'),
+              SnackBar(
+                content: Text(context.l10n.paymentProofSubmittedSuccessfully),
               ),
             );
         } catch (e) {
@@ -251,52 +253,14 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
   }
 
   Future<void> _showLanguagePicker() async {
-    await _showPremiumSheet(
-      title: 'App Language',
-      subtitle: 'Choose your preferred language for the interface.',
-      icon: Icons.language_rounded,
-      children: [
-        _buildLanguageOption('🇺🇸', 'English (US)', true),
-        _buildLanguageOption('🇪🇹', 'Amharic', false),
-      ],
-      actionLabel: 'Confirm Selection',
-      onAction: () {},
-    );
-  }
-
-  Widget _buildLanguageOption(String flag, String name, bool selected) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: selected ? AppColors.primarySoft : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: selected ? AppColors.primary : AppColors.borderLight,
-          width: 2,
-        ),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        leading: Text(flag, style: const TextStyle(fontSize: 28)),
-        title: Text(
-          name,
-          style: TextStyle(
-            fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-            color: selected ? AppColors.primary : AppColors.textPrimary,
-            fontSize: 16,
-          ),
-        ),
-        trailing: selected
-            ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
-            : null,
-      ),
-    );
+    await showAppLanguagePickerSheet(context, ref);
+    if (mounted) setState(() {});
   }
 
   Future<void> _showLegal() async {
     await _showPremiumSheet(
-      title: 'Legal & Privacy',
-      subtitle: 'Global Logistics PLC Driver Policies.',
+      title: context.l10n.legalAndPrivacy,
+      subtitle: context.l10n.driverPolicies,
       icon: Icons.policy_outlined,
       children: [
         const Text(
@@ -315,8 +279,8 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
 
   Future<void> _showSupport() async {
     await _showPremiumSheet(
-      title: 'Help Desk',
-      subtitle: '24/7 priority support line for active drivers.',
+      title: context.l10n.helpDesk,
+      subtitle: context.l10n.helpDeskDriverSubtitle,
       icon: Icons.support_agent_rounded,
       children: [
         ListTile(
@@ -346,14 +310,14 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
             ),
             child: const Icon(Icons.email_rounded, color: AppColors.primary),
           ),
-          title: const Text(
-            'Email Support',
+          title: Text(
+            context.l10n.emailSupport,
             style: TextStyle(fontWeight: FontWeight.w700),
           ),
           subtitle: const Text('drivers@global-logistics.com'),
         ),
       ],
-      actionLabel: 'Close',
+      actionLabel: context.l10n.close,
       onAction: () {},
     );
   }
@@ -383,7 +347,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                 vertical: 16,
               ),
               title: Text(
-                'Profile',
+                context.l10n.profile,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                   color: AppColors.textPrimary,
@@ -445,7 +409,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                auth.displayName ?? 'Driver',
+                                auth.displayName ?? context.l10n.driver,
                                 style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
@@ -487,7 +451,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                   Row(
                     children: [
                       _buildStatCard(
-                        title: 'Active Loads',
+                        title: context.l10n.activeLoads,
                         value: assignments.maybeWhen(
                           data: (list) => list.length.toString(),
                           orElse: () => '-',
@@ -495,7 +459,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                       ),
                       const SizedBox(width: 16),
                       _buildStatCard(
-                        title: 'Driver Rating',
+                        title: context.l10n.driverRating,
                         value: '4.8', // Static for now
                       ),
                     ],
@@ -558,12 +522,12 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                     _buildListItem(
                       Icons.language_rounded,
                       'Language',
-                      'English (US)',
+                      currentAppLanguageLabel(context, ref),
                       onTap: _showLanguagePicker,
                     ),
                     _buildListItem(
                       Icons.notifications_none_rounded,
-                      'Notifications',
+                      context.l10n.notifications,
                       'Load & route alerts',
                       trailing: Switch.adaptive(
                         value: _notificationsEnabled,
@@ -574,7 +538,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                     ),
                     _buildListItem(
                       Icons.headset_mic_outlined,
-                      'Help Desk',
+                      context.l10n.helpDesk,
                       '24/7 priority support',
                       onTap: _showSupport,
                     ),
@@ -608,8 +572,8 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                         foregroundColor: AppColors.error,
                       ),
                       icon: const Icon(Icons.logout_rounded),
-                      label: const Text(
-                        'Sign Out',
+                      label: Text(
+                        context.l10n.signOut,
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 16,

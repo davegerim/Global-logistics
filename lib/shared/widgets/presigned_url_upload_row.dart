@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -88,7 +89,7 @@ class _PresignedUrlUploadRowState extends ConsumerState<PresignedUrlUploadRow> {
       if (bytes == null || bytes.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not read the selected file.')),
+            SnackBar(content: Text(context.l10n.couldNotReadFile)),
           );
         }
         return;

@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -44,7 +45,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final phone = _phone.text.trim();
     if (phone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your phone number first.')),
+        SnackBar(content: Text(context.l10n.pleaseEnterPhoneNumberFirst)),
       );
       return;
     }
@@ -54,7 +55,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       await ref.read(backendApiProvider).authForgetPassword(phone);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('OTP sent. Check your phone for the verification code.')),
+        SnackBar(content: Text(context.l10n.otpSentCheckPhone)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -72,13 +73,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
     if (phone.isEmpty || otp.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields.')),
+        SnackBar(content: Text(context.l10n.pleaseFillInAllFields)),
       );
       return;
     }
     if (newPassword != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match.')),
+        SnackBar(content: Text(context.l10n.passwordsDoNotMatch)),
       );
       return;
     }
@@ -93,7 +94,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password reset successful. Please sign in.')),
+        SnackBar(content: Text(context.l10n.passwordResetSuccessful)),
       );
       context.pop();
     } catch (e) {
@@ -206,7 +207,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                                     child: CircularProgressIndicator(strokeWidth: 2),
                                   )
                                 : const Icon(Icons.sms_outlined),
-                            label: const Text('Send OTP'),
+                            label: Text(context.l10n.sendOtp),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -254,7 +255,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         ),
                         const SizedBox(height: 22),
                         GlPrimaryButton(
-                          label: 'Reset password',
+                          label: context.l10n.resetPassword,
                           isLoading: _resettingPassword,
                           onPressed: _sendingOtp || _resettingPassword ? null : _resetPassword,
                         ),

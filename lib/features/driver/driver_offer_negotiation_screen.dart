@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -42,29 +43,29 @@ class _DriverOfferNegotiationScreenState
       await ref
           .read(backendApiProvider)
           .driverNegotiationsDriverAccepts(payload);
-    }, success: 'Offer accepted.');
+    }, success: context.l10n.offerAccepted);
   }
 
   Future<void> _reject(String negotiationId) async {
-    final reason = await _promptText('Reject offer', 'Reason (optional)');
+    final reason = await _promptText(context.l10n.rejectOffer, context.l10n.reasonOptional);
     if (!mounted) return;
     await _runAction(() async {
       await ref.read(backendApiProvider).driverNegotiationsDriverRejects({
         'negotiationId': negotiationId,
         if (reason != null && reason.isNotEmpty) 'reason': reason,
       });
-    }, success: 'Offer declined.');
+    }, success: context.l10n.offerDeclined);
   }
 
   Future<void> _cancel(String negotiationId) async {
-    final reason = await _promptText('Cancel offer', 'Reason (optional)');
+    final reason = await _promptText(context.l10n.cancelOffer, context.l10n.reasonOptional);
     if (!mounted) return;
     await _runAction(() async {
       await ref.read(backendApiProvider).driverNegotiationsDriverCancel({
         'negotiationId': negotiationId,
         if (reason != null && reason.isNotEmpty) 'reason': reason,
       });
-    }, success: 'Offer cancelled.');
+    }, success: context.l10n.offerCancelled);
   }
 
   Future<void> _counter(String negotiationId, DriverOfferModel offer) async {
@@ -101,7 +102,7 @@ class _DriverOfferNegotiationScreenState
             TextField(
               controller: reason,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Reason (optional)'),
+              decoration: InputDecoration(labelText: context.l10n.reasonOptional),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -123,7 +124,7 @@ class _DriverOfferNegotiationScreenState
                   if (ctx.mounted) Navigator.pop(ctx, true);
                 },
                 icon: const Icon(Icons.currency_exchange_rounded),
-                label: const Text('Send counter offer'),
+                label: Text(context.l10n.sendCounterOffer),
               ),
             ),
           ],
@@ -132,7 +133,7 @@ class _DriverOfferNegotiationScreenState
     );
     if (submitted == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Counter proposal submitted.')),
+        SnackBar(content: Text(context.l10n.counterProposalSubmitted)),
       );
     }
   }
@@ -174,11 +175,11 @@ class _DriverOfferNegotiationScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, c.text.trim()),
-            child: const Text('OK'),
+            child: Text(context.l10n.ok),
           ),
         ],
       ),
@@ -193,7 +194,7 @@ class _DriverOfferNegotiationScreenState
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Offer negotiation'),
+        title: Text(context.l10n.offerNegotiation),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
@@ -217,7 +218,7 @@ class _DriverOfferNegotiationScreenState
           }
           final offer = widget.initialOffer ?? matched;
           if (offer == null) {
-            return const Center(child: Text('Offer not found'));
+            return Center(child: Text(context.l10n.offerNotFound));
           }
           final rounds = _buildTimeline(offer);
           final hasRounds = rounds.isNotEmpty;
@@ -270,7 +271,7 @@ class _DriverOfferNegotiationScreenState
                       _InfoRow('Route', offer.routeSummary),
                       _InfoRow('Goods type', offer.goodType ?? '—'),
                       _InfoRow('Last update', timeFmt.format(offer.expiresAt)),
-                      _InfoRow('Negotiation ID', offer.displayNegotiationId),
+                      _InfoRow(context.l10n.negotiationId, offer.displayNegotiationId),
                     ],
                   ),
                 ),
@@ -431,7 +432,7 @@ class _DriverOfferNegotiationScreenState
                           Expanded(
                             child: _buildActionBtn(
                               icon: Icons.thumb_down_alt_outlined,
-                              label: 'Decline',
+                              label: context.l10n.decline,
                               onPressed: _busy
                                   ? null
                                   : () => _reject(offer.apiNegotiationId),
@@ -442,7 +443,7 @@ class _DriverOfferNegotiationScreenState
                           Expanded(
                             child: _buildActionBtn(
                               icon: Icons.cancel_outlined,
-                              label: 'Cancel',
+                              label: context.l10n.cancel,
                               onPressed: _busy
                                   ? null
                                   : () => _cancel(offer.apiNegotiationId),
@@ -453,7 +454,7 @@ class _DriverOfferNegotiationScreenState
                           Expanded(
                             child: _buildActionBtn(
                               icon: Icons.currency_exchange_rounded,
-                              label: 'Counter',
+                              label: context.l10n.counter,
                               onPressed: _busy
                                   ? null
                                   : () => _counter(offer.apiNegotiationId, offer),
@@ -464,7 +465,7 @@ class _DriverOfferNegotiationScreenState
                           Expanded(
                             child: _buildActionBtn(
                               icon: Icons.check_circle_outline,
-                              label: 'Accept',
+                              label: context.l10n.accept,
                               onPressed: _busy
                                   ? null
                                   : () => _accept(offer.apiNegotiationId),
@@ -490,7 +491,7 @@ class _DriverOfferNegotiationScreenState
       return [
         _RoundItem(
           actor: _RoundActor.admin,
-          title: 'Current offer',
+          title: context.l10n.currentOffer,
           message: offer.apiStatus,
           when: offer.expiresAt,
           priceAmount: offer.price,
@@ -583,7 +584,7 @@ class _DriverOfferNegotiationScreenState
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Settled',
+              context.l10n.settled,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 color: AppColors.gold,
                 fontWeight: FontWeight.w800,
