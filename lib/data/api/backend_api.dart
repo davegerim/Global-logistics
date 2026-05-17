@@ -113,6 +113,21 @@ class BackendApi {
   }
 
   // --- consignor profile ---
+  Future<Map<String, dynamic>> consignorsProfile() async {
+    final r = await _dio.get<Map<String, dynamic>>('/consignors/profile');
+    return r.data ?? {};
+  }
+
+  Future<void> consignorsUpdate({
+    String? businessName,
+    String? tradeLicence,
+  }) async {
+    final payload = <String, dynamic>{};
+    if (businessName != null) payload['businessName'] = businessName;
+    if (tradeLicence != null) payload['tradeLicence'] = tradeLicence;
+    await _dio.post<void>('/consignors/update', data: payload);
+  }
+
   Future<void> consignorsCreate({
     String? businessName,
     String? tradeLicence,
@@ -131,6 +146,27 @@ class BackendApi {
   }
 
   // --- driver profile ---
+  Future<Map<String, dynamic>> driversProfile() async {
+    final r = await _dio.get<Map<String, dynamic>>('/drivers/profile');
+    return r.data ?? {};
+  }
+
+  Future<void> driversUpdate({
+    String? profilePic,
+    String? nationalId,
+    String? licenceNumber,
+    String? licenceDocument,
+    String? preferredLanes,
+  }) async {
+    final payload = <String, dynamic>{};
+    if (profilePic != null) payload['profilePic'] = profilePic;
+    if (nationalId != null) payload['nationalId'] = nationalId;
+    if (licenceNumber != null) payload['licenceNumber'] = licenceNumber;
+    if (licenceDocument != null) payload['licenceDocument'] = licenceDocument;
+    if (preferredLanes != null) payload['preferredLanes'] = preferredLanes;
+    await _dio.post<void>('/drivers/update', data: payload);
+  }
+
   Future<void> driversCreate({
     String? profilePic,
     String? nationalId,

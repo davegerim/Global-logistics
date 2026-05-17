@@ -8,7 +8,9 @@ import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/payments_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:global_logistics_app/core/services/presigned_storage_service.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
+import 'package:global_logistics_app/data/utils/role_profile_utils.dart';
 import 'package:global_logistics_app/shared/widgets/app_language_picker_sheet.dart';
 import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
 import 'package:global_logistics_app/shared/widgets/shipment_receipt_upload_row.dart';
@@ -17,11 +19,14 @@ class ConsignorProfileScreen extends ConsumerStatefulWidget {
   const ConsignorProfileScreen({super.key});
 
   @override
-  ConsumerState<ConsignorProfileScreen> createState() => _ConsignorProfileScreenState();
+  ConsumerState<ConsignorProfileScreen> createState() =>
+      _ConsignorProfileScreenState();
 }
 
-class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen> {
+class _ConsignorProfileScreenState
+    extends ConsumerState<ConsignorProfileScreen> {
   Map<String, dynamic>? _profile;
+  Map<String, dynamic>? _consignorProfile;
   bool _notificationsEnabled = true;
 
   @override
@@ -31,9 +36,14 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
   }
 
   Future<void> _load() async {
+    final api = ref.read(backendApiProvider);
     try {
-      final p = await ref.read(backendApiProvider).identityGet();
-      if (mounted) setState(() => _profile = p);
+      final identity = await api.identityGet();
+      if (mounted) setState(() => _profile = identity);
+    } catch (_) {}
+    try {
+      final consignor = await api.consignorsProfile();
+      if (mounted) setState(() => _consignorProfile = consignor);
     } catch (_) {}
   }
 
@@ -43,7 +53,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
     required IconData icon,
     required List<Widget> children,
     String? actionLabel,
-    VoidCallback? onAction,
+    Future<void> Function()? onAction,
   }) async {
     await showModalBottomSheet<void>(
       context: context,
@@ -60,7 +70,8 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
           left: 24,
           right: 24,
           top: 32,
-          bottom: MediaQuery.viewInsetsOf(ctx).bottom +
+          bottom:
+              MediaQuery.viewInsetsOf(ctx).bottom +
               MediaQuery.paddingOf(ctx).bottom +
               32,
         ),
@@ -82,18 +93,18 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
               Text(
                 title,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textPrimary,
-                      letterSpacing: -0.5,
-                    ),
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.5,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 subtitle,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
-                      height: 1.4,
-                    ),
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
               ),
               const SizedBox(height: 32),
               ...children,
@@ -105,16 +116,21 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                   child: FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                       elevation: 0,
                     ),
-                    onPressed: () {
-                      onAction();
-                      Navigator.pop(ctx);
+                    onPressed: () async {
+                      await onAction!();
+                      if (ctx.mounted) Navigator.pop(ctx);
                     },
                     child: Text(
                       actionLabel,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
@@ -126,7 +142,11 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
     );
   }
 
-  Widget _buildInput(TextEditingController controller, String label, {TextInputType? type}) {
+  Widget _buildInput(
+    TextEditingController controller,
+    String label, {
+    TextInputType? type,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -137,22 +157,100 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
       child: TextField(
         controller: controller,
         keyboardType: type,
-        style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+          labelStyle: const TextStyle(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
         ),
       ),
     );
   }
 
+  Future<void> _editBusinessProfile() async {
+    final businessName = TextEditingController(
+      text:
+          RoleProfileUtils.stringField(_consignorProfile, 'businessName') ?? '',
+    );
+    final tradeLicence = TextEditingController(
+      text:
+          RoleProfileUtils.stringField(_consignorProfile, 'tradeLicence') ?? '',
+    );
+    Object? saveError;
+    var saved = false;
+    await _showPremiumSheet(
+      title: 'Business profile',
+      subtitle: 'Update your company name and trade licence',
+      icon: Icons.business_rounded,
+      children: [
+        _buildInput(businessName, context.l10n.businessNameOptional),
+        PresignedUrlUploadRow(
+          urlController: tradeLicence,
+          folder: S3Folder.profile,
+          buttonLabel: 'Upload trade licence (image or PDF)',
+          successMessage: 'Trade licence uploaded.',
+        ),
+        PresignedUploadAttachedHint(
+          controller: tradeLicence,
+          message: context.l10n.tradeLicenceAttached,
+        ),
+      ],
+      actionLabel: 'Save Changes',
+      onAction: () async {
+        try {
+          await ref
+              .read(backendApiProvider)
+              .consignorsUpdate(
+                businessName: businessName.text.trim().isEmpty
+                    ? null
+                    : businessName.text.trim(),
+                tradeLicence: tradeLicence.text.trim().isEmpty
+                    ? null
+                    : tradeLicence.text.trim(),
+              );
+          saved = true;
+        } catch (e) {
+          saveError = e;
+        }
+      },
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      businessName.dispose();
+      tradeLicence.dispose();
+    });
+    if (!mounted) return;
+    if (saved) {
+      await _load();
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Business profile updated')));
+    } else if (saveError != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(userFacingMessage(saveError!))));
+    }
+  }
+
   Future<void> _editProfile() async {
-    final fn = TextEditingController(text: _profile?['firstName'] as String? ?? '');
-    final ln = TextEditingController(text: _profile?['lastName'] as String? ?? '');
+    final fn = TextEditingController(
+      text: _profile?['firstName'] as String? ?? '',
+    );
+    final ln = TextEditingController(
+      text: _profile?['lastName'] as String? ?? '',
+    );
     await _showPremiumSheet(
       title: context.l10n.personalDetails,
       subtitle: context.l10n.updateCorporateIdentity,
@@ -171,7 +269,10 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
           await ref.read(authProvider.notifier).refreshProfile();
           await _load();
         } catch (e) {
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
+          if (mounted)
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
         }
       },
     );
@@ -192,12 +293,20 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
           ),
           child: Row(
             children: [
-              Icon(Icons.mark_email_read_outlined, color: AppColors.warning, size: 24),
+              Icon(
+                Icons.mark_email_read_outlined,
+                color: AppColors.warning,
+                size: 24,
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   'Please check your registered email for password reset instructions.',
-                  style: TextStyle(color: AppColors.warning.withValues(alpha: 0.9), fontWeight: FontWeight.w600, height: 1.4),
+                  style: TextStyle(
+                    color: AppColors.warning.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                  ),
                 ),
               ),
             ],
@@ -205,7 +314,7 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
         ),
       ],
       actionLabel: 'Send Reset Link',
-      onAction: () {},
+      onAction: () async {},
     );
   }
 
@@ -240,7 +349,10 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
           });
           ref.invalidate(paymentsProvider);
         } catch (e) {
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
+          if (mounted)
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
         }
       },
     );
@@ -259,11 +371,15 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
       children: [
         const Text(
           'Your data is protected under our strict corporate privacy policies. We do not share shipping metrics or personal details with unauthorized third parties.\n\nFor full terms of service, please visit our website.',
-          style: TextStyle(color: AppColors.textSecondary, height: 1.6, fontSize: 15),
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            height: 1.6,
+            fontSize: 15,
+          ),
         ),
       ],
       actionLabel: 'Acknowledge',
-      onAction: () {},
+      onAction: () async {},
     );
   }
 
@@ -277,10 +393,16 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
           contentPadding: EdgeInsets.zero,
           leading: Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: AppColors.primarySoft,
+              shape: BoxShape.circle,
+            ),
             child: const Icon(Icons.phone_rounded, color: AppColors.primary),
           ),
-          title: Text(context.l10n.phoneSupport, style: TextStyle(fontWeight: FontWeight.w700)),
+          title: Text(
+            context.l10n.phoneSupport,
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           subtitle: const Text('+251 900 000 000'),
         ),
         const SizedBox(height: 16),
@@ -288,15 +410,21 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
           contentPadding: EdgeInsets.zero,
           leading: Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: AppColors.primarySoft,
+              shape: BoxShape.circle,
+            ),
             child: const Icon(Icons.email_rounded, color: AppColors.primary),
           ),
-          title: Text(context.l10n.emailSupport, style: TextStyle(fontWeight: FontWeight.w700)),
+          title: Text(
+            context.l10n.emailSupport,
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           subtitle: const Text('support@global-logistics.com'),
         ),
       ],
       actionLabel: context.l10n.close,
-      onAction: () {},
+      onAction: () async {},
     );
   }
 
@@ -314,6 +442,12 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                     : '${rawStatus.toUpperCase()} (WAITING ADMIN APPROVAL)'));
     final payments = ref.watch(paymentsProvider);
     final shipments = ref.watch(consignorShipmentsProvider);
+    final rating = RoleProfileUtils.rating(_consignorProfile);
+    final reviewCount = RoleProfileUtils.reviewCount(_consignorProfile);
+    final businessName = RoleProfileUtils.stringField(
+      _consignorProfile,
+      'businessName',
+    );
     // Clearance above ConsignorShell bottom nav: SafeArea min bottom (10) + bar (72).
     final bottomNavClearance =
         MediaQuery.paddingOf(context).bottom + 10 + 72 + 24;
@@ -329,14 +463,17 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
             elevation: 0,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              titlePadding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 16,
+              ),
               title: Text(
                 context.l10n.profile,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textPrimary,
-                      letterSpacing: -0.5,
-                    ),
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.5,
+                ),
               ),
             ),
           ),
@@ -353,7 +490,11 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(32),
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 24, offset: const Offset(0, 12)),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
+                        ),
                       ],
                     ),
                     child: Row(
@@ -362,8 +503,14 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                           radius: 36,
                           backgroundColor: AppColors.primarySoft,
                           child: Text(
-                            (auth.displayName ?? 'C').substring(0, 1).toUpperCase(),
-                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.primary),
+                            (auth.displayName ?? 'C')
+                                .substring(0, 1)
+                                .toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.primary,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 20),
@@ -372,14 +519,40 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                auth.displayName ?? context.l10n.consignor,
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                                businessName?.isNotEmpty == true
+                                    ? businessName!
+                                    : (auth.displayName ??
+                                          context.l10n.consignor),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
+                              if (businessName?.isNotEmpty == true &&
+                                  auth.displayName != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  auth.displayName!,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
                               const SizedBox(height: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: canBook ? AppColors.success.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1),
+                                  color: canBook
+                                      ? AppColors.success.withValues(alpha: 0.1)
+                                      : AppColors.warning.withValues(
+                                          alpha: 0.1,
+                                        ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
@@ -387,7 +560,9 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
-                                    color: canBook ? AppColors.success : AppColors.warning,
+                                    color: canBook
+                                        ? AppColors.success
+                                        : AppColors.warning,
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -427,19 +602,59 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                       ),
                     ],
                   ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      _buildStatCard(
+                        title: 'Rating',
+                        value: RoleProfileUtils.formatRating(rating),
+                      ),
+                      const SizedBox(width: 16),
+                      _buildStatCard(
+                        title: 'Reviews',
+                        value: RoleProfileUtils.formatReviewCount(reviewCount),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 32),
 
                   // Grouped Settings Lists
                   const _ListHeader('Account Details'),
                   _buildListGroup([
-                    _buildListItem(Icons.person_outline_rounded, context.l10n.personalDetails, 'Corporate info', onTap: _editProfile),
-                    _buildListItem(Icons.shield_outlined, 'Security', 'Password & 2FA', onTap: _changePassword),
-                    _buildListItem(Icons.account_balance_wallet_outlined, 'Financial Ledger', 'Records & invoices', onTap: _addShipmentPayment),
+                    _buildListItem(
+                      Icons.person_outline_rounded,
+                      context.l10n.personalDetails,
+                      'Name & contact',
+                      onTap: _editProfile,
+                    ),
+                    _buildListItem(
+                      Icons.business_rounded,
+                      'Business profile',
+                      'Company & trade licence',
+                      onTap: _editBusinessProfile,
+                    ),
+                    _buildListItem(
+                      Icons.shield_outlined,
+                      'Security',
+                      'Password & 2FA',
+                      onTap: _changePassword,
+                    ),
+                    _buildListItem(
+                      Icons.account_balance_wallet_outlined,
+                      'Payments',
+                      'Records & invoices',
+                      onTap: _addShipmentPayment,
+                    ),
                   ]),
 
                   const _ListHeader('Logistics'),
                   _buildListGroup([
-                    _buildListItem(Icons.history_rounded, 'Shipment Archive', 'Past load history', onTap: () => context.push('/consignor/shipments')),
+                    _buildListItem(
+                      Icons.history_rounded,
+                      'Shipment Archive',
+                      'Past load history',
+                      onTap: () => context.push('/consignor/shipments'),
+                    ),
                   ]),
 
                   const _ListHeader('Preferences & Support'),
@@ -450,18 +665,36 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                       currentAppLanguageLabel(context, ref),
                       onTap: _showLanguagePicker,
                     ),
-                    _buildListItem(Icons.notifications_none_rounded, context.l10n.notifications, 'Push alerts', trailing: Switch.adaptive(
-                      value: _notificationsEnabled,
-                      onChanged: (v) => setState(() => _notificationsEnabled = v),
-                      activeTrackColor: AppColors.primary.withValues(alpha: 0.45),
-                      activeThumbColor: AppColors.surface,
-                    )),
-                    _buildListItem(Icons.support_agent_rounded, context.l10n.helpDesk, '24/7 priority support', onTap: _showSupport),
-                    _buildListItem(Icons.policy_outlined, 'Legal', 'Privacy & terms', onTap: _showLegal),
+                    _buildListItem(
+                      Icons.notifications_none_rounded,
+                      context.l10n.notifications,
+                      'Push alerts',
+                      trailing: Switch.adaptive(
+                        value: _notificationsEnabled,
+                        onChanged: (v) =>
+                            setState(() => _notificationsEnabled = v),
+                        activeTrackColor: AppColors.primary.withValues(
+                          alpha: 0.45,
+                        ),
+                        activeThumbColor: AppColors.surface,
+                      ),
+                    ),
+                    _buildListItem(
+                      Icons.support_agent_rounded,
+                      context.l10n.helpDesk,
+                      '24/7 priority support',
+                      onTap: _showSupport,
+                    ),
+                    _buildListItem(
+                      Icons.policy_outlined,
+                      'Legal',
+                      'Privacy & terms',
+                      onTap: _showLegal,
+                    ),
                   ]),
 
                   const SizedBox(height: 16),
-                  
+
                   // Logout Button
                   SizedBox(
                     width: double.infinity,
@@ -473,12 +706,23 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
                         context.go('/login?role=consignor');
                       },
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppColors.error.withValues(alpha: 0.3), width: 1.5),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        side: BorderSide(
+                          color: AppColors.error.withValues(alpha: 0.3),
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         foregroundColor: AppColors.error,
                       ),
                       icon: const Icon(Icons.logout_rounded),
-                      label: Text(context.l10n.signOut, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                      label: Text(
+                        context.l10n.signOut,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(height: bottomNavClearance),
@@ -499,7 +743,11 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 16, offset: const Offset(0, 8)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
           ],
         ),
         child: Column(
@@ -507,12 +755,21 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
           children: [
             Text(
               value,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.textPrimary, letterSpacing: -1),
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textPrimary,
+                letterSpacing: -1,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               title,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -527,16 +784,24 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 16, offset: const Offset(0, 8)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
-  Widget _buildListItem(IconData icon, String title, String subtitle, {Widget? trailing, VoidCallback? onTap}) {
+  Widget _buildListItem(
+    IconData icon,
+    String title,
+    String subtitle, {
+    Widget? trailing,
+    VoidCallback? onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(28),
@@ -546,7 +811,10 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
           children: [
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: AppColors.surfaceHighlight, borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceHighlight,
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Icon(icon, color: AppColors.textPrimary, size: 22),
             ),
             const SizedBox(width: 16),
@@ -554,13 +822,31 @@ class _ConsignorProfileScreenState extends ConsumerState<ConsignorProfileScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.textPrimary)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13, color: AppColors.textSecondary)),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                 ],
               ),
             ),
-            trailing ?? const Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary),
+            trailing ??
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textTertiary,
+                ),
           ],
         ),
       ),
@@ -578,7 +864,12 @@ class _ListHeader extends StatelessWidget {
       padding: const EdgeInsets.only(left: 8, bottom: 12),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 1.5, color: AppColors.textTertiary),
+        style: const TextStyle(
+          fontWeight: FontWeight.w800,
+          fontSize: 12,
+          letterSpacing: 1.5,
+          color: AppColors.textTertiary,
+        ),
       ),
     );
   }

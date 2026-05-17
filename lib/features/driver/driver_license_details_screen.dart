@@ -72,7 +72,8 @@ class _DriverLicenseDetailsScreenState
       final key = '$label:$s';
       if (seen.contains(key)) return;
       seen.add(key);
-      out.add(_LicenseField(label, s));
+      final showAsImage = label == 'Profile photo' && _looksLikeUrl(s);
+      out.add(_LicenseField(label, s, showAsImage: showAsImage));
     }
 
     const directKeys = <String, String>{
@@ -196,10 +197,11 @@ class _DriverLicenseDetailsScreenState
 }
 
 class _LicenseField {
-  _LicenseField(this.label, this.value);
+  _LicenseField(this.label, this.value, {this.showAsImage = false});
 
   final String label;
   final String value;
+  final bool showAsImage;
 }
 
 class _LicenseHero extends StatelessWidget {
@@ -350,9 +352,11 @@ class _LicenseFieldsCard extends StatelessWidget {
             if (i > 0) const Divider(height: 1, color: AppColors.borderLight),
             _LicenseFieldTile(
               field: fields[i],
-              onOpenUrl: looksLikeUrl(fields[i].value)
-                  ? () => onOpenUrl(fields[i].value)
-                  : null,
+              onOpenUrl: fields[i].showAsImage
+                  ? null
+                  : looksLikeUrl(fields[i].value)
+                      ? () => onOpenUrl(fields[i].value)
+                      : null,
             ),
           ],
         ],
@@ -382,14 +386,40 @@ class _LicenseFieldTile extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 6),
-          SelectableText(
-            field.value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w700,
-                  height: 1.35,
+          if (field.showAsImage)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Image.network(
+                  field.value,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: AppColors.surfaceHighlight,
+                    child: const Center(
+                      child: Icon(
+                        Icons.broken_image_outlined,
+                        size: 48,
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+                  ),
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return const Center(child: CircularProgressIndicator());
+                  },
                 ),
-          ),
+              ),
+            )
+          else
+            SelectableText(
+              field.value,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+            ),
           if (onOpenUrl != null) ...[
             const SizedBox(height: 8),
             TextButton.icon(

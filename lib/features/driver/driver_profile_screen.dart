@@ -7,6 +7,8 @@ import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:global_logistics_app/core/services/presigned_storage_service.dart';
+import 'package:global_logistics_app/data/utils/role_profile_utils.dart';
 import 'package:global_logistics_app/shared/widgets/app_language_picker_sheet.dart';
 import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
 import 'package:global_logistics_app/shared/widgets/shipment_receipt_upload_row.dart';
@@ -21,12 +23,16 @@ class DriverProfileScreen extends ConsumerStatefulWidget {
 
 class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
   Map<String, dynamic>? _vehicle;
+  Map<String, dynamic>? _driverProfile;
   bool _notificationsEnabled = true;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadVehicle());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadVehicle();
+      _loadDriverProfile();
+    });
   }
 
   Future<void> _loadVehicle() async {
@@ -38,13 +44,119 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
     } catch (_) {}
   }
 
+  Future<void> _loadDriverProfile() async {
+    try {
+      final p = await ref.read(backendApiProvider).driversProfile();
+      if (mounted) setState(() => _driverProfile = p);
+    } catch (_) {}
+  }
+
+  static bool _looksLikeUrl(String? s) {
+    if (s == null) return false;
+    final t = s.trim().toLowerCase();
+    return t.startsWith('http://') || t.startsWith('https://');
+  }
+
+  Future<void> _editDriverProfile() async {
+    final profilePic = TextEditingController(
+      text: RoleProfileUtils.stringField(_driverProfile, 'profilePic') ?? '',
+    );
+    final nationalId = TextEditingController(
+      text: RoleProfileUtils.stringField(_driverProfile, 'nationalId') ?? '',
+    );
+    final licenceNumber = TextEditingController(
+      text: RoleProfileUtils.stringField(_driverProfile, 'licenceNumber') ??
+          RoleProfileUtils.stringField(_driverProfile, 'licenseNumber') ??
+          '',
+    );
+    final licenceDocument = TextEditingController(
+      text: RoleProfileUtils.stringField(_driverProfile, 'licenceDocument') ??
+          RoleProfileUtils.stringField(_driverProfile, 'licenseDocument') ??
+          '',
+    );
+    final preferredLanes = TextEditingController(
+      text: RoleProfileUtils.stringField(_driverProfile, 'preferredLanes') ??
+          '',
+    );
+    await _showPremiumSheet(
+      title: 'Update driver profile',
+      subtitle: 'Photo, ID, licence, and preferred lanes',
+      icon: Icons.badge_outlined,
+      children: [
+        PresignedUrlUploadRow(
+          urlController: profilePic,
+          folder: S3Folder.profile,
+          allowPdf: false,
+          buttonLabel: 'Upload profile photo',
+          successMessage: 'Profile photo uploaded.',
+        ),
+        PresignedUploadAttachedHint(
+          controller: profilePic,
+          message: 'Profile photo attached',
+        ),
+        _buildInput(nationalId, 'National ID'),
+        _buildInput(licenceNumber, context.l10n.licenceNumber),
+        PresignedUrlUploadRow(
+          urlController: licenceDocument,
+          folder: S3Folder.profile,
+          buttonLabel: 'Upload licence document (image or PDF)',
+          successMessage: 'Licence document uploaded.',
+        ),
+        PresignedUploadAttachedHint(
+          controller: licenceDocument,
+          message: context.l10n.licenceDocumentAttached,
+        ),
+        _buildInput(preferredLanes, context.l10n.preferredLanesOptional),
+      ],
+      actionLabel: 'Save Changes',
+      onAction: () async {
+        try {
+          await ref.read(backendApiProvider).driversUpdate(
+                profilePic: profilePic.text.trim().isEmpty
+                    ? null
+                    : profilePic.text.trim(),
+                nationalId: nationalId.text.trim().isEmpty
+                    ? null
+                    : nationalId.text.trim(),
+                licenceNumber: licenceNumber.text.trim().isEmpty
+                    ? null
+                    : licenceNumber.text.trim(),
+                licenceDocument: licenceDocument.text.trim().isEmpty
+                    ? null
+                    : licenceDocument.text.trim(),
+                preferredLanes: preferredLanes.text.trim().isEmpty
+                    ? null
+                    : preferredLanes.text.trim(),
+              );
+          await _loadDriverProfile();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Profile updated successfully')),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(userFacingMessage(e))),
+            );
+          }
+        }
+      },
+    );
+    profilePic.dispose();
+    nationalId.dispose();
+    licenceNumber.dispose();
+    licenceDocument.dispose();
+    preferredLanes.dispose();
+  }
+
   Future<void> _showPremiumSheet({
     required String title,
     required String subtitle,
     required IconData icon,
     required List<Widget> children,
     String? actionLabel,
-    VoidCallback? onAction,
+    Future<void> Function()? onAction,
   }) async {
     await showModalBottomSheet<void>(
       context: context,
@@ -108,9 +220,9 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                       ),
                       elevation: 0,
                     ),
-                    onPressed: () {
-                      onAction();
-                      Navigator.pop(ctx);
+                    onPressed: () async {
+                      await onAction!();
+                      if (ctx.mounted) Navigator.pop(ctx);
                     },
                     child: Text(
                       actionLabel,
@@ -203,7 +315,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
         ),
       ],
       actionLabel: 'Send Reset Link',
-      onAction: () {},
+      onAction: () async {},
     );
   }
 
@@ -273,7 +385,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
         ),
       ],
       actionLabel: 'Acknowledge',
-      onAction: () {},
+      onAction: () async {},
     );
   }
 
@@ -318,7 +430,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
         ),
       ],
       actionLabel: context.l10n.close,
-      onAction: () {},
+      onAction: () async {},
     );
   }
 
@@ -330,6 +442,10 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
     final statusLabel = approvalPending ? 'Pending Approval' : rawStatus;
     final statusColor = approvalPending ? AppColors.warning : AppColors.success;
     final assignments = ref.watch(driverActiveAssignmentsProvider);
+    final profilePicUrl =
+        RoleProfileUtils.stringField(_driverProfile, 'profilePic');
+    final rating = RoleProfileUtils.rating(_driverProfile);
+    final reviewCount = RoleProfileUtils.reviewCount(_driverProfile);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundWarm,
@@ -391,16 +507,21 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                           child: CircleAvatar(
                             radius: 32,
                             backgroundColor: AppColors.gold.withValues(alpha: 0.2),
-                            child: Text(
-                              (auth.displayName ?? 'D')
-                                  .substring(0, 1)
-                                  .toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.gold,
-                              ),
-                            ),
+                            backgroundImage: _looksLikeUrl(profilePicUrl)
+                                ? NetworkImage(profilePicUrl!)
+                                : null,
+                            child: _looksLikeUrl(profilePicUrl)
+                                ? null
+                                : Text(
+                                    (auth.displayName ?? 'D')
+                                        .substring(0, 1)
+                                        .toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.gold,
+                                    ),
+                                  ),
                           ),
                         ),
                         const SizedBox(width: 20),
@@ -460,15 +581,34 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                       const SizedBox(width: 16),
                       _buildStatCard(
                         title: context.l10n.driverRating,
-                        value: '4.8', // Static for now
+                        value: RoleProfileUtils.formatRating(rating),
                       ),
                     ],
                   ),
+                  if (_driverProfile != null) ...[
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        _buildStatCard(
+                          title: 'Reviews',
+                          value: RoleProfileUtils.formatReviewCount(reviewCount),
+                        ),
+                        const SizedBox(width: 16),
+                        const Expanded(child: SizedBox()),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 32),
 
                   // Grouped Settings Lists
                   const _ListHeader('Fleet Information'),
                   _buildListGroup([
+                    _buildListItem(
+                      Icons.edit_outlined,
+                      'Update profile',
+                      'Photo, licence, lanes',
+                      onTap: _editDriverProfile,
+                    ),
                     _buildListItem(
                       Icons.local_shipping_outlined,
                       'Vehicle Details',
@@ -591,7 +731,11 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
     );
   }
 
-  Widget _buildStatCard({required String title, required String value}) {
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    String? subtitle,
+  }) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -627,6 +771,17 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                 color: AppColors.textSecondary,
               ),
             ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textTertiary,
+                ),
+              ),
+            ],
           ],
         ),
       ),
