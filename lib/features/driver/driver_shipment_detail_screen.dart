@@ -11,20 +11,11 @@ import 'package:global_logistics_app/core/providers/repository_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/core/services/device_location_service.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
+import 'package:global_logistics_app/data/storage/assignment_feedback_preferences.dart';
 import 'package:global_logistics_app/features/documents/gdn_grn_document_sheet.dart';
+import 'package:global_logistics_app/shared/widgets/assignment_feedback_sheet.dart';
 import 'package:global_logistics_app/shared/widgets/status_chip.dart';
 import 'package:intl/intl.dart';
-
-String _feedbackRatingCaption(int rating) {
-  return switch (rating) {
-    1 => 'Poor',
-    2 => 'Fair',
-    3 => 'Good',
-    4 => 'Very good',
-    5 => 'Excellent',
-    _ => '',
-  };
-}
 
 /// Driver assignment actions: `PUT /assignments/*` and `POST /tracking`.
 class DriverShipmentDetailScreen extends ConsumerStatefulWidget {
@@ -51,6 +42,9 @@ class _DriverShipmentDetailScreenState
   Timer? _trackingTimer;
   String? _trackedAssignmentId;
   bool _trackingInFlight = false;
+  bool _feedbackToConsignorSubmitted = false;
+  String? _feedbackLoadedForAid;
+  bool _loadingFeedbackState = false;
 
   @override
   void initState() {
@@ -103,17 +97,22 @@ class _DriverShipmentDetailScreenState
     );
   }
 
-  /// Styled sheet for driver → consignor feedback (replaces generic [_prompt] for this flow).
-  Future<({String comment, int rating})?> _showFeedbackToConsignorSheet(
-    BuildContext context,
-  ) async {
-    return showModalBottomSheet<({String comment, int rating})>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const _FeedbackToConsignorSheet(),
-    );
+  Future<void> _loadFeedbackToConsignorState(String assignmentId) async {
+    if (_loadingFeedbackState || _feedbackLoadedForAid == assignmentId) {
+      return;
+    }
+    _loadingFeedbackState = true;
+    try {
+      final submitted = await AssignmentFeedbackPreferences.instance
+          .hasSubmittedToConsignor(assignmentId);
+      if (!mounted) return;
+      setState(() {
+        _feedbackToConsignorSubmitted = submitted;
+        _feedbackLoadedForAid = assignmentId;
+      });
+    } finally {
+      _loadingFeedbackState = false;
+    }
   }
 
   Future<void> _putStatus(
@@ -325,7 +324,14 @@ class _DriverShipmentDetailScreenState
               !_loadingDocuments) {
             _refreshAssignmentDocuments(aid);
           }
+          if (aid != null && _feedbackLoadedForAid != aid) {
+            _loadFeedbackToConsignorState(aid);
+          }
           final currentStep = _currentStepIndex(status);
+          final canSendFeedbackToConsignor =
+              aid != null &&
+              assignmentAllowsFeedback(status) &&
+              !_feedbackToConsignorSubmitted;
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
@@ -402,10 +408,7 @@ class _DriverShipmentDetailScreenState
                 ),
               ),
               const SizedBox(height: 18),
-              Text(
-                'Actions',
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
+              Text('Actions', style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 10),
               if (aid == null)
                 const Text(
@@ -526,38 +529,44 @@ class _DriverShipmentDetailScreenState
                   ),
                 ],
               ],
-              const SizedBox(height: 20),
-              _FeedbackToConsignorCard(
-                enabled: aid != null,
-                onPressed: aid == null
-                    ? null
-                    : () async {
-                        final result = await _showFeedbackToConsignorSheet(
-                          context,
+              if (canSendFeedbackToConsignor) ...[
+                const SizedBox(height: 20),
+                _FeedbackToConsignorCard(
+                  enabled: true,
+                  onPressed: () async {
+                    final result = await showAssignmentFeedbackSheet(
+                      context,
+                      title: 'Feedback to consignor',
+                      subtitle:
+                          'Your message helps improve service and '
+                          'keeps the shipper informed.',
+                    );
+                    if (!context.mounted || result == null) {
+                      return;
+                    }
+                    try {
+                      await api.feedbackToConsignor({
+                        'assignmentId': aid,
+                        'comment': result.comment,
+                        'rating': result.rating,
+                      });
+                      await AssignmentFeedbackPreferences.instance
+                          .markSubmittedToConsignor(aid);
+                      if (!context.mounted) return;
+                      setState(() => _feedbackToConsignorSubmitted = true);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(context.l10n.feedbackSent)),
+                      );
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(userFacingMessage(e))),
                         );
-                        if (!context.mounted || result == null) {
-                          return;
-                        }
-                        try {
-                          await api.feedbackToConsignor({
-                            'assignmentId': aid,
-                            'comment': result.comment,
-                            'rating': result.rating,
-                          });
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(context.l10n.feedbackSent)),
-                            );
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(
-                              context,
-                            ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
-                          }
-                        }
-                      },
-              ),
+                      }
+                    }
+                  },
+                ),
+              ],
             ],
           );
         },
@@ -572,11 +581,7 @@ class _DriverShipmentDetailScreenState
     DocumentRef d,
     DateFormat fmt,
   ) async {
-    await showGdnGrnDocumentSheet(
-      context,
-      documentRef: d,
-      dateFmt: fmt,
-    );
+    await showGdnGrnDocumentSheet(context, documentRef: d, dateFmt: fmt);
   }
 
   Widget _block(String title, String body, IconData icon) {
@@ -746,7 +751,10 @@ class _DriverGdnGrnSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (gdn.isNotEmpty) ...[
-          _DriverDocTypeHeader(label: context.l10n.goodsDeliveryNote, count: gdn.length),
+          _DriverDocTypeHeader(
+            label: context.l10n.goodsDeliveryNote,
+            count: gdn.length,
+          ),
           ...gdn.map(
             (d) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -760,7 +768,10 @@ class _DriverGdnGrnSection extends StatelessWidget {
         ],
         if (grn.isNotEmpty) ...[
           if (gdn.isNotEmpty) const SizedBox(height: 4),
-          _DriverDocTypeHeader(label: context.l10n.goodsReceivedNote, count: grn.length),
+          _DriverDocTypeHeader(
+            label: context.l10n.goodsReceivedNote,
+            count: grn.length,
+          ),
           ...grn.map(
             (d) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -1100,257 +1111,6 @@ class _FeedbackToConsignorCard extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FeedbackToConsignorSheet extends StatefulWidget {
-  const _FeedbackToConsignorSheet();
-
-  @override
-  State<_FeedbackToConsignorSheet> createState() =>
-      _FeedbackToConsignorSheetState();
-}
-
-class _FeedbackToConsignorSheetState extends State<_FeedbackToConsignorSheet> {
-  final TextEditingController _commentCtrl = TextEditingController();
-  int _rating = 4;
-  String? _errorText;
-
-  @override
-  void dispose() {
-    _commentCtrl.dispose();
-    super.dispose();
-  }
-
-  void _submit() {
-    final text = _commentCtrl.text.trim();
-    if (text.isEmpty) {
-      setState(() => _errorText = 'Please enter your feedback.');
-      return;
-    }
-    Navigator.of(context).pop((comment: text, rating: _rating));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.backgroundWarm,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-        ),
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-        child: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.06),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(16),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.primarySoft,
-                                border: Border.all(
-                                  color: AppColors.gold.withValues(alpha: 0.35),
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.chat_rounded,
-                                color: AppColors.primary,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Feedback to consignor',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w800,
-                                          color: AppColors.primaryDark,
-                                          height: 1.2,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'Your message helps improve service and '
-                                    'keeps the shipper informed.',
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: AppColors.textSecondary,
-                                          height: 1.45,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Experience rating',
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(5, (i) {
-                            final idx = i + 1;
-                            return IconButton(
-                              onPressed: () => setState(() => _rating = idx),
-                              icon: Icon(
-                                idx <= _rating
-                                    ? Icons.star_rounded
-                                    : Icons.star_outline_rounded,
-                                color: idx <= _rating
-                                    ? AppColors.gold
-                                    : AppColors.textTertiary,
-                                size: 36,
-                              ),
-                            );
-                          }),
-                        ),
-                        Center(
-                          child: Text(
-                            _feedbackRatingCaption(_rating),
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        TextField(
-                          controller: _commentCtrl,
-                          maxLines: 5,
-                          minLines: 4,
-                          textCapitalization: TextCapitalization.sentences,
-                          onChanged: (_) {
-                            if (_errorText != null) {
-                              setState(() => _errorText = null);
-                            }
-                          },
-                          decoration: InputDecoration(
-                            labelText: 'Your message',
-                            hintText:
-                                'Describe handover, condition, timing, '
-                                'or appreciation...',
-                            alignLabelWithHint: true,
-                            errorText: _errorText,
-                            filled: true,
-                            fillColor: AppColors.surfaceHighlight,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: AppColors.border,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: AppColors.border,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.65,
-                                ),
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: Text(context.l10n.cancel),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              flex: 2,
-                              child: FilledButton(
-                                onPressed: _submit,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: Text(context.l10n.sendFeedback),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ),
             ),
           ),

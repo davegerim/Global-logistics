@@ -461,10 +461,7 @@ class BackendApi {
   }) async {
     final r = await _dio.get<Map<String, dynamic>>(
       '/s3/presigned-delete-url',
-      queryParameters: {
-        'folder': folder,
-        'fileName': fileName,
-      },
+      queryParameters: {'folder': folder, 'fileName': fileName},
     );
     return r.data ?? {};
   }

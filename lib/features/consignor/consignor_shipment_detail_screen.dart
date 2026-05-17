@@ -8,6 +8,8 @@ import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/consignor_active_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
+import 'package:global_logistics_app/data/storage/assignment_feedback_preferences.dart';
+import 'package:global_logistics_app/shared/widgets/assignment_feedback_sheet.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 import 'package:global_logistics_app/shared/widgets/status_chip.dart';
 import 'package:intl/intl.dart';
@@ -269,6 +271,9 @@ class _ConsignorShipmentDetailScreenState
   }
 
   bool _confirmingHandover = false;
+  bool _feedbackToDriverSubmitted = false;
+  String? _feedbackLoadedForAid;
+  bool _loadingFeedbackState = false;
 
   Future<String?> _promptConfirmRemark() async {
     final value = await showDialog<String>(
@@ -294,6 +299,26 @@ class _ConsignorShipmentDetailScreenState
       _resolveAssignmentScheduled = false;
       _assignmentId = null;
       _assignmentApiStatus = null;
+      _feedbackLoadedForAid = null;
+      _feedbackToDriverSubmitted = false;
+    }
+  }
+
+  Future<void> _loadFeedbackToDriverState(String assignmentId) async {
+    if (_loadingFeedbackState || _feedbackLoadedForAid == assignmentId) {
+      return;
+    }
+    _loadingFeedbackState = true;
+    try {
+      final submitted = await AssignmentFeedbackPreferences.instance
+          .hasSubmittedToDriver(assignmentId);
+      if (!mounted) return;
+      setState(() {
+        _feedbackToDriverSubmitted = submitted;
+        _feedbackLoadedForAid = assignmentId;
+      });
+    } finally {
+      _loadingFeedbackState = false;
     }
   }
 
@@ -392,6 +417,13 @@ class _ConsignorShipmentDetailScreenState
               _driverSelected || (assignedByStatus && _assignmentId != null);
           final grnControlEnabled =
               _assignmentId != null && _canOpenGrnControl(assignmentStatus);
+          if (_assignmentId != null && _feedbackLoadedForAid != _assignmentId) {
+            _loadFeedbackToDriverState(_assignmentId!);
+          }
+          final canSendFeedbackToDriver =
+              _assignmentId != null &&
+              assignmentAllowsFeedback(assignmentStatus) &&
+              !_feedbackToDriverSubmitted;
           final fmt = DateFormat.yMMMd();
           return ListView(
             padding: const EdgeInsets.all(20),
@@ -670,6 +702,62 @@ class _ConsignorShipmentDetailScreenState
                         useGoldAccent: true,
                       ),
                     ],
+                  ],
+                ),
+              ],
+              if (canSendFeedbackToDriver) ...[
+                const SizedBox(height: 16),
+                _InfoCard(
+                  title: 'Feedback to driver',
+                  icon: Icons.chat_rounded,
+                  children: [
+                    const Text(
+                      'Share delivery notes or rate your driver after handover is confirmed.',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    GlPrimaryButton(
+                      label: context.l10n.sendFeedback,
+                      icon: Icons.star_rounded,
+                      onPressed: () async {
+                        final aid = _assignmentId!;
+                        final messenger = ScaffoldMessenger.of(context);
+                        final sentLabel = context.l10n.feedbackSent;
+                        final result = await showAssignmentFeedbackSheet(
+                          context,
+                          title: 'Feedback to driver',
+                          subtitle:
+                              'Your rating and comments help maintain '
+                              'service quality.',
+                          hint:
+                              'Describe professionalism, timing, '
+                              'vehicle condition, or appreciation...',
+                        );
+                        if (!mounted || result == null) return;
+                        try {
+                          await ref.read(backendApiProvider).feedbackToDriver({
+                            'assignmentId': aid,
+                            'comment': result.comment,
+                            'rating': result.rating,
+                          });
+                          await AssignmentFeedbackPreferences.instance
+                              .markSubmittedToDriver(aid);
+                          if (!mounted) return;
+                          setState(() => _feedbackToDriverSubmitted = true);
+                          messenger.showSnackBar(
+                            SnackBar(content: Text(sentLabel)),
+                          );
+                        } catch (e) {
+                          if (!mounted) return;
+                          messenger.showSnackBar(
+                            SnackBar(content: Text(userFacingMessage(e))),
+                          );
+                        }
+                      },
+                    ),
                   ],
                 ),
               ],
