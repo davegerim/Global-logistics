@@ -52,19 +52,19 @@ class DriverShell extends ConsumerWidget {
             children: [
               _NavItem(
                 icon: Icons.home_rounded,
-                label: context.l10n.home,
+                label: context.l10n.bottomNavHome,
                 selected: navigationShell.currentIndex == 0,
                 onTap: () => _goBranch(context, ref, 0),
               ),
               _NavItem(
                 icon: Icons.local_offer_outlined,
-                label: 'Offers',
+                label: context.l10n.bottomNavOffers,
                 selected: navigationShell.currentIndex == 1,
                 onTap: () => _goBranch(context, ref, 1),
               ),
               _NavItem(
                 icon: Icons.person_outline_rounded,
-                label: context.l10n.profile,
+                label: context.l10n.bottomNavProfile,
                 selected: navigationShell.currentIndex == 2,
                 onTap: () => _goBranch(context, ref, 2),
               ),

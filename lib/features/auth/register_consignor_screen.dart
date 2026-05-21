@@ -162,7 +162,7 @@ class _RegisterConsignorScreenState
               ),
               const SizedBox(height: 16),
               Text(
-                'Consignor Registration',
+                context.l10n.consignorRegistrationTitle,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                   color: AppColors.textPrimary,
@@ -171,7 +171,7 @@ class _RegisterConsignorScreenState
               ),
               const SizedBox(height: 8),
               Text(
-                'Step 1 of 3: Create your account to start managing shipments.',
+                context.l10n.consignorRegStep1,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.4,

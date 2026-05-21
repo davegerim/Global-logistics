@@ -139,6 +139,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gdnForm => 'GDN Form';
 
   @override
+  String get grnForm => 'GRN Form';
+
+  @override
   String get personalDetails => 'Personal Details';
 
   @override
@@ -897,4 +900,277 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get afterGrnRecordedConfirm =>
       'After GRN is recorded, confirm final receipt here.';
+
+  @override
+  String get rating => 'Rating';
+
+  @override
+  String get reviews => 'Reviews';
+
+  @override
+  String get accountDetails => 'Account Details';
+
+  @override
+  String get nameAndContact => 'Name & contact';
+
+  @override
+  String get businessProfile => 'Business profile';
+
+  @override
+  String get companyAndTradeLicence => 'Company & trade licence';
+
+  @override
+  String get security => 'Security';
+
+  @override
+  String get passwordAnd2fa => 'Password & 2FA';
+
+  @override
+  String get logisticsSection => 'Logistics';
+
+  @override
+  String get shipmentArchive => 'Shipment Archive';
+
+  @override
+  String get pastLoadHistory => 'Past load history';
+
+  @override
+  String get preferencesAndSupport => 'Preferences & Support';
+
+  @override
+  String get languageLabel => 'Language';
+
+  @override
+  String get pushAlerts => 'Push alerts';
+
+  @override
+  String get legal => 'Legal';
+
+  @override
+  String get privacyAndTerms => 'Privacy & terms';
+
+  @override
+  String get amharicLanguage => 'Amharic';
+
+  @override
+  String get englishUs => 'English (US)';
+
+  @override
+  String get confirmSelection => 'Confirm Selection';
+
+  @override
+  String get gdnGrnHub => 'GDN & GRN Hub';
+
+  @override
+  String get viewAllShippingDocumentsDesc =>
+      'View all shipping documents for the selected shipment assignment.';
+
+  @override
+  String get selectShipment => 'Select Shipment';
+
+  @override
+  String get noGdnGrnForShipment =>
+      'This shipment has no active assignment, so no GDN/GRN is available yet.';
+
+  @override
+  String get noGdnGrnRecordsReturned =>
+      'No GDN or GRN records were returned for this assignment.';
+
+  @override
+  String noTypeDocuments(String type) {
+    return 'No $type documents';
+  }
+
+  @override
+  String get trySwitchingFilter =>
+      'Try switching the filter to see all available documents.';
+
+  @override
+  String get documentNoPrefix => 'No:';
+
+  @override
+  String get allFilter => 'ALL';
+
+  @override
+  String get gdnFilter => 'GDN';
+
+  @override
+  String get grnFilter => 'GRN';
+
+  @override
+  String get goodsDetails => 'Goods Details';
+
+  @override
+  String get scanToVerifyAuthenticity => 'Scan to verify document authenticity';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get downloadPdf => 'Download PDF';
+
+  @override
+  String get preparingPdf => 'Preparing…';
+
+  @override
+  String get licensePrefix => 'License:';
+
+  @override
+  String get idPrefix => 'ID:';
+
+  @override
+  String get platePrefix => 'Plate:';
+
+  @override
+  String get updateCompanyAndTradeLicence =>
+      'Update your company name and trade licence';
+
+  @override
+  String get uploadTradeLicence => 'Upload trade licence (image or PDF)';
+
+  @override
+  String get tradeLicenceUploaded => 'Trade licence uploaded.';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get passwordResetEmailInstructions =>
+      'Please check your registered email for password reset instructions.';
+
+  @override
+  String get sendResetLink => 'Send Reset Link';
+
+  @override
+  String get privacyPolicyText =>
+      'Your data is protected under our strict corporate privacy policies. We do not share shipping metrics or personal details with unauthorized third parties.\n\nFor full terms of service, please visit our website.';
+
+  @override
+  String get acknowledge => 'Acknowledge';
+
+  @override
+  String successfullySavedToDownloads(String filename) {
+    return 'Successfully saved to Downloads folder.\n$filename';
+  }
+
+  @override
+  String get welcomeBackTitle => 'Welcome Back';
+
+  @override
+  String get signInToManageShipments => 'Sign in to manage shipments.';
+
+  @override
+  String get forgotPasswordQuestion => 'Forgot password?';
+
+  @override
+  String get dontHaveAnAccount => 'Don\'t have an account?';
+
+  @override
+  String get createAccount => 'Create Account';
+
+  @override
+  String get forgotPasswordTitle => 'Forgot password';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'Enter your phone number to receive an OTP, then create a new password.';
+
+  @override
+  String get phoneLabel => 'Phone';
+
+  @override
+  String get otpCodeLabel => 'OTP code';
+
+  @override
+  String get newPasswordLabel => 'New password';
+
+  @override
+  String get confirmNewPasswordLabel => 'Confirm new password';
+
+  @override
+  String get consignorRegistrationTitle => 'Consignor Registration';
+
+  @override
+  String get consignorRegStep1 =>
+      'Step 1 of 3: Create your account to start managing shipments.';
+
+  @override
+  String get assignedShipmentsTitle => 'Assigned shipments';
+
+  @override
+  String get assignedShipmentsDesc =>
+      'Accept offers from the Offers tab; admin assigns final routes.';
+
+  @override
+  String get accountStatusPrefix => 'Account status: ';
+
+  @override
+  String get openOffersButton => 'Open offers';
+
+  @override
+  String get noActiveAssignmentsDesc =>
+      'No active assignments. Check new offers.';
+
+  @override
+  String get updateProfileTitle => 'Update profile';
+
+  @override
+  String get updateProfileSubtitle => 'Photo, licence, lanes';
+
+  @override
+  String get vehicleDetailsTitle => 'Vehicle Details';
+
+  @override
+  String get driverLicenseTitle => 'Driver License';
+
+  @override
+  String get driverLicenseSubtitle => 'Verification & expiry';
+
+  @override
+  String get viewAdminPaymentRecords => 'View admin payment records';
+
+  @override
+  String get assignmentsTitle => 'Assignments';
+
+  @override
+  String get currentActiveRoutes => 'Current active routes';
+
+  @override
+  String get offersCenterTitle => 'Offers Center';
+
+  @override
+  String get bidsForNewShipments => 'Bids for new shipments';
+
+  @override
+  String get loadAndRouteAlerts => 'Load & route alerts';
+
+  @override
+  String get driverTermsAndPrivacy => 'Driver terms & privacy';
+
+  @override
+  String get notSpecified => 'Not specified';
+
+  @override
+  String get adminMessage => 'Admin message';
+
+  @override
+  String get driverMessage => 'Driver message';
+
+  @override
+  String get etbCurrency => 'ETB';
+
+  @override
+  String get roundsPrefix => 'Rounds: ';
+
+  @override
+  String get noAssignmentsYet => 'No assignments yet.';
+
+  @override
+  String get bottomNavHome => 'Home';
+
+  @override
+  String get bottomNavOffers => 'Offers';
+
+  @override
+  String get bottomNavProfile => 'Profile';
 }

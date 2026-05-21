@@ -178,7 +178,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       children: [
                         // Greeting
                         Text(
-                          'Welcome Back',
+                          context.l10n.welcomeBackTitle,
                           style: t.headlineMedium?.copyWith(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w800,
@@ -189,7 +189,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Text(
                           role == AppRole.driver
                               ? 'Sign in to access your routes.'
-                              : 'Sign in to manage shipments.',
+                              : context.l10n.signInToManageShipments,
                           style: t.bodySmall?.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -363,7 +363,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                             child: Text(
-                              'Forgot password?',
+                              context.l10n.forgotPasswordQuestion,
                               style: t.labelMedium?.copyWith(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w700,
@@ -389,7 +389,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Don\'t have an account? ',
+                              '${context.l10n.dontHaveAnAccount} ',
                               style: t.bodySmall?.copyWith(
                                 color: AppColors.textSecondary,
                                 fontSize: 11,
@@ -413,7 +413,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 }
                               },
                               child: Text(
-                                'Create Account',
+                                context.l10n.createAccount,
                                 style: t.labelMedium?.copyWith(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w800,

@@ -156,13 +156,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    'Forgot password',
+                    context.l10n.forgotPasswordTitle,
                     textAlign: TextAlign.center,
                     style: t.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Enter your phone number to receive an OTP, then create a new password.',
+                    context.l10n.forgotPasswordSubtitle,
                     textAlign: TextAlign.center,
                     style: t.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
@@ -190,9 +190,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         TextField(
                           controller: _phone,
                           keyboardType: TextInputType.phone,
-                          decoration: const InputDecoration(
-                            labelText: 'Phone',
-                            prefixIcon: Icon(Icons.phone_outlined),
+                          decoration: InputDecoration(
+                            labelText: context.l10n.phoneLabel,
+                            prefixIcon: const Icon(Icons.phone_outlined),
                           ),
                         ),
                         const SizedBox(height: 14),
@@ -214,9 +214,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         TextField(
                           controller: _otp,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'OTP code',
-                            prefixIcon: Icon(Icons.lock_clock_outlined),
+                          decoration: InputDecoration(
+                            labelText: context.l10n.otpCodeLabel,
+                            prefixIcon: const Icon(Icons.lock_clock_outlined),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -224,7 +224,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           controller: _newPassword,
                           obscureText: _obscureNew,
                           decoration: InputDecoration(
-                            labelText: 'New password',
+                            labelText: context.l10n.newPasswordLabel,
                             prefixIcon: const Icon(Icons.lock_outline_rounded),
                             suffixIcon: IconButton(
                               onPressed: () => setState(() => _obscureNew = !_obscureNew),
@@ -241,7 +241,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           controller: _confirmPassword,
                           obscureText: _obscureConfirm,
                           decoration: InputDecoration(
-                            labelText: 'Confirm new password',
+                            labelText: context.l10n.confirmNewPasswordLabel,
                             prefixIcon: const Icon(Icons.lock_outline_rounded),
                             suffixIcon: IconButton(
                               onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),

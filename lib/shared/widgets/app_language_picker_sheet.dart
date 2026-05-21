@@ -74,13 +74,13 @@ Future<void> showAppLanguagePickerSheet(
                 const SizedBox(height: 32),
                 _LanguageOptionTile(
                   flag: '🇺🇸',
-                  name: 'English (US)',
+                  name: context.l10n.englishUs,
                   selected: selectedCode == 'en',
                   onTap: () => setSheetState(() => selectedCode = 'en'),
                 ),
                 _LanguageOptionTile(
                   flag: '🇪🇹',
-                  name: 'Amharic',
+                  name: context.l10n.amharicLanguage,
                   selected: selectedCode == 'am',
                   onTap: () => setSheetState(() => selectedCode = 'am'),
                 ),
@@ -102,9 +102,9 @@ Future<void> showAppLanguagePickerSheet(
                           .setLocale(selectedCode);
                       if (ctx.mounted) Navigator.pop(ctx);
                     },
-                    child: const Text(
-                      'Confirm Selection',
-                      style: TextStyle(
+                    child: Text(
+                      context.l10n.confirmSelection,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -170,5 +170,5 @@ String currentAppLanguageLabel(BuildContext context, WidgetRef ref) {
   final code =
       ref.watch(localeProvider)?.languageCode ??
       Localizations.localeOf(context).languageCode;
-  return code == 'am' ? 'Amharic' : 'English (US)';
+  return code == 'am' ? context.l10n.amharicLanguage : context.l10n.englishUs;
 }

@@ -132,6 +132,9 @@ class AppLocalizationsAm extends AppLocalizations {
   String get gdnForm => 'የ GDN ቅጽ';
 
   @override
+  String get grnForm => 'የ GRN ቅጽ';
+
+  @override
   String get personalDetails => 'የግል መረጃ';
 
   @override
@@ -874,4 +877,271 @@ class AppLocalizationsAm extends AppLocalizations {
   @override
   String get afterGrnRecordedConfirm =>
       'GRN ከተመዘገበ በኋላ፣ የመጨረሻውን ደረሰኝ እዚህ ያረጋግጡ።';
+
+  @override
+  String get rating => 'ደረጃ';
+
+  @override
+  String get reviews => 'ግምገማዎች';
+
+  @override
+  String get accountDetails => 'የመለያ ዝርዝሮች';
+
+  @override
+  String get nameAndContact => 'ስም እና አድራሻ';
+
+  @override
+  String get businessProfile => 'የንግድ መገለጫ';
+
+  @override
+  String get companyAndTradeLicence => 'ኩባንያ እና የንግድ ፈቃድ';
+
+  @override
+  String get security => 'ደህንነት';
+
+  @override
+  String get passwordAnd2fa => 'የይለፍ ቃል እና 2FA';
+
+  @override
+  String get logisticsSection => 'ሎጂስቲክስ';
+
+  @override
+  String get shipmentArchive => 'የጭነት ማህደር';
+
+  @override
+  String get pastLoadHistory => 'የቀድሞ ጭነት ታሪክ';
+
+  @override
+  String get preferencesAndSupport => 'ምርጫዎች እና ድጋፍ';
+
+  @override
+  String get languageLabel => 'ቋንቋ';
+
+  @override
+  String get pushAlerts => 'የግፍ ማሳወቂያዎች';
+
+  @override
+  String get legal => 'ህጋዊ';
+
+  @override
+  String get privacyAndTerms => 'ግላዊነት እና ውሎች';
+
+  @override
+  String get amharicLanguage => 'አማርኛ';
+
+  @override
+  String get englishUs => 'እንግሊዝኛ (US)';
+
+  @override
+  String get confirmSelection => 'ምርጫ አረጋግጥ';
+
+  @override
+  String get gdnGrnHub => 'GDN እና GRN ማዕከል';
+
+  @override
+  String get viewAllShippingDocumentsDesc =>
+      'ለተመረጠው የጭነት ምደባ ሁሉንም የማጓጓዣ ሰነዶች ይመልከቱ።';
+
+  @override
+  String get selectShipment => 'ጭነት ይምረጡ';
+
+  @override
+  String get noGdnGrnForShipment => 'ይህ ጭነት ንቁ ምደባ የለውም፣ ስለዚህ GDN/GRN አይገኝም።';
+
+  @override
+  String get noGdnGrnRecordsReturned => 'ለዚህ ምደባ ምንም GDN ወይም GRN መዝገብ አልተመለሰም።';
+
+  @override
+  String noTypeDocuments(String type) {
+    return 'ምንም $type ሰነዶች የሉም';
+  }
+
+  @override
+  String get trySwitchingFilter => 'ሁሉንም የሚገኙ ሰነዶችን ለማየት ማጣሪያውን ይቀይሩ።';
+
+  @override
+  String get documentNoPrefix => 'ቁጥር:';
+
+  @override
+  String get allFilter => 'ሁሉም';
+
+  @override
+  String get gdnFilter => 'GDN';
+
+  @override
+  String get grnFilter => 'GRN';
+
+  @override
+  String get goodsDetails => 'የእቃ ዝርዝሮች';
+
+  @override
+  String get scanToVerifyAuthenticity => 'ሰነዱን ለማረጋገጥ ይቃኙ';
+
+  @override
+  String get done => 'ተጠናቋል';
+
+  @override
+  String get downloadPdf => 'PDF አውርድ';
+
+  @override
+  String get preparingPdf => 'በማዘጋጀት ላይ…';
+
+  @override
+  String get licensePrefix => 'ፈቃድ:';
+
+  @override
+  String get idPrefix => 'መለያ:';
+
+  @override
+  String get platePrefix => 'ታርጋ:';
+
+  @override
+  String get updateCompanyAndTradeLicence => 'የኩባንያዎን ስም እና የንግድ ፈቃድ ያዘምኑ';
+
+  @override
+  String get uploadTradeLicence => 'የንግድ ፈቃድ ይስቀሉ (ምስል ወይም PDF)';
+
+  @override
+  String get tradeLicenceUploaded => 'የንግድ ፈቃድ ተስቀልቷል።';
+
+  @override
+  String get saveChanges => 'ለውጦችን አስቀምጥ';
+
+  @override
+  String get passwordResetEmailInstructions =>
+      'ለይለፍ ቃል ዳግም ማስጀመሪያ መመሪያዎች ለተመዘገበው ኢሜይልዎ ይመልከቱ።';
+
+  @override
+  String get sendResetLink => 'ዳግም ማስጀመሪያ ሊንክ ላክ';
+
+  @override
+  String get privacyPolicyText =>
+      'የእርስዎ መረጃ በጥብቅ የድርጅት ግላዊነት ፖሊሲዎች በጥበቃ ስር ነው። የማጓጓዣ መለኪያዎችን ወይም የግል ዝርዝሮችን ለያልተፈቀዱ ሶስተኞች አንጋራም።\n\nሙሉ የአገልግሎት ውሎችን ለማንበብ ድረ-ገጻችንን ይጎብኙ።';
+
+  @override
+  String get acknowledge => 'ተቀበል';
+
+  @override
+  String successfullySavedToDownloads(String filename) {
+    return 'በተሳካ ሁኔታ ወደ Downloads አቅራቢያ ተቀምጧል።\n$filename';
+  }
+
+  @override
+  String get welcomeBackTitle => 'እንኳን ደህና መጡ';
+
+  @override
+  String get signInToManageShipments => 'ጭነቶችን ለማስተዳደር ይግቡ።';
+
+  @override
+  String get forgotPasswordQuestion => 'የይለፍ ቃል ረሱ?';
+
+  @override
+  String get dontHaveAnAccount => 'መለያ የለዎትም?';
+
+  @override
+  String get createAccount => 'መለያ ይፍጠሩ';
+
+  @override
+  String get forgotPasswordTitle => 'የይለፍ ቃል ረሱ';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'OTP ለመቀበል ስልክ ቁጥርዎን ያስገቡ፣ ከዚያ አዲስ የይለፍ ቃል ይፍጠሩ።';
+
+  @override
+  String get phoneLabel => 'ስልክ';
+
+  @override
+  String get otpCodeLabel => 'የ OTP ኮድ';
+
+  @override
+  String get newPasswordLabel => 'አዲስ የይለፍ ቃል';
+
+  @override
+  String get confirmNewPasswordLabel => 'አዲስ የይለፍ ቃል ያረጋግጡ';
+
+  @override
+  String get consignorRegistrationTitle => 'የአስጫኝ ምዝገባ';
+
+  @override
+  String get consignorRegStep1 => 'ደረጃ 1 ከ 3: ጭነቶችን ማስተዳደር ለመጀመር መለያዎን ይፍጠሩ።';
+
+  @override
+  String get assignedShipmentsTitle => 'የተመደቡ ጭነቶች';
+
+  @override
+  String get assignedShipmentsDesc =>
+      'ከቅናሾች ትር ላይ ቅናሾችን ይቀበሉ፤ አስተዳዳሪው የመጨረሻ መንገዶችን ይመድባል።';
+
+  @override
+  String get accountStatusPrefix => 'የመለያ ሁኔታ: ';
+
+  @override
+  String get openOffersButton => 'ቅናሾችን ክፈት';
+
+  @override
+  String get noActiveAssignmentsDesc => 'ምንም ገባሪ ምደባዎች የሉም። አዳዲስ ቅናሾችን ያረጋግጡ።';
+
+  @override
+  String get updateProfileTitle => 'መገለጫ አዘምን';
+
+  @override
+  String get updateProfileSubtitle => 'ፎቶ፣ ፈቃድ፣ መስመሮች';
+
+  @override
+  String get vehicleDetailsTitle => 'የተሽከርካሪ ዝርዝሮች';
+
+  @override
+  String get driverLicenseTitle => 'የአሽከርካሪ ፈቃድ';
+
+  @override
+  String get driverLicenseSubtitle => 'ማረጋገጫ እና የሚያበቃበት ጊዜ';
+
+  @override
+  String get viewAdminPaymentRecords => 'የአስተዳዳሪ ክፍያ መዝገቦችን ይመልከቱ';
+
+  @override
+  String get assignmentsTitle => 'ምደባዎች';
+
+  @override
+  String get currentActiveRoutes => 'የአሁኑ ገባሪ መስመሮች';
+
+  @override
+  String get offersCenterTitle => 'የቅናሾች ማዕከል';
+
+  @override
+  String get bidsForNewShipments => 'ለአዳዲስ ጭነቶች ጨረታዎች';
+
+  @override
+  String get loadAndRouteAlerts => 'የጭነት እና የመንገድ ማሳወቂያዎች';
+
+  @override
+  String get driverTermsAndPrivacy => 'የአሽከርካሪ ውሎች እና ግላዊነት';
+
+  @override
+  String get notSpecified => 'አልተገለጸም';
+
+  @override
+  String get adminMessage => 'የአስተዳዳሪ መልእክት';
+
+  @override
+  String get driverMessage => 'የአሽከርካሪ መልእክት';
+
+  @override
+  String get etbCurrency => 'ብር';
+
+  @override
+  String get roundsPrefix => 'ዙሮች: ';
+
+  @override
+  String get noAssignmentsYet => 'እስካሁን ምንም ምደባዎች የሉም።';
+
+  @override
+  String get bottomNavHome => 'ዋና ገጽ';
+
+  @override
+  String get bottomNavOffers => 'ቅናሾች';
+
+  @override
+  String get bottomNavProfile => 'መገለጫ';
 }

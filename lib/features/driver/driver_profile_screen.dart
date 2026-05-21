@@ -559,13 +559,13 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                   _buildListGroup([
                     _buildListItem(
                       Icons.edit_outlined,
-                      'Update profile',
-                      'Photo, licence, lanes',
+                      context.l10n.updateProfileTitle,
+                      context.l10n.updateProfileSubtitle,
                       onTap: _editDriverProfile,
                     ),
                     _buildListItem(
                       Icons.local_shipping_outlined,
-                      'Vehicle Details',
+                      context.l10n.vehicleDetailsTitle,
                       _vehicle != null
                           ? '${_vehicle!['type'] ?? 'Truck'} · ${_vehicle!['plateNumber'] ?? 'No Plate'}'
                           : 'Load vehicle info',
@@ -573,8 +573,8 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                     ),
                     _buildListItem(
                       Icons.badge_outlined,
-                      'Driver License',
-                      'Verification & expiry',
+                      context.l10n.driverLicenseTitle,
+                      context.l10n.driverLicenseSubtitle,
                       onTap: () => context.push('/driver/profile/license'),
                     ),
                   ]),
@@ -590,7 +590,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                     _buildListItem(
                       Icons.payments_outlined,
                       context.l10n.payments,
-                      'View admin payment records',
+                      context.l10n.viewAdminPaymentRecords,
                       onTap: () => context.push('/driver/profile/payouts'),
                     ),
                   ]),
@@ -599,14 +599,14 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                   _buildListGroup([
                     _buildListItem(
                       Icons.route_outlined,
-                      'Assignments',
-                      'Current active routes',
+                      context.l10n.assignmentsTitle,
+                      context.l10n.currentActiveRoutes,
                       onTap: () => context.go('/driver/home'),
                     ),
                     _buildListItem(
                       Icons.local_offer_outlined,
-                      'Offers Center',
-                      'Bids for new shipments',
+                      context.l10n.offersCenterTitle,
+                      context.l10n.bidsForNewShipments,
                       onTap: () => context.go('/driver/offers'),
                     ),
                   ]),
@@ -622,7 +622,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                     _buildListItem(
                       Icons.notifications_none_rounded,
                       context.l10n.notifications,
-                      'Load & route alerts',
+                      context.l10n.loadAndRouteAlerts,
                       trailing: Switch.adaptive(
                         value: _notificationsEnabled,
                         onChanged: (v) =>
@@ -638,8 +638,8 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                     ),
                     _buildListItem(
                       Icons.policy_outlined,
-                      'Legal',
-                      'Driver terms & privacy',
+                      context.l10n.legal,
+                      context.l10n.driverTermsAndPrivacy,
                       onTap: _showLegal,
                     ),
                   ]),

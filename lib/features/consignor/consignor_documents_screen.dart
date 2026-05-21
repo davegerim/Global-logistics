@@ -67,7 +67,7 @@ class _ConsignorDocumentsScreenState
     });
 
     final shipmentsAsync = ref.watch(consignorShipmentsProvider);
-    final fmt = DateFormat.yMMMd();
+    final fmt = DateFormat.yMMMd(context.l10n.localeName);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -132,7 +132,7 @@ class _ConsignorDocumentsScreenState
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'GDN & GRN Hub',
+                                context.l10n.gdnGrnHub,
                                 style: Theme.of(context).textTheme.titleLarge
                                     ?.copyWith(
                                       color: Colors.white,
@@ -146,7 +146,7 @@ class _ConsignorDocumentsScreenState
                         Padding(
                           padding: const EdgeInsets.only(right: 90),
                           child: Text(
-                            'View all shipping documents for the selected shipment assignment.',
+                            context.l10n.viewAllShippingDocumentsDesc,
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   color: Colors.white.withValues(alpha: 0.9),
@@ -210,9 +210,9 @@ class _ConsignorDocumentsScreenState
                           Icons.keyboard_arrow_down_rounded,
                           color: AppColors.primary,
                         ),
-                        decoration: const InputDecoration(
-                          labelText: 'Select Shipment',
-                          labelStyle: TextStyle(
+                        decoration: InputDecoration(
+                          labelText: context.l10n.selectShipment,
+                          labelStyle: const TextStyle(
                             color: AppColors.textTertiary,
                             fontWeight: FontWeight.w600,
                           ),
@@ -224,7 +224,9 @@ class _ConsignorDocumentsScreenState
                               (s) => DropdownMenuItem(
                                 value: s.id,
                                 child: Text(
-                                  s.displayId,
+                                  s.displayId
+                                      .replaceAll('Booking #', context.l10n.bookingPrefix)
+                                      .replaceAll('Assignment #', context.l10n.assignmentPrefix),
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
                                   style: const TextStyle(
@@ -251,8 +253,7 @@ class _ConsignorDocumentsScreenState
                 _emptyStateCard(
                   context: context,
                   title: context.l10n.noAssignmentYet,
-                  subtitle:
-                      'This shipment has no active assignment, so no GDN/GRN is available yet.',
+                  subtitle: context.l10n.noGdnGrnForShipment,
                   icon: Icons.assignment_late_outlined,
                 )
               else
@@ -273,8 +274,7 @@ class _ConsignorDocumentsScreenState
                       return _emptyStateCard(
                         context: context,
                         title: context.l10n.noDocumentsFound,
-                        subtitle:
-                            'No GDN or GRN records were returned for this assignment.',
+                        subtitle: context.l10n.noGdnGrnRecordsReturned,
                         icon: Icons.folder_open_outlined,
                       );
                     }
@@ -285,12 +285,14 @@ class _ConsignorDocumentsScreenState
                           spacing: 8,
                           runSpacing: 8,
                           children: [
-                            _typeChip('ALL', docs.length),
+                            _typeChip(context, 'ALL', docs.length),
                             _typeChip(
+                              context,
                               'GDN',
                               docs.where((d) => d.type == 'GDN').length,
                             ),
                             _typeChip(
+                              context,
                               'GRN',
                               docs.where((d) => d.type == 'GRN').length,
                             ),
@@ -300,10 +302,10 @@ class _ConsignorDocumentsScreenState
                         if (filtered.isEmpty)
                           _emptyStateCard(
                             context: context,
-                            title:
-                                'No ${_selectedType.toUpperCase()} documents',
-                            subtitle:
-                                'Try switching the filter to see all available documents.',
+                            title: context.l10n.noTypeDocuments(
+                              _filterLabel(context, _selectedType),
+                            ),
+                            subtitle: context.l10n.trySwitchingFilter,
                             icon: Icons.filter_alt_off_outlined,
                           )
                         else
@@ -326,12 +328,25 @@ class _ConsignorDocumentsScreenState
     );
   }
 
-  Widget _typeChip(String type, int count) {
+  String _filterLabel(BuildContext context, String type) {
+    switch (type) {
+      case 'ALL':
+        return context.l10n.allFilter;
+      case 'GDN':
+        return context.l10n.gdnFilter;
+      case 'GRN':
+        return context.l10n.grnFilter;
+      default:
+        return type;
+    }
+  }
+
+  Widget _typeChip(BuildContext context, String type, int count) {
     final selected = _selectedType == type;
     return ChoiceChip(
       selected: selected,
       onSelected: (_) => setState(() => _selectedType = type),
-      label: Text('$type ($count)'),
+      label: Text('${_filterLabel(context, type)} ($count)'),
       selectedColor: AppColors.primary.withValues(alpha: 0.12),
       backgroundColor: AppColors.surface,
       labelStyle: TextStyle(
@@ -403,7 +418,9 @@ class _ConsignorDocumentsScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      d.title,
+                      isGdn
+                          ? context.l10n.goodsDeliveryNote
+                          : context.l10n.goodsReceivedNote,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.2,
@@ -412,7 +429,7 @@ class _ConsignorDocumentsScreenState
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${d.type} • ${fmt.format(d.availableAt)}',
+                      '${isGdn ? context.l10n.gdnFilter : context.l10n.grnFilter} • ${fmt.format(d.availableAt)}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
@@ -421,7 +438,7 @@ class _ConsignorDocumentsScreenState
                     if ((d.documentNumber ?? '').isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
-                        'No: ${d.documentNumber}',
+                        '${context.l10n.documentNoPrefix} ${d.documentNumber}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textTertiary,
                           fontWeight: FontWeight.w600,

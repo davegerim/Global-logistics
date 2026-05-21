@@ -249,7 +249,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                   ],
                 ),
                 const SizedBox(height: 10),
-                Text('Assignment: ${widget.assignmentId}'),
+                Text('${context.l10n.assignment}: ${widget.assignmentId}'),
                 const SizedBox(height: 8),
                 if (_loadingState)
                   const LinearProgressIndicator()

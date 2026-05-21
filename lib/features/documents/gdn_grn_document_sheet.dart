@@ -114,7 +114,7 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
           ..showSnackBar(
             SnackBar(
               content: Text(
-                'Successfully saved to Downloads folder.\n$filename',
+                context.l10n.successfullySavedToDownloads(filename),
               ),
               backgroundColor: AppColors.success,
               behavior: SnackBarBehavior.floating,
@@ -152,7 +152,7 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final timeFmt = DateFormat.jms();
+    final timeFmt = DateFormat.jms(context.l10n.localeName);
     final vm = _vm;
 
     return ScaffoldMessenger(
@@ -284,7 +284,7 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                         child: _DocInfoCard(
                                           title: context.l10n.consignor,
                                           lines: [
-                                            vm.consignorName,
+                                            context.translateDynamic(vm.consignorName),
                                             if (vm.consignorPhone.isNotEmpty) vm.consignorPhone,
                                           ],
                                         ),
@@ -294,7 +294,7 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                         child: _DocInfoCard(
                                           title: context.l10n.consignee,
                                           lines: [
-                                            vm.consigneeName,
+                                            context.translateDynamic(vm.consigneeName),
                                             if (vm.consigneePhone.isNotEmpty) vm.consigneePhone,
                                           ],
                                         ),
@@ -308,10 +308,14 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                         child: _DocInfoCard(
                                           title: context.l10n.driver,
                                           lines: [
-                                            if (vm.driverName.isNotEmpty) vm.driverName else '—',
-                                            if (vm.driverId.isNotEmpty) 'ID: ${vm.driverId}',
+                                            if (vm.driverName.isNotEmpty)
+                                              context.translateDynamic(vm.driverName)
+                                            else
+                                              '—',
+                                            if (vm.driverId.isNotEmpty)
+                                              '${context.l10n.idPrefix} ${vm.driverId}',
                                             if (vm.licenseNumber.isNotEmpty)
-                                              'License: ${vm.licenseNumber}',
+                                              '${context.l10n.licensePrefix} ${vm.licenseNumber}',
                                           ],
                                         ),
                                       ),
@@ -321,11 +325,11 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                           title: context.l10n.vehicle,
                                           lines: [
                                             if (vm.vehicleType.isNotEmpty)
-                                              'Type: ${vm.vehicleType}'
+                                              '${context.l10n.typeLabel}: ${context.translateDynamic(vm.vehicleType)}'
                                             else
                                               '—',
                                             if (vm.plateNumber.isNotEmpty)
-                                              'Plate: ${vm.plateNumber}',
+                                              '${context.l10n.platePrefix} ${vm.plateNumber}',
                                           ],
                                         ),
                                       ),
@@ -333,7 +337,7 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    'Goods Details',
+                                    context.l10n.goodsDetails,
                                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                           fontWeight: FontWeight.w800,
                                         ),
@@ -356,14 +360,18 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                       Expanded(
                                         child: _LocationBlock(
                                           label: context.l10n.loadingLocation,
-                                          value: vm.loadingLocation,
+                                          value: context.translateDynamic(
+                                            vm.loadingLocation,
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: _LocationBlock(
                                           label: context.l10n.offloadingLocation,
-                                          value: vm.offloadingLocation,
+                                          value: context.translateDynamic(
+                                            vm.offloadingLocation,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -377,7 +385,9 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
-                                    vm.remarks.isNotEmpty ? vm.remarks : '—',
+                                    vm.remarks.isNotEmpty
+                                        ? context.translateDynamic(vm.remarks)
+                                        : '—',
                                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                           color: AppColors.textPrimary,
                                         ),
@@ -394,7 +404,7 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Scan to verify document authenticity',
+                                      context.l10n.scanToVerifyAuthenticity,
                                       textAlign: TextAlign.center,
                                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                             color: AppColors.textSecondary,
@@ -426,9 +436,9 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                      child: const Text(
-                        'Done',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      child: Text(
+                        context.l10n.done,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -448,7 +458,9 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                             )
                           : const Icon(Icons.picture_as_pdf_outlined),
                       label: Text(
-                        _pdfBusy ? 'Preparing…' : 'Download PDF',
+                        _pdfBusy
+                            ? context.l10n.preparingPdf
+                            : context.l10n.downloadPdf,
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                       ),
                       style: FilledButton.styleFrom(
@@ -601,7 +613,7 @@ class _GoodsTable extends StatelessWidget {
                   (c) => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                     child: Text(
-                      c.isEmpty ? '—' : c,
+                      c.isEmpty ? '—' : context.translateDynamic(c),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppColors.textPrimary,
                           ),

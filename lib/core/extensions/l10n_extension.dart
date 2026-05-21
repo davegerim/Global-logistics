@@ -34,6 +34,7 @@ extension AppLocalizationsX on BuildContext {
       case 'Normal': return isAm ? 'መደበኛ' : 'Normal';
       case 'in a timeline constraint': return isAm ? 'በጊዜ ገደብ ውስጥ' : 'in a timeline constraint';
       case 'nice': return isAm ? 'ጥሩ' : 'nice';
+      case 'ETB': return isAm ? 'ብር' : 'ETB';
     }
 
     return text;

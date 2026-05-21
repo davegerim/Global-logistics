@@ -354,14 +354,14 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                     _OfferDetailRow(
                       label: context.l10n.goods,
                       value: o.goodType?.isNotEmpty == true
-                          ? o.goodType!
-                          : 'Not specified',
+                          ? context.translateDynamic(o.goodType!)
+                          : context.l10n.notSpecified,
                     ),
                     _OfferDetailRow(
                       label: context.l10n.distance,
                       value: o.distanceKm > 0
                           ? '${o.distanceKm.toStringAsFixed(0)} km'
-                          : 'Not specified',
+                          : context.l10n.notSpecified,
                     ),
                     _OfferDetailRow(
                       label: context.l10n.negotiationId,

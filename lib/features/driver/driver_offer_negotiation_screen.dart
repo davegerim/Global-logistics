@@ -244,8 +244,8 @@ class _DriverOfferNegotiationScreenState
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Status: ${offer.apiStatus ?? 'OFFER'}'
-                          '  •  Rounds: ${rounds.length}',
+                          '${context.l10n.statusPrefix}${offer.apiStatus ?? 'OFFER'}'
+                          '  •  ${context.l10n.roundsPrefix}${rounds.length}',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
                                 color: Colors.white,
@@ -375,7 +375,7 @@ class _DriverOfferNegotiationScreenState
                                     if (item.priceAmount != null) ...[
                                       const SizedBox(height: 6),
                                       Text(
-                                        'Price: ${item.priceAmount!.toStringAsFixed(0)} ${offer.currency}',
+                                        'Price: ${item.priceAmount!.toStringAsFixed(0)} ${context.translateDynamic(offer.currency)}',
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w800,
@@ -548,9 +548,9 @@ class _DriverOfferNegotiationScreenState
   String _roundActorTitle(_RoundActor actor) {
     switch (actor) {
       case _RoundActor.driver:
-        return 'Driver message';
+        return context.l10n.driverMessage;
       case _RoundActor.admin:
-        return 'Admin message';
+        return context.l10n.adminMessage;
       case _RoundActor.system:
         return 'System message';
     }

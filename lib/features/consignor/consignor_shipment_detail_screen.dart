@@ -145,7 +145,7 @@ class _ConsignorShipmentDetailScreenState
       setState(() {
         _gdnCreated = gdns.isNotEmpty;
         if (_gdnCreated) {
-          _gdnMessage = 'GDN already generated and locked.';
+          _gdnMessage = context.l10n.gdnAlreadyGeneratedLocked;
         }
       });
     } catch (_) {}
@@ -160,7 +160,7 @@ class _ConsignorShipmentDetailScreenState
       setState(() {
         _grnCreated = grns.isNotEmpty;
         if (_grnCreated) {
-          _grnMessage = 'GRN already generated.';
+          _grnMessage = context.l10n.grnAlreadyCreated;
         } else {
           _grnMessage = null;
         }

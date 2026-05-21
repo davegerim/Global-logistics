@@ -122,14 +122,14 @@ class DriverHomeScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Assigned shipments',
+                                context.l10n.assignedShipmentsTitle,
                                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                       color: AppColors.surface,
                                     ),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Accept offers from the Offers tab; admin assigns final routes.',
+                                context.l10n.assignedShipmentsDesc,
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: AppColors.surface.withValues(alpha: 0.8),
                                     ),
@@ -155,7 +155,7 @@ class DriverHomeScreen extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Account status: $statusLabel',
+                            '${context.l10n.accountStatusPrefix}$statusLabel',
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: statusColor,
                               fontWeight: FontWeight.w600,
@@ -176,7 +176,7 @@ class DriverHomeScreen extends ConsumerWidget {
                 title: context.l10n.activeAssignments,
                 secondaryActionLabel: context.l10n.history,
                 onSecondaryAction: () => context.push('/driver/assignments/history'),
-                actionLabel: 'Open offers',
+                actionLabel: context.l10n.openOffersButton,
                 onAction: () {
                   if (auth.canViewDriverOffers) {
                     context.go('/driver/offers');
@@ -200,7 +200,7 @@ class DriverHomeScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   sliver: SliverToBoxAdapter(
                     child: Text(
-                      'No active assignments. Check new offers.',
+                      context.l10n.noActiveAssignmentsDesc,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),

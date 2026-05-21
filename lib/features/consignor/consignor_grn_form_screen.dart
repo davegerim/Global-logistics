@@ -312,13 +312,13 @@ class _ConsignorGrnFormScreenState
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'GRN Form',
+                      context.l10n.grnForm,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                Text('Assignment: ${widget.assignmentId}'),
+                Text('${context.l10n.assignment}: ${widget.assignmentId}'),
                 const SizedBox(height: 8),
                 if (_loadingState)
                   const LinearProgressIndicator()

@@ -32,7 +32,7 @@ class DriverAssignmentHistoryScreen extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  'No assignments yet.',
+                  context.l10n.noAssignmentsYet,
                   style: Theme.of(context).textTheme.bodyLarge,
                   textAlign: TextAlign.center,
                 ),

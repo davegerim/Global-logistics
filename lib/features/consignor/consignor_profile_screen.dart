@@ -190,23 +190,23 @@ class _ConsignorProfileScreenState
     Object? saveError;
     var saved = false;
     await _showPremiumSheet(
-      title: 'Business profile',
-      subtitle: 'Update your company name and trade licence',
+      title: context.l10n.businessProfile,
+      subtitle: context.l10n.updateCompanyAndTradeLicence,
       icon: Icons.business_rounded,
       children: [
         _buildInput(businessName, context.l10n.businessNameOptional),
         PresignedUrlUploadRow(
           urlController: tradeLicence,
           folder: S3Folder.profile,
-          buttonLabel: 'Upload trade licence (image or PDF)',
-          successMessage: 'Trade licence uploaded.',
+          buttonLabel: context.l10n.uploadTradeLicence,
+          successMessage: context.l10n.tradeLicenceUploaded,
         ),
         PresignedUploadAttachedHint(
           controller: tradeLicence,
           message: context.l10n.tradeLicenceAttached,
         ),
       ],
-      actionLabel: 'Save Changes',
+      actionLabel: context.l10n.saveChanges,
       onAction: () async {
         try {
           await ref
@@ -258,7 +258,7 @@ class _ConsignorProfileScreenState
         _buildInput(fn, context.l10n.firstName),
         _buildInput(ln, context.l10n.lastName),
       ],
-      actionLabel: 'Save Changes',
+      actionLabel: context.l10n.saveChanges,
       onAction: () async {
         try {
           final base = Map<String, dynamic>.from(_profile ?? {});
@@ -300,7 +300,7 @@ class _ConsignorProfileScreenState
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  'Please check your registered email for password reset instructions.',
+                  context.l10n.passwordResetEmailInstructions,
                   style: TextStyle(
                     color: AppColors.warning.withValues(alpha: 0.9),
                     fontWeight: FontWeight.w600,
@@ -312,7 +312,7 @@ class _ConsignorProfileScreenState
           ),
         ),
       ],
-      actionLabel: 'Send Reset Link',
+      actionLabel: context.l10n.sendResetLink,
       onAction: () async {},
     );
   }
@@ -328,16 +328,16 @@ class _ConsignorProfileScreenState
       subtitle: context.l10n.consignorPolicies,
       icon: Icons.policy_outlined,
       children: [
-        const Text(
-          'Your data is protected under our strict corporate privacy policies. We do not share shipping metrics or personal details with unauthorized third parties.\n\nFor full terms of service, please visit our website.',
-          style: TextStyle(
+        Text(
+          context.l10n.privacyPolicyText,
+          style: const TextStyle(
             color: AppColors.textSecondary,
             height: 1.6,
             fontSize: 15,
           ),
         ),
       ],
-      actionLabel: 'Acknowledge',
+      actionLabel: context.l10n.acknowledge,
       onAction: () async {},
     );
   }
@@ -393,12 +393,12 @@ class _ConsignorProfileScreenState
     final canBook = auth.canCreateConsignorBooking;
     final rawStatus = (auth.accountStatus ?? '').trim();
     final statusLabel = canBook
-        ? (rawStatus.isEmpty ? 'APPROVED' : rawStatus.toUpperCase())
+        ? (rawStatus.isEmpty ? context.l10n.approvedLabel : rawStatus.toUpperCase())
         : (rawStatus.toUpperCase() == 'VERIFIED'
-              ? 'VERIFIED (WAITING ADMIN APPROVAL)'
+              ? context.l10n.verifiedWaitingAdminApproval
               : (rawStatus.isEmpty
-                    ? 'PENDING ADMIN APPROVAL'
-                    : '${rawStatus.toUpperCase()} (WAITING ADMIN APPROVAL)'));
+                    ? context.l10n.pendingAdminApproval
+                    : '${rawStatus.toUpperCase()} (${context.l10n.waitingAdminApproval})'));
     final payments = ref.watch(paymentsProvider);
     final shipments = ref.watch(consignorShipmentsProvider);
     final rating = RoleProfileUtils.rating(_consignorProfile);
@@ -515,7 +515,7 @@ class _ConsignorProfileScreenState
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  statusLabel.toUpperCase(),
+                                  statusLabel,
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
@@ -565,12 +565,12 @@ class _ConsignorProfileScreenState
                   Row(
                     children: [
                       _buildStatCard(
-                        title: 'Rating',
+                        title: context.l10n.rating,
                         value: RoleProfileUtils.formatRating(rating),
                       ),
                       const SizedBox(width: 16),
                       _buildStatCard(
-                        title: 'Reviews',
+                        title: context.l10n.reviews,
                         value: RoleProfileUtils.formatReviewCount(reviewCount),
                       ),
                     ],
@@ -578,50 +578,50 @@ class _ConsignorProfileScreenState
                   const SizedBox(height: 32),
 
                   // Grouped Settings Lists
-                  const _ListHeader('Account Details'),
+                  _ListHeader(context.l10n.accountDetails),
                   _buildListGroup([
                     _buildListItem(
                       Icons.person_outline_rounded,
                       context.l10n.personalDetails,
-                      'Name & contact',
+                      context.l10n.nameAndContact,
                       onTap: _editProfile,
                     ),
                     _buildListItem(
                       Icons.business_rounded,
-                      'Business profile',
-                      'Company & trade licence',
+                      context.l10n.businessProfile,
+                      context.l10n.companyAndTradeLicence,
                       onTap: _editBusinessProfile,
                     ),
                     _buildListItem(
                       Icons.shield_outlined,
-                      'Security',
-                      'Password & 2FA',
+                      context.l10n.security,
+                      context.l10n.passwordAnd2fa,
                       onTap: _changePassword,
                     ),
                   ]),
 
-                  const _ListHeader('Logistics'),
+                  _ListHeader(context.l10n.logisticsSection),
                   _buildListGroup([
                     _buildListItem(
                       Icons.history_rounded,
-                      'Shipment Archive',
-                      'Past load history',
+                      context.l10n.shipmentArchive,
+                      context.l10n.pastLoadHistory,
                       onTap: () => context.push('/consignor/shipments'),
                     ),
                   ]),
 
-                  const _ListHeader('Preferences & Support'),
+                  _ListHeader(context.l10n.preferencesAndSupport),
                   _buildListGroup([
                     _buildListItem(
                       Icons.language_rounded,
-                      'Language',
+                      context.l10n.languageLabel,
                       currentAppLanguageLabel(context, ref),
                       onTap: _showLanguagePicker,
                     ),
                     _buildListItem(
                       Icons.notifications_none_rounded,
                       context.l10n.notifications,
-                      'Push alerts',
+                      context.l10n.pushAlerts,
                       trailing: Switch.adaptive(
                         value: _notificationsEnabled,
                         onChanged: (v) =>
@@ -635,13 +635,13 @@ class _ConsignorProfileScreenState
                     _buildListItem(
                       Icons.support_agent_rounded,
                       context.l10n.helpDesk,
-                      '24/7 priority support',
+                      context.l10n.contactSupportConsignorSubtitle,
                       onTap: _showSupport,
                     ),
                     _buildListItem(
                       Icons.policy_outlined,
-                      'Legal',
-                      'Privacy & terms',
+                      context.l10n.legal,
+                      context.l10n.privacyAndTerms,
                       onTap: _showLegal,
                     ),
                   ]),

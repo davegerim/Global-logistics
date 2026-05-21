@@ -344,6 +344,12 @@ abstract class AppLocalizations {
   /// **'GDN Form'**
   String get gdnForm;
 
+  /// No description provided for @grnForm.
+  ///
+  /// In en, this message translates to:
+  /// **'GRN Form'**
+  String get grnForm;
+
   /// No description provided for @personalDetails.
   ///
   /// In en, this message translates to:
@@ -1807,6 +1813,522 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'After GRN is recorded, confirm final receipt here.'**
   String get afterGrnRecordedConfirm;
+
+  /// No description provided for @rating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get rating;
+
+  /// No description provided for @reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get reviews;
+
+  /// No description provided for @accountDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Details'**
+  String get accountDetails;
+
+  /// No description provided for @nameAndContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Name & contact'**
+  String get nameAndContact;
+
+  /// No description provided for @businessProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Business profile'**
+  String get businessProfile;
+
+  /// No description provided for @companyAndTradeLicence.
+  ///
+  /// In en, this message translates to:
+  /// **'Company & trade licence'**
+  String get companyAndTradeLicence;
+
+  /// No description provided for @security.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get security;
+
+  /// No description provided for @passwordAnd2fa.
+  ///
+  /// In en, this message translates to:
+  /// **'Password & 2FA'**
+  String get passwordAnd2fa;
+
+  /// No description provided for @logisticsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Logistics'**
+  String get logisticsSection;
+
+  /// No description provided for @shipmentArchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipment Archive'**
+  String get shipmentArchive;
+
+  /// No description provided for @pastLoadHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Past load history'**
+  String get pastLoadHistory;
+
+  /// No description provided for @preferencesAndSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences & Support'**
+  String get preferencesAndSupport;
+
+  /// No description provided for @languageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get languageLabel;
+
+  /// No description provided for @pushAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Push alerts'**
+  String get pushAlerts;
+
+  /// No description provided for @legal.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get legal;
+
+  /// No description provided for @privacyAndTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & terms'**
+  String get privacyAndTerms;
+
+  /// No description provided for @amharicLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Amharic'**
+  String get amharicLanguage;
+
+  /// No description provided for @englishUs.
+  ///
+  /// In en, this message translates to:
+  /// **'English (US)'**
+  String get englishUs;
+
+  /// No description provided for @confirmSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Selection'**
+  String get confirmSelection;
+
+  /// No description provided for @gdnGrnHub.
+  ///
+  /// In en, this message translates to:
+  /// **'GDN & GRN Hub'**
+  String get gdnGrnHub;
+
+  /// No description provided for @viewAllShippingDocumentsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View all shipping documents for the selected shipment assignment.'**
+  String get viewAllShippingDocumentsDesc;
+
+  /// No description provided for @selectShipment.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Shipment'**
+  String get selectShipment;
+
+  /// No description provided for @noGdnGrnForShipment.
+  ///
+  /// In en, this message translates to:
+  /// **'This shipment has no active assignment, so no GDN/GRN is available yet.'**
+  String get noGdnGrnForShipment;
+
+  /// No description provided for @noGdnGrnRecordsReturned.
+  ///
+  /// In en, this message translates to:
+  /// **'No GDN or GRN records were returned for this assignment.'**
+  String get noGdnGrnRecordsReturned;
+
+  /// No description provided for @noTypeDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'No {type} documents'**
+  String noTypeDocuments(String type);
+
+  /// No description provided for @trySwitchingFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Try switching the filter to see all available documents.'**
+  String get trySwitchingFilter;
+
+  /// No description provided for @documentNoPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'No:'**
+  String get documentNoPrefix;
+
+  /// No description provided for @allFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'ALL'**
+  String get allFilter;
+
+  /// No description provided for @gdnFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'GDN'**
+  String get gdnFilter;
+
+  /// No description provided for @grnFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'GRN'**
+  String get grnFilter;
+
+  /// No description provided for @goodsDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Goods Details'**
+  String get goodsDetails;
+
+  /// No description provided for @scanToVerifyAuthenticity.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to verify document authenticity'**
+  String get scanToVerifyAuthenticity;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// No description provided for @downloadPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Download PDF'**
+  String get downloadPdf;
+
+  /// No description provided for @preparingPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing…'**
+  String get preparingPdf;
+
+  /// No description provided for @licensePrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'License:'**
+  String get licensePrefix;
+
+  /// No description provided for @idPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'ID:'**
+  String get idPrefix;
+
+  /// No description provided for @platePrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate:'**
+  String get platePrefix;
+
+  /// No description provided for @updateCompanyAndTradeLicence.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your company name and trade licence'**
+  String get updateCompanyAndTradeLicence;
+
+  /// No description provided for @uploadTradeLicence.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload trade licence (image or PDF)'**
+  String get uploadTradeLicence;
+
+  /// No description provided for @tradeLicenceUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade licence uploaded.'**
+  String get tradeLicenceUploaded;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// No description provided for @passwordResetEmailInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your registered email for password reset instructions.'**
+  String get passwordResetEmailInstructions;
+
+  /// No description provided for @sendResetLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Reset Link'**
+  String get sendResetLink;
+
+  /// No description provided for @privacyPolicyText.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is protected under our strict corporate privacy policies. We do not share shipping metrics or personal details with unauthorized third parties.\n\nFor full terms of service, please visit our website.'**
+  String get privacyPolicyText;
+
+  /// No description provided for @acknowledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledge'**
+  String get acknowledge;
+
+  /// No description provided for @successfullySavedToDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully saved to Downloads folder.\n{filename}'**
+  String successfullySavedToDownloads(String filename);
+
+  /// No description provided for @welcomeBackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back'**
+  String get welcomeBackTitle;
+
+  /// No description provided for @signInToManageShipments.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to manage shipments.'**
+  String get signInToManageShipments;
+
+  /// No description provided for @forgotPasswordQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get forgotPasswordQuestion;
+
+  /// No description provided for @dontHaveAnAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account?'**
+  String get dontHaveAnAccount;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get createAccount;
+
+  /// No description provided for @forgotPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password'**
+  String get forgotPasswordTitle;
+
+  /// No description provided for @forgotPasswordSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your phone number to receive an OTP, then create a new password.'**
+  String get forgotPasswordSubtitle;
+
+  /// No description provided for @phoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phoneLabel;
+
+  /// No description provided for @otpCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OTP code'**
+  String get otpCodeLabel;
+
+  /// No description provided for @newPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPasswordLabel;
+
+  /// No description provided for @confirmNewPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm new password'**
+  String get confirmNewPasswordLabel;
+
+  /// No description provided for @consignorRegistrationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Consignor Registration'**
+  String get consignorRegistrationTitle;
+
+  /// No description provided for @consignorRegStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 3: Create your account to start managing shipments.'**
+  String get consignorRegStep1;
+
+  /// No description provided for @assignedShipmentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned shipments'**
+  String get assignedShipmentsTitle;
+
+  /// No description provided for @assignedShipmentsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept offers from the Offers tab; admin assigns final routes.'**
+  String get assignedShipmentsDesc;
+
+  /// No description provided for @accountStatusPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Account status: '**
+  String get accountStatusPrefix;
+
+  /// No description provided for @openOffersButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Open offers'**
+  String get openOffersButton;
+
+  /// No description provided for @noActiveAssignmentsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'No active assignments. Check new offers.'**
+  String get noActiveAssignmentsDesc;
+
+  /// No description provided for @updateProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update profile'**
+  String get updateProfileTitle;
+
+  /// No description provided for @updateProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo, licence, lanes'**
+  String get updateProfileSubtitle;
+
+  /// No description provided for @vehicleDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle Details'**
+  String get vehicleDetailsTitle;
+
+  /// No description provided for @driverLicenseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver License'**
+  String get driverLicenseTitle;
+
+  /// No description provided for @driverLicenseSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification & expiry'**
+  String get driverLicenseSubtitle;
+
+  /// No description provided for @viewAdminPaymentRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'View admin payment records'**
+  String get viewAdminPaymentRecords;
+
+  /// No description provided for @assignmentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignments'**
+  String get assignmentsTitle;
+
+  /// No description provided for @currentActiveRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Current active routes'**
+  String get currentActiveRoutes;
+
+  /// No description provided for @offersCenterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Offers Center'**
+  String get offersCenterTitle;
+
+  /// No description provided for @bidsForNewShipments.
+  ///
+  /// In en, this message translates to:
+  /// **'Bids for new shipments'**
+  String get bidsForNewShipments;
+
+  /// No description provided for @loadAndRouteAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Load & route alerts'**
+  String get loadAndRouteAlerts;
+
+  /// No description provided for @driverTermsAndPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver terms & privacy'**
+  String get driverTermsAndPrivacy;
+
+  /// No description provided for @notSpecified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not specified'**
+  String get notSpecified;
+
+  /// No description provided for @adminMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin message'**
+  String get adminMessage;
+
+  /// No description provided for @driverMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver message'**
+  String get driverMessage;
+
+  /// No description provided for @etbCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'ETB'**
+  String get etbCurrency;
+
+  /// No description provided for @roundsPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Rounds: '**
+  String get roundsPrefix;
+
+  /// No description provided for @noAssignmentsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No assignments yet.'**
+  String get noAssignmentsYet;
+
+  /// No description provided for @bottomNavHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get bottomNavHome;
+
+  /// No description provided for @bottomNavOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'Offers'**
+  String get bottomNavOffers;
+
+  /// No description provided for @bottomNavProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get bottomNavProfile;
 }
 
 class _AppLocalizationsDelegate
