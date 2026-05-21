@@ -11,7 +11,6 @@ import 'package:global_logistics_app/core/services/presigned_storage_service.dar
 import 'package:global_logistics_app/data/utils/role_profile_utils.dart';
 import 'package:global_logistics_app/shared/widgets/app_language_picker_sheet.dart';
 import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
-import 'package:global_logistics_app/shared/widgets/shipment_receipt_upload_row.dart';
 
 class DriverProfileScreen extends ConsumerStatefulWidget {
   const DriverProfileScreen({super.key});
@@ -131,7 +130,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
           await _loadDriverProfile();
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Profile updated successfully')),
+              SnackBar(content: Text(context.l10n.profileUpdatedSuccessfully)),
             );
           }
         } catch (e) {
@@ -316,51 +315,6 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
       ],
       actionLabel: 'Send Reset Link',
       onAction: () async {},
-    );
-  }
-
-  Future<void> _assignmentPayment() async {
-    final af = TextEditingController();
-    final amt = TextEditingController();
-    final refNo = TextEditingController();
-    final slip = TextEditingController();
-    await _showPremiumSheet(
-      title: context.l10n.recordPayout,
-      subtitle: context.l10n.submitProofOfPayout,
-      icon: Icons.receipt_long_rounded,
-      children: [
-        _buildInput(af, 'Assignment Finance ID'),
-        _buildInput(amt, 'Amount', type: TextInputType.number),
-        _buildInput(refNo, 'Reference Number'),
-        ShipmentReceiptUploadRow(slipController: slip),
-        PresignedUploadAttachedHint(
-          controller: slip,
-          message: context.l10n.paymentReceiptAttached,
-        ),
-      ],
-      actionLabel: 'Submit Proof',
-      onAction: () async {
-        try {
-          await ref.read(backendApiProvider).assignmentFinanceAddPayment({
-            'assignmentFinanceId': af.text.trim(),
-            'paidAmount': double.tryParse(amt.text.trim()) ?? 0,
-            'referenceNo': refNo.text.trim(),
-            'slipUrl': slip.text.trim(),
-            'paidAt': DateTime.now().toUtc().toIso8601String(),
-          });
-          if (mounted)
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(context.l10n.paymentProofSubmittedSuccessfully),
-              ),
-            );
-        } catch (e) {
-          if (mounted)
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
-        }
-      },
     );
   }
 
@@ -634,10 +588,10 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                       onTap: _changePassword,
                     ),
                     _buildListItem(
-                      Icons.receipt_long_outlined,
-                      'Payout Records',
-                      'Submit assignment proof',
-                      onTap: _assignmentPayment,
+                      Icons.payments_outlined,
+                      context.l10n.payments,
+                      'View admin payment records',
+                      onTap: () => context.push('/driver/profile/payouts'),
                     ),
                   ]),
 

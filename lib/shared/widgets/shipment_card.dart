@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
@@ -17,7 +18,7 @@ class ShipmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-    final dateFmt = DateFormat.MMMd();
+    final dateFmt = DateFormat.MMMd(context.l10n.localeName);
     return Material(
       color: Colors.transparent,
       elevation: 0,
@@ -44,7 +45,9 @@ class ShipmentCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            shipment.displayId,
+                            shipment.displayId
+                                .replaceAll('Booking #', context.l10n.bookingPrefix)
+                                .replaceAll('Assignment #', context.l10n.assignmentPrefix),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: t.titleMedium?.copyWith(
@@ -69,15 +72,15 @@ class ShipmentCard extends StatelessWidget {
                           _row(
                             context,
                             Icons.upload_rounded,
-                            'From',
-                            shipment.loadingAddress,
+                            context.l10n.fromLabel,
+                            context.translateDynamic(shipment.loadingAddress),
                           ),
                           const SizedBox(height: 10),
                           _row(
                             context,
                             Icons.download_rounded,
-                            'To',
-                            shipment.offloadingAddress,
+                            context.l10n.toLabel,
+                            context.translateDynamic(shipment.offloadingAddress),
                           ),
                         ],
                       ),
@@ -92,7 +95,7 @@ class ShipmentCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Placed ${dateFmt.format(shipment.placedAt)}',
+                          '${context.l10n.placedPrefix}${dateFmt.format(shipment.placedAt)}',
                           style: t.bodyMedium,
                         ),
                         if (shipment.estimatedDelivery != null) ...[
@@ -104,7 +107,7 @@ class ShipmentCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Est. ${dateFmt.format(shipment.estimatedDelivery!)}',
+                            '${context.l10n.estPrefix}${dateFmt.format(shipment.estimatedDelivery!)}',
                             style: t.bodyMedium?.copyWith(
                               color: AppColors.textPrimary,
                               fontWeight: FontWeight.w600,

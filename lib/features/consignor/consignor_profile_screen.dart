@@ -13,7 +13,6 @@ import 'package:global_logistics_app/data/models/shipment_status.dart';
 import 'package:global_logistics_app/data/utils/role_profile_utils.dart';
 import 'package:global_logistics_app/shared/widgets/app_language_picker_sheet.dart';
 import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
-import 'package:global_logistics_app/shared/widgets/shipment_receipt_upload_row.dart';
 
 class ConsignorProfileScreen extends ConsumerStatefulWidget {
   const ConsignorProfileScreen({super.key});
@@ -236,7 +235,7 @@ class _ConsignorProfileScreenState
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Business profile updated')));
+      ).showSnackBar(SnackBar(content: Text(context.l10n.businessProfileUpdated)));
     } else if (saveError != null) {
       ScaffoldMessenger.of(
         context,
@@ -315,46 +314,6 @@ class _ConsignorProfileScreenState
       ],
       actionLabel: 'Send Reset Link',
       onAction: () async {},
-    );
-  }
-
-  Future<void> _addShipmentPayment() async {
-    final fid = TextEditingController();
-    final amt = TextEditingController();
-    final refNo = TextEditingController();
-    final slip = TextEditingController();
-    await _showPremiumSheet(
-      title: context.l10n.recordPayment,
-      subtitle: context.l10n.submitNewPaymentRecord,
-      icon: Icons.receipt_long_rounded,
-      children: [
-        _buildInput(fid, 'Finance ID'),
-        _buildInput(amt, 'Amount', type: TextInputType.number),
-        _buildInput(refNo, 'Reference Number'),
-        ShipmentReceiptUploadRow(slipController: slip),
-        PresignedUploadAttachedHint(
-          controller: slip,
-          message: context.l10n.paymentReceiptAttached,
-        ),
-      ],
-      actionLabel: 'Submit Record',
-      onAction: () async {
-        try {
-          await ref.read(backendApiProvider).shipmentFinanceCreatePayment({
-            'shipmentFinanceId': fid.text.trim(),
-            'paidAmount': double.tryParse(amt.text.trim()) ?? 0,
-            'referenceNo': refNo.text.trim(),
-            'slipUrl': slip.text.trim(),
-            'paidAt': DateTime.now().toUtc().toIso8601String(),
-          });
-          ref.invalidate(paymentsProvider);
-        } catch (e) {
-          if (mounted)
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
-        }
-      },
     );
   }
 
@@ -638,12 +597,6 @@ class _ConsignorProfileScreenState
                       'Security',
                       'Password & 2FA',
                       onTap: _changePassword,
-                    ),
-                    _buildListItem(
-                      Icons.account_balance_wallet_outlined,
-                      'Payments',
-                      'Records & invoices',
-                      onTap: _addShipmentPayment,
                     ),
                   ]),
 

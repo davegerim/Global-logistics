@@ -137,23 +137,93 @@ class ApiLogisticsRepository implements LogisticsRepository {
       final sid = shipments[i].id;
       try {
         final fin = await _api.shipmentFinanceByShipment(sid);
-        final payments = (fin['payments'] as List?) ?? const [];
-        for (final p in payments) {
-          if (p is! Map) continue;
-          final m = p.cast<String, dynamic>();
-          out.add(
-            PaymentRecord(
-              id: m['publicId'] as String? ?? '',
-              amount: (m['amount'] as num?)?.toDouble() ?? 0,
-              currency: (fin['priceCurrency'] as String?) ?? 'ETB',
-              status: m['status'] as String? ?? '—',
-              updatedAt: DateTime.tryParse(m['paidAt'] as String? ?? '') ?? DateTime.now(),
-              referenceNo: m['referenceNo'] as String?,
-              slipUrl: m['slipUrl'] as String?,
-            ),
-          );
-        }
+        out.addAll(_paymentRecordsFromFinance(fin));
       } catch (_) {}
+    }
+    return out;
+  }
+
+  @override
+  Future<List<DriverAssignmentFinance>> fetchDriverPayouts() async {
+    final assignments = await fetchDriverAssignedShipments();
+    final out = <DriverAssignmentFinance>[];
+    final seenAssignments = <String>{};
+
+    for (final shipment in assignments) {
+      final assignmentId = shipment.assignmentId?.trim();
+      if (assignmentId == null ||
+          assignmentId.isEmpty ||
+          seenAssignments.contains(assignmentId)) {
+        continue;
+      }
+      seenAssignments.add(assignmentId);
+      try {
+        final fin = await _api.assignmentFinance(assignmentId);
+        final record = _assignmentFinanceFromApi(fin, shipment.displayId);
+        if (record != null) out.add(record);
+      } catch (_) {}
+    }
+
+    out.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return out;
+  }
+
+  static Map<String, dynamic> _unwrapApiPayload(Map<String, dynamic> raw) {
+    final data = raw['data'];
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return raw;
+  }
+
+  static DriverAssignmentFinance? _assignmentFinanceFromApi(
+    Map<String, dynamic> raw,
+    String shipmentLabel,
+  ) {
+    final m = _unwrapApiPayload(raw);
+    final assignmentId = m['assignmentId']?.toString().trim() ?? '';
+    final publicId = m['publicId']?.toString().trim() ?? '';
+    if (assignmentId.isEmpty && publicId.isEmpty) return null;
+
+    return DriverAssignmentFinance(
+      publicId: publicId,
+      assignmentId: assignmentId,
+      agreedAmount: (m['agreedAmount'] as num?)?.toDouble() ?? 0,
+      paidAmount: (m['paidAmount'] as num?)?.toDouble() ?? 0,
+      remainingAmount: (m['remainingAmount'] as num?)?.toDouble() ?? 0,
+      status: m['status'] as String? ?? '—',
+      updatedAt: DateTime.tryParse(m['updatedAt'] as String? ?? '') ??
+          DateTime.tryParse(m['createdAt'] as String? ?? '') ??
+          DateTime.now(),
+      shipmentLabel: shipmentLabel,
+      currency: (m['priceCurrency'] as String?) ?? 'ETB',
+      payments: _paymentRecordsFromFinance(m),
+    );
+  }
+
+  static List<PaymentRecord> _paymentRecordsFromFinance(
+    Map<String, dynamic> fin,
+  ) {
+    final out = <PaymentRecord>[];
+    final payments = (fin['payments'] as List?) ?? const [];
+    final currency = (fin['priceCurrency'] as String?) ?? 'ETB';
+    for (final p in payments) {
+      if (p is! Map) continue;
+      final m = p.cast<String, dynamic>();
+      final amount = (m['paidAmount'] as num?)?.toDouble() ??
+          (m['amount'] as num?)?.toDouble() ??
+          0;
+      out.add(
+        PaymentRecord(
+          id: m['publicId'] as String? ?? '',
+          amount: amount,
+          currency: currency,
+          status: m['status'] as String? ?? '—',
+          updatedAt:
+              DateTime.tryParse(m['paidAt'] as String? ?? '') ?? DateTime.now(),
+          referenceNo: m['referenceNo'] as String?,
+          slipUrl: m['slipUrl'] as String?,
+        ),
+      );
     }
     return out;
   }

@@ -247,7 +247,7 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                               Text(
                                 assignment == null
                                     ? 'No assignment id'
-                                    : 'Tracking',
+                                    : context.l10n.trackingLabel,
                                 style: Theme.of(context).textTheme.labelLarge
                                     ?.copyWith(color: AppColors.textPrimary),
                               ),
@@ -300,7 +300,7 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                         const SizedBox(height: 8),
                         if (assignment != null)
                           Text(
-                            'Tracking points: ${_points.length}',
+                            '${context.l10n.trackingPoints} ${_points.length}',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         if (_error != null)
@@ -313,7 +313,7 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                         if (_latest != null) ...[
                           const SizedBox(height: 12),
                           Text(
-                            'Latest: lat ${_latest!['latitude']} lon ${_latest!['longitude']} @ ${_latest!['recordedAt']}',
+                            '${context.l10n.latestLocationPrefix}${_latest!['latitude']}${context.l10n.lonPrefix}${_latest!['longitude']}${context.l10n.atPrefix}${_latest!['recordedAt']}',
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: 10),

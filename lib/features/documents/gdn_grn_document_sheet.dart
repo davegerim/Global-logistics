@@ -370,7 +370,7 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    'Remarks',
+                                    context.l10n.remarks,
                                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                           fontWeight: FontWeight.w800,
                                         ),
@@ -566,7 +566,7 @@ class _GoodsTable extends StatelessWidget {
             ['—', '—', '—', '—', '—'],
           ]
         : rows;
-    final headers = ['Type', context.l10n.quantity, context.l10n.weight, context.l10n.volume, 'Packaging'];
+    final headers = [context.l10n.typeLabel, context.l10n.quantity, context.l10n.weight, context.l10n.volume, context.l10n.packaging];
     return Table(
       border: TableBorder.all(color: AppColors.borderLight, width: 1),
       columnWidths: const {

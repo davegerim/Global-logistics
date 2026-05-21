@@ -134,7 +134,7 @@ class _ConsignorNegotiationScreenState
               if (requiredField && v.isEmpty) return;
               Navigator.pop(ctx, v);
             },
-            child: const Text('Send'),
+            child: Text(context.l10n.sendButton),
           ),
         ],
       ),
@@ -345,7 +345,7 @@ class _ConsignorNegotiationScreenState
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Negotiation room'),
+        title: Text(context.l10n.negotiationRoom),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
@@ -398,8 +398,8 @@ class _ConsignorNegotiationScreenState
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Status: $status'
-                        '${latestPrice != null ? '  •  Latest price: $latestPrice' : ''}',
+                        '${context.l10n.statusPrefix}$status'
+                        '${latestPrice != null ? '  •  ${context.l10n.latestPrice} $latestPrice' : ''}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -415,7 +415,7 @@ class _ConsignorNegotiationScreenState
                         child: Padding(
                           padding: const EdgeInsets.all(24),
                           child: Text(
-                            'No offer rounds yet.',
+                            context.l10n.noOfferRoundsYet,
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(color: AppColors.textSecondary),
                             textAlign: TextAlign.center,
@@ -542,7 +542,7 @@ class _ConsignorNegotiationScreenState
                     foregroundColor: Colors.white,
                   ),
                   icon: const Icon(Icons.history_rounded),
-                  label: const Text('Open shipment history'),
+                  label: Text(context.l10n.openShipmentHistory),
                 ),
               ),
               Container(

@@ -20,11 +20,11 @@ class ConsignorHomeScreen extends ConsumerWidget {
     final canBook = auth.canCreateConsignorBooking;
     final rawStatus = (auth.accountStatus ?? '').trim();
     final statusLabel = canBook
-        ? (rawStatus.isEmpty ? 'APPROVED' : rawStatus.toUpperCase())
+        ? (rawStatus.isEmpty ? context.l10n.approvedLabel : rawStatus.toUpperCase())
         : (rawStatus.toUpperCase() == 'VERIFIED'
-              ? 'VERIFIED (waiting admin approval)'
+              ? context.l10n.verifiedWaitingAdminApproval
               : (rawStatus.isEmpty
-                    ? 'PENDING ADMIN APPROVAL'
+                    ? context.l10n.pendingAdminApproval
                     : '${rawStatus.toUpperCase()} (waiting admin approval)'));
     final shipments = ref.watch(consignorShipmentsProvider);
     final unreadAsync = ref.watch(unreadNotificationsCountProvider);
@@ -58,7 +58,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Welcome back',
+                        context.l10n.welcomeBack,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.w600,
@@ -134,7 +134,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
                             ),
                           ),
                           child: Text(
-                            'Quick action',
+                            context.l10n.quickAction,
                             style: Theme.of(context).textTheme.labelLarge
                                 ?.copyWith(
                                   color: AppColors.goldMuted,
@@ -144,7 +144,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Create booking',
+                          context.l10n.createBooking,
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(
                                 color: Colors.white,
@@ -179,8 +179,8 @@ class ConsignorHomeScreen extends ConsumerWidget {
                               Expanded(
                                 child: Text(
                                   canBook
-                                      ? 'Status: $statusLabel'
-                                      : 'Status: $statusLabel · Booking unlocks after admin approval',
+                                      ? '${context.l10n.statusPrefix}$statusLabel'
+                                      : '${context.l10n.statusPrefix}$statusLabel · ${context.l10n.bookingUnlocksAfterAdminApproval}',
                                   style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         color: Colors.white.withValues(
@@ -216,7 +216,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
                     bottom: -15,
                     child: IgnorePointer(
                       child: Image.asset(
-                        'assets/images/image-31GYuaDQ6tzlmK2MsYTpfwzmJwf9Kr.webp',
+                        'assets/images/huge_truck.png',
                         width: 150,
                         height: 150,
                         fit: BoxFit.contain,
@@ -234,7 +234,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
             sliver: SliverToBoxAdapter(
               child: SectionHeader(
                 title: context.l10n.activeAndRecent,
-                actionLabel: 'View all',
+                actionLabel: context.l10n.viewAll,
                 onAction: () => context.go('/consignor/shipments'),
               ),
             ),
@@ -254,7 +254,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   sliver: SliverToBoxAdapter(
                     child: Text(
-                      'No active shipments. Create a booking to get started.',
+                      context.l10n.noActiveShipmentsCreateBookingToGetStarted,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),

@@ -29,6 +29,7 @@ import 'package:global_logistics_app/features/driver/driver_home_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_license_details_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_offer_negotiation_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_offers_screen.dart';
+import 'package:global_logistics_app/features/driver/driver_payouts_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_profile_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_shipment_detail_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_shell.dart';
@@ -378,6 +379,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             parentNavigatorKey: _rootNavigatorKey,
             path: 'profile/license',
             builder: (context, state) => const DriverLicenseDetailsScreen(),
+          ),
+          GoRoute(
+            parentNavigatorKey: _rootNavigatorKey,
+            path: 'profile/payouts',
+            builder: (context, state) => const DriverPayoutsScreen(),
           ),
           GoRoute(
             parentNavigatorKey: _rootNavigatorKey,

@@ -1159,6 +1159,654 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Vehicle'**
   String get vehicle;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get welcomeBack;
+
+  /// No description provided for @quickAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick action'**
+  String get quickAction;
+
+  /// No description provided for @createBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Create booking'**
+  String get createBooking;
+
+  /// No description provided for @createBookingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Booking'**
+  String get createBookingTitle;
+
+  /// No description provided for @statusPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Status: '**
+  String get statusPrefix;
+
+  /// No description provided for @bookingUnlocksAfterAdminApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking unlocks after admin approval'**
+  String get bookingUnlocksAfterAdminApproval;
+
+  /// No description provided for @noActiveShipmentsCreateBookingToGetStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'No active shipments. Create a booking to get started.'**
+  String get noActiveShipmentsCreateBookingToGetStarted;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get viewAll;
+
+  /// No description provided for @newShipment.
+  ///
+  /// In en, this message translates to:
+  /// **'New Shipment'**
+  String get newShipment;
+
+  /// No description provided for @createNewShipmentOfferDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new shipment offer. Provide accurate logistics details to match with the best drivers.'**
+  String get createNewShipmentOfferDesc;
+
+  /// No description provided for @accountPendingAdminApprovalDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is pending admin approval. Booking is currently disabled.'**
+  String get accountPendingAdminApprovalDesc;
+
+  /// No description provided for @fromLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get fromLabel;
+
+  /// No description provided for @toLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get toLabel;
+
+  /// No description provided for @placedPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Placed '**
+  String get placedPrefix;
+
+  /// No description provided for @estPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Est. '**
+  String get estPrefix;
+
+  /// No description provided for @approvedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'APPROVED'**
+  String get approvedLabel;
+
+  /// No description provided for @verifiedWaitingAdminApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'VERIFIED (waiting admin approval)'**
+  String get verifiedWaitingAdminApproval;
+
+  /// No description provided for @pendingAdminApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'PENDING ADMIN APPROVAL'**
+  String get pendingAdminApproval;
+
+  /// No description provided for @waitingAdminApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'WAITING ADMIN APPROVAL'**
+  String get waitingAdminApproval;
+
+  /// No description provided for @completedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'COMPLETED'**
+  String get completedLabel;
+
+  /// No description provided for @cancelledLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CANCELLED'**
+  String get cancelledLabel;
+
+  /// No description provided for @inTransitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'IN TRANSIT'**
+  String get inTransitLabel;
+
+  /// No description provided for @arrivedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'ARRIVED'**
+  String get arrivedLabel;
+
+  /// No description provided for @offloadedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OFFLOADED'**
+  String get offloadedLabel;
+
+  /// No description provided for @loadedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'LOADED'**
+  String get loadedLabel;
+
+  /// No description provided for @gdnGeneratedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'GDN GENERATED'**
+  String get gdnGeneratedLabel;
+
+  /// No description provided for @grnGeneratedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'GRN GENERATED'**
+  String get grnGeneratedLabel;
+
+  /// No description provided for @consignorAcceptedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CONSIGNOR ACCEPTED'**
+  String get consignorAcceptedLabel;
+
+  /// No description provided for @driverAssignedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'DRIVER ASSIGNED'**
+  String get driverAssignedLabel;
+
+  /// No description provided for @selectedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SELECTED'**
+  String get selectedLabel;
+
+  /// No description provided for @consignorReceivedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CONSIGNOR RECEIVED'**
+  String get consignorReceivedLabel;
+
+  /// No description provided for @adminApprovedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'ADMIN APPROVED'**
+  String get adminApprovedLabel;
+
+  /// No description provided for @bookingPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking #'**
+  String get bookingPrefix;
+
+  /// No description provided for @assignmentPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment #'**
+  String get assignmentPrefix;
+
+  /// No description provided for @statusPendingReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending review'**
+  String get statusPendingReview;
+
+  /// No description provided for @statusAwaitingDriver.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting driver'**
+  String get statusAwaitingDriver;
+
+  /// No description provided for @statusDriverAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver assigned'**
+  String get statusDriverAssigned;
+
+  /// No description provided for @statusGdnIssued.
+  ///
+  /// In en, this message translates to:
+  /// **'GDN issued'**
+  String get statusGdnIssued;
+
+  /// No description provided for @statusLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get statusLoading;
+
+  /// No description provided for @statusInTransit.
+  ///
+  /// In en, this message translates to:
+  /// **'In transit'**
+  String get statusInTransit;
+
+  /// No description provided for @statusAtDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'At destination'**
+  String get statusAtDestination;
+
+  /// No description provided for @statusOffloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Offloading'**
+  String get statusOffloading;
+
+  /// No description provided for @statusDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get statusDelivered;
+
+  /// No description provided for @statusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get statusCompleted;
+
+  /// No description provided for @statusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get statusCancelled;
+
+  /// No description provided for @businessProfileUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Business profile updated'**
+  String get businessProfileUpdated;
+
+  /// No description provided for @profileUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully'**
+  String get profileUpdatedSuccessfully;
+
+  /// No description provided for @sendButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get sendButton;
+
+  /// No description provided for @openShipmentHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Open shipment history'**
+  String get openShipmentHistory;
+
+  /// No description provided for @shipmentProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipment Progress'**
+  String get shipmentProgress;
+
+  /// No description provided for @weightLabelCap.
+  ///
+  /// In en, this message translates to:
+  /// **'WEIGHT'**
+  String get weightLabelCap;
+
+  /// No description provided for @volumeLabelCap.
+  ///
+  /// In en, this message translates to:
+  /// **'VOLUME'**
+  String get volumeLabelCap;
+
+  /// No description provided for @vehicleLabelCap.
+  ///
+  /// In en, this message translates to:
+  /// **'VEHICLE'**
+  String get vehicleLabelCap;
+
+  /// No description provided for @createdLabelCap.
+  ///
+  /// In en, this message translates to:
+  /// **'CREATED'**
+  String get createdLabelCap;
+
+  /// No description provided for @priceTypeLabelCap.
+  ///
+  /// In en, this message translates to:
+  /// **'PRICE TYPE'**
+  String get priceTypeLabelCap;
+
+  /// No description provided for @priceLabelCap.
+  ///
+  /// In en, this message translates to:
+  /// **'PRICE'**
+  String get priceLabelCap;
+
+  /// No description provided for @routeMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Route Map'**
+  String get routeMap;
+
+  /// No description provided for @pickupLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PICKUP LOCATION'**
+  String get pickupLocationLabel;
+
+  /// No description provided for @deliveryDestinationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'DELIVERY DESTINATION'**
+  String get deliveryDestinationLabel;
+
+  /// No description provided for @placedOnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PLACED ON'**
+  String get placedOnLabel;
+
+  /// No description provided for @estArrivalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'EST. ARRIVAL'**
+  String get estArrivalLabel;
+
+  /// No description provided for @gdnControlOnceAdminSelects.
+  ///
+  /// In en, this message translates to:
+  /// **'GDN control becomes available once admin selects and assigns a driver.'**
+  String get gdnControlOnceAdminSelects;
+
+  /// No description provided for @grnControlAfterDriverAssignment.
+  ///
+  /// In en, this message translates to:
+  /// **'GRN control becomes available after driver assignment is active.'**
+  String get grnControlAfterDriverAssignment;
+
+  /// No description provided for @handoverConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Handover confirmed'**
+  String get handoverConfirmed;
+
+  /// No description provided for @feedbackToDriver.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback to driver'**
+  String get feedbackToDriver;
+
+  /// No description provided for @shareDeliveryNotesOrRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Share delivery notes or rate your driver after handover is confirmed.'**
+  String get shareDeliveryNotesOrRate;
+
+  /// No description provided for @receiverNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Receiver name, quantity and condition note are required.'**
+  String get receiverNameRequired;
+
+  /// No description provided for @grnExistsAndCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'GRN exists and consignor confirmation is completed.'**
+  String get grnExistsAndCompleted;
+
+  /// No description provided for @grnAlreadyCreatedConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'GRN already created. Confirm final receipt on the shipment screen.'**
+  String get grnAlreadyCreatedConfirm;
+
+  /// No description provided for @fillFormToCreateGrnAfterOffload.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill the form to create GRN after offloading.'**
+  String get fillFormToCreateGrnAfterOffload;
+
+  /// No description provided for @grnCreatedSuccessConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'GRN created successfully. Confirm final receipt on the shipment screen.'**
+  String get grnCreatedSuccessConfirm;
+
+  /// No description provided for @receiverNameStar.
+  ///
+  /// In en, this message translates to:
+  /// **'Receiver name *'**
+  String get receiverNameStar;
+
+  /// No description provided for @receivedQuantityStar.
+  ///
+  /// In en, this message translates to:
+  /// **'Received quantity *'**
+  String get receivedQuantityStar;
+
+  /// No description provided for @receivedWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Received weight'**
+  String get receivedWeight;
+
+  /// No description provided for @receivedVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Received volume'**
+  String get receivedVolume;
+
+  /// No description provided for @damageQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Damage quantity'**
+  String get damageQuantity;
+
+  /// No description provided for @shortageQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Shortage quantity'**
+  String get shortageQuantity;
+
+  /// No description provided for @conditionNoteStar.
+  ///
+  /// In en, this message translates to:
+  /// **'Condition note *'**
+  String get conditionNoteStar;
+
+  /// No description provided for @receivedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Received at'**
+  String get receivedAt;
+
+  /// No description provided for @grnAlreadyCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'GRN already created'**
+  String get grnAlreadyCreated;
+
+  /// No description provided for @gdnAlreadyGeneratedLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'GDN already generated and locked.'**
+  String get gdnAlreadyGeneratedLocked;
+
+  /// No description provided for @fillFormToCreateGdn.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill the form to create GDN.'**
+  String get fillFormToCreateGdn;
+
+  /// No description provided for @gdnCreatedSuccessEditingDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'GDN created successfully. Editing is disabled.'**
+  String get gdnCreatedSuccessEditingDisabled;
+
+  /// No description provided for @issuerNameStar.
+  ///
+  /// In en, this message translates to:
+  /// **'Issuer name *'**
+  String get issuerNameStar;
+
+  /// No description provided for @consigneeNameStar.
+  ///
+  /// In en, this message translates to:
+  /// **'Consignee name *'**
+  String get consigneeNameStar;
+
+  /// No description provided for @consigneeContactStar.
+  ///
+  /// In en, this message translates to:
+  /// **'Consignee contact *'**
+  String get consigneeContactStar;
+
+  /// No description provided for @quantityStar.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity *'**
+  String get quantityStar;
+
+  /// No description provided for @packaging.
+  ///
+  /// In en, this message translates to:
+  /// **'Packaging'**
+  String get packaging;
+
+  /// No description provided for @remarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Remarks'**
+  String get remarks;
+
+  /// No description provided for @gdnAlreadyCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'GDN already created'**
+  String get gdnAlreadyCreated;
+
+  /// No description provided for @trackingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracking'**
+  String get trackingLabel;
+
+  /// No description provided for @trackingPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracking points:'**
+  String get trackingPoints;
+
+  /// No description provided for @latestLocationPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest: lat '**
+  String get latestLocationPrefix;
+
+  /// No description provided for @lonPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **' lon '**
+  String get lonPrefix;
+
+  /// No description provided for @atPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **' @ '**
+  String get atPrefix;
+
+  /// No description provided for @noOfferRoundsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No offer rounds yet.'**
+  String get noOfferRoundsYet;
+
+  /// No description provided for @latestPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest price:'**
+  String get latestPrice;
+
+  /// No description provided for @typeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get typeLabel;
+
+  /// No description provided for @shipmentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipment'**
+  String get shipmentTitle;
+
+  /// No description provided for @waitingForDriverAssignment.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for driver assignment. Once assigned, create GDN before driver can continue status updates.'**
+  String get waitingForDriverAssignment;
+
+  /// No description provided for @assignmentLabelCap.
+  ///
+  /// In en, this message translates to:
+  /// **'ASSIGNMENT'**
+  String get assignmentLabelCap;
+
+  /// No description provided for @statusLabelCap.
+  ///
+  /// In en, this message translates to:
+  /// **'STATUS'**
+  String get statusLabelCap;
+
+  /// No description provided for @viewGdnForm.
+  ///
+  /// In en, this message translates to:
+  /// **'View GDN form'**
+  String get viewGdnForm;
+
+  /// No description provided for @openGdnForm.
+  ///
+  /// In en, this message translates to:
+  /// **'Open GDN form'**
+  String get openGdnForm;
+
+  /// No description provided for @grnCreatedAfterOffload.
+  ///
+  /// In en, this message translates to:
+  /// **'GRN can be created after the driver confirms offloaded status.'**
+  String get grnCreatedAfterOffload;
+
+  /// No description provided for @viewGrnForm.
+  ///
+  /// In en, this message translates to:
+  /// **'View GRN form'**
+  String get viewGrnForm;
+
+  /// No description provided for @openGrnForm.
+  ///
+  /// In en, this message translates to:
+  /// **'Open GRN form'**
+  String get openGrnForm;
+
+  /// No description provided for @afterGrnRecordedConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'After GRN is recorded, confirm final receipt here.'**
+  String get afterGrnRecordedConfirm;
 }
 
 class _AppLocalizationsDelegate

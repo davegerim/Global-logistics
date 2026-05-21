@@ -539,4 +539,339 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get vehicle => 'ተሽከርካሪ';
+
+  @override
+  String get welcomeBack => 'እንኳን ደህና መጡ';
+
+  @override
+  String get quickAction => 'ፈጣን እርምጃ';
+
+  @override
+  String get createBooking => 'ትዕዛዝ ፍጠር';
+
+  @override
+  String get createBookingTitle => 'ትዕዛዝ ፍጠር';
+
+  @override
+  String get statusPrefix => 'ሁኔታ: ';
+
+  @override
+  String get bookingUnlocksAfterAdminApproval => 'የአስተዳዳሪ ማረጋገጫ ሲገኝ ትዕዛዝ ይከፈታል';
+
+  @override
+  String get noActiveShipmentsCreateBookingToGetStarted =>
+      'ምንም ገባሪ ጭነት የለም። ለመጀመር ትዕዛዝ ይፍጠሩ።';
+
+  @override
+  String get viewAll => 'ሁሉንም እይ';
+
+  @override
+  String get newShipment => 'አዲስ ጭነት';
+
+  @override
+  String get createNewShipmentOfferDesc =>
+      'አዲስ የጭነት ቅናሽ ይፍጠሩ። ከአሽከርካሪዎች ጋር በትክክል ለማዛመድ ትክክለኛ የሎጂስቲክስ ዝርዝሮችን ያቅርቡ።';
+
+  @override
+  String get accountPendingAdminApprovalDesc =>
+      'የእርስዎ መለያ የአስተዳዳሪ ማረጋገጫ በመጠባበቅ ላይ ነው። ትዕዛዝ መፍጠር በአሁኑ ጊዜ ተዘግቷል።';
+
+  @override
+  String get fromLabel => 'መነሻ';
+
+  @override
+  String get toLabel => 'መድረሻ';
+
+  @override
+  String get placedPrefix => 'የታዘዘው ';
+
+  @override
+  String get estPrefix => 'ግምት ';
+
+  @override
+  String get approvedLabel => 'ተቀባይነት አግኝቷል';
+
+  @override
+  String get verifiedWaitingAdminApproval => 'ተረጋግጧል (የአስተዳዳሪ ማረጋገጫ በመጠባበቅ ላይ)';
+
+  @override
+  String get pendingAdminApproval => 'የአስተዳዳሪ ማረጋገጫ በመጠባበቅ ላይ';
+
+  @override
+  String get waitingAdminApproval => 'የአስተዳዳሪ ማረጋገጫ በመጠባበቅ ላይ';
+
+  @override
+  String get completedLabel => 'ተጠናቋል';
+
+  @override
+  String get cancelledLabel => 'ተሰርዟል';
+
+  @override
+  String get inTransitLabel => 'በመንገድ ላይ';
+
+  @override
+  String get arrivedLabel => 'ደርሷል';
+
+  @override
+  String get offloadedLabel => 'ወርዷል';
+
+  @override
+  String get loadedLabel => 'ተጭኗል';
+
+  @override
+  String get gdnGeneratedLabel => 'GDN ተፈጥሯል';
+
+  @override
+  String get grnGeneratedLabel => 'GRN ተፈጥሯል';
+
+  @override
+  String get consignorAcceptedLabel => 'በአስጫኝ ተቀባይነት አግኝቷል';
+
+  @override
+  String get driverAssignedLabel => 'አሽከርካሪ ተመድቧል';
+
+  @override
+  String get selectedLabel => 'ተመርጧል';
+
+  @override
+  String get consignorReceivedLabel => 'በአስጫኝ ተቀብሏል';
+
+  @override
+  String get adminApprovedLabel => 'በአስተዳዳሪ ጸድቋል';
+
+  @override
+  String get bookingPrefix => 'ትዕዛዝ #';
+
+  @override
+  String get assignmentPrefix => 'ስራ #';
+
+  @override
+  String get statusPendingReview => 'ግምገማ በመጠባበቅ ላይ';
+
+  @override
+  String get statusAwaitingDriver => 'አሽከርካሪ በመጠባበቅ ላይ';
+
+  @override
+  String get statusDriverAssigned => 'አሽከርካሪ ተመድቧል';
+
+  @override
+  String get statusGdnIssued => 'GDN ተሰጥቷል';
+
+  @override
+  String get statusLoading => 'በመጫን ላይ';
+
+  @override
+  String get statusInTransit => 'በመንገድ ላይ';
+
+  @override
+  String get statusAtDestination => 'መድረሻ ላይ ነው';
+
+  @override
+  String get statusOffloading => 'በማራገፍ ላይ';
+
+  @override
+  String get statusDelivered => 'ደርሷል';
+
+  @override
+  String get statusCompleted => 'ተጠናቋል';
+
+  @override
+  String get statusCancelled => 'ተሰርዟል';
+
+  @override
+  String get businessProfileUpdated => 'የንግድ መገለጫ ተዘምኗል';
+
+  @override
+  String get profileUpdatedSuccessfully => 'መገለጫ በተሳካ ሁኔታ ተዘምኗል';
+
+  @override
+  String get sendButton => 'ላክ';
+
+  @override
+  String get openShipmentHistory => 'የጭነት ታሪክ ክፈት';
+
+  @override
+  String get shipmentProgress => 'የጭነት ሂደት';
+
+  @override
+  String get weightLabelCap => 'ክብደት';
+
+  @override
+  String get volumeLabelCap => 'መጠን';
+
+  @override
+  String get vehicleLabelCap => 'ተሽከርካሪ';
+
+  @override
+  String get createdLabelCap => 'ተፈጥሯል';
+
+  @override
+  String get priceTypeLabelCap => 'የዋጋ አይነት';
+
+  @override
+  String get priceLabelCap => 'ዋጋ';
+
+  @override
+  String get routeMap => 'የመንገድ ካርታ';
+
+  @override
+  String get pickupLocationLabel => 'የመጫኛ ቦታ';
+
+  @override
+  String get deliveryDestinationLabel => 'የማድረሻ ቦታ';
+
+  @override
+  String get placedOnLabel => 'የታዘዘበት';
+
+  @override
+  String get estArrivalLabel => 'የመድረሻ ግምት';
+
+  @override
+  String get gdnControlOnceAdminSelects =>
+      'አስተዳዳሪው አሽከርካሪ ሲመርጥ እና ሲመድብ የ GDN ቁጥጥር ይገኛል።';
+
+  @override
+  String get grnControlAfterDriverAssignment =>
+      'የአሽከርካሪ ምደባ ንቁ ከሆነ በኋላ የ GRN ቁጥጥር ይገኛል።';
+
+  @override
+  String get handoverConfirmed => 'ርክክብ ተረጋግጧል';
+
+  @override
+  String get feedbackToDriver => 'ለአሽከርካሪ አስተያየት';
+
+  @override
+  String get shareDeliveryNotesOrRate =>
+      'ርክክብ ከተረጋገጠ በኋላ የማድረሻ ማስታወሻዎችን ያካፍሉ ወይም አሽከርካሪዎን ደረጃ ይስጡ።';
+
+  @override
+  String get receiverNameRequired => 'የተቀባዩ ስም፣ ብዛት እና የሁኔታ ማስታወሻ ያስፈልጋሉ።';
+
+  @override
+  String get grnExistsAndCompleted => 'GRN አለ እና የአስጫኙ ማረጋገጫ ተጠናቋል።';
+
+  @override
+  String get grnAlreadyCreatedConfirm =>
+      'GRN አስቀድሞ ተፈጥሯል። በማጓጓዣ ማያ ገጽ ላይ የመጨረሻውን ደረሰኝ ያረጋግጡ።';
+
+  @override
+  String get fillFormToCreateGrnAfterOffload => 'ካራገፉ በኋላ GRN ለመፍጠር ቅጹን ይሙሉ::';
+
+  @override
+  String get grnCreatedSuccessConfirm =>
+      'GRN በተሳካ ሁኔታ ተፈጥሯል። በማጓጓዣ ማያ ገጽ ላይ የመጨረሻውን ደረሰኝ ያረጋግጡ።';
+
+  @override
+  String get receiverNameStar => 'የተቀባይ ስም *';
+
+  @override
+  String get receivedQuantityStar => 'የተቀበሉት ብዛት *';
+
+  @override
+  String get receivedWeight => 'የተቀበሉት ክብደት';
+
+  @override
+  String get receivedVolume => 'የተቀበሉት መጠን';
+
+  @override
+  String get damageQuantity => 'የተጎዳው ብዛት';
+
+  @override
+  String get shortageQuantity => 'የጎደለው ብዛት';
+
+  @override
+  String get conditionNoteStar => 'የሁኔታ ማስታወሻ *';
+
+  @override
+  String get receivedAt => 'የተቀበሉበት ጊዜ';
+
+  @override
+  String get grnAlreadyCreated => 'GRN አስቀድሞ ተፈጥሯል';
+
+  @override
+  String get gdnAlreadyGeneratedLocked => 'GDN አስቀድሞ ተፈጥሯል እና ተቆልፏል።';
+
+  @override
+  String get fillFormToCreateGdn => 'GDN ለመፍጠር ቅጹን ይሙሉ::';
+
+  @override
+  String get gdnCreatedSuccessEditingDisabled =>
+      'GDN በተሳካ ሁኔታ ተፈጥሯል። ማስተካከል ተሰናክሏል።';
+
+  @override
+  String get issuerNameStar => 'የሰጪው ስም *';
+
+  @override
+  String get consigneeNameStar => 'የተቀባይ ስም *';
+
+  @override
+  String get consigneeContactStar => 'የተቀባይ ስልክ ቁጥር *';
+
+  @override
+  String get quantityStar => 'ብዛት *';
+
+  @override
+  String get packaging => 'ማሸጊያ';
+
+  @override
+  String get remarks => 'አስተያየቶች';
+
+  @override
+  String get gdnAlreadyCreated => 'GDN አስቀድሞ ተፈጥሯል';
+
+  @override
+  String get trackingLabel => 'ክትትል';
+
+  @override
+  String get trackingPoints => 'የክትትል ነጥቦች:';
+
+  @override
+  String get latestLocationPrefix => 'የቅርብ ጊዜ: ኬክሮስ ';
+
+  @override
+  String get lonPrefix => ' ኬንትሮስ ';
+
+  @override
+  String get atPrefix => ' በ ';
+
+  @override
+  String get noOfferRoundsYet => 'እስካሁን ምንም የዋጋ ድርድር የለም።';
+
+  @override
+  String get latestPrice => 'የቅርብ ጊዜ ዋጋ:';
+
+  @override
+  String get typeLabel => 'አይነት';
+
+  @override
+  String get shipmentTitle => 'የጭነት ዝርዝር';
+
+  @override
+  String get waitingForDriverAssignment =>
+      'የአሽከርካሪ ምደባን በመጠበቅ ላይ። አንዴ ከተመደበ፣ አሽከርካሪው የሁኔታ ዝመናዎችን ከመቀጠሉ በፊት GDN ይፍጠሩ።';
+
+  @override
+  String get assignmentLabelCap => 'ምደባ';
+
+  @override
+  String get statusLabelCap => 'ሁኔታ';
+
+  @override
+  String get viewGdnForm => 'የ GDN ቅጽ ይመልከቱ';
+
+  @override
+  String get openGdnForm => 'የ GDN ቅጽ ክፈት';
+
+  @override
+  String get grnCreatedAfterOffload => 'አሽከርካሪው ማራገፉን ካረጋገጠ በኋላ GRN መፍጠር ይቻላል።';
+
+  @override
+  String get viewGrnForm => 'የ GRN ቅጽ ይመልከቱ';
+
+  @override
+  String get openGrnForm => 'የ GRN ቅጽ ክፈት';
+
+  @override
+  String get afterGrnRecordedConfirm =>
+      'GRN ከተመዘገበ በኋላ፣ የመጨረሻውን ደረሰኝ እዚህ ያረጋግጡ።';
 }

@@ -16,6 +16,7 @@ Future<void> showAppLanguagePickerSheet(
 
   await showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (sheetContext) => StatefulBuilder(
@@ -30,7 +31,10 @@ Future<void> showAppLanguagePickerSheet(
             left: 24,
             right: 24,
             top: 32,
-            bottom: MediaQuery.viewInsetsOf(ctx).bottom + 32,
+            bottom:
+                MediaQuery.viewInsetsOf(ctx).bottom +
+                MediaQuery.paddingOf(ctx).bottom +
+                32,
           ),
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),

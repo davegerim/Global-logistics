@@ -9,6 +9,7 @@ import 'package:global_logistics_app/core/providers/consignor_active_provider.da
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/storage/assignment_feedback_preferences.dart';
+import 'package:global_logistics_app/features/consignor/widgets/consignor_shipment_payment_section.dart';
 import 'package:global_logistics_app/shared/widgets/assignment_feedback_sheet.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 import 'package:global_logistics_app/shared/widgets/status_chip.dart';
@@ -373,9 +374,9 @@ class _ConsignorShipmentDetailScreenState
           ),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'Shipment',
-          style: TextStyle(
+        title: Text(
+          context.l10n.shipmentTitle,
+          style: const TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 18,
             color: AppColors.textPrimary,
@@ -424,7 +425,7 @@ class _ConsignorShipmentDetailScreenState
               _assignmentId != null &&
               assignmentAllowsFeedback(assignmentStatus) &&
               !_feedbackToDriverSubmitted;
-          final fmt = DateFormat.yMMMd();
+          final fmt = DateFormat.yMMMd(context.l10n.localeName);
           return ListView(
             padding: const EdgeInsets.all(20),
             physics: const BouncingScrollPhysics(),
@@ -453,7 +454,7 @@ class _ConsignorShipmentDetailScreenState
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  s.goodsDescription,
+                                  context.translateDynamic(s.goodsDescription),
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
@@ -470,46 +471,44 @@ class _ConsignorShipmentDetailScreenState
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-                      _ProgressCard(progress: s.progress01 ?? 0.0),
+                      const SizedBox(height: 20),
+                      _InfoCard(
+                        title: context.l10n.shipmentDetails,
+                        icon: Icons.inventory_2_outlined,
+                        children: [
+                          _kv(context.l10n.weightLabelCap, _formatMetric(s.weightKg)),
+                          _docDivider(),
+                          _kv(context.l10n.volumeLabelCap, _formatMetric(s.volumeM3)),
+                          _docDivider(),
+                          _kv(context.l10n.vehicleLabelCap, context.translateDynamic(s.vehicleType)),
+                          _docDivider(),
+                          _kv(context.l10n.createdLabelCap, fmt.format(s.placedAt)),
+                          if (s.paymentMethod != null) ...[
+                            _docDivider(),
+                            _kv(context.l10n.priceTypeLabelCap, context.translateDynamic(s.paymentMethod!)),
+                          ],
+                          if (s.priceOffer != null) ...[
+                            _docDivider(),
+                            _kv(context.l10n.priceLabelCap, _formatPrice(s.priceOffer!)),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
                   Positioned(
-                    right: 16,
-                    top: 25,
+                    right: -10,
+                    top: 15,
                     child: IgnorePointer(
                       child: Hero(
                         tag: 'shipment_vehicle_${s.id}',
                         child: Image.asset(
-                          'assets/images/image-31GYuaDQ6tzlmK2MsYTpfwzmJwf9Kr.webp',
-                          height: 100,
+                          'assets/images/huge_truck.png',
+                          height: 110,
                           fit: BoxFit.contain,
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              _InfoCard(
-                title: context.l10n.shipmentDetails,
-                icon: Icons.inventory_2_outlined,
-                children: [
-                  _kv('WEIGHT', _formatMetric(s.weightKg)),
-                  _docDivider(),
-                  _kv('VOLUME', _formatMetric(s.volumeM3)),
-                  _docDivider(),
-                  _kv('VEHICLE', s.vehicleType),
-                  _docDivider(),
-                  _kv('CREATED', fmt.format(s.placedAt)),
-                  if (s.paymentMethod != null) ...[
-                    _docDivider(),
-                    _kv('PRICE TYPE', s.paymentMethod!),
-                  ],
-                  if (s.priceOffer != null) ...[
-                    _docDivider(),
-                    _kv('PRICE', _formatPrice(s.priceOffer!)),
-                  ],
                 ],
               ),
               const SizedBox(height: 16),
@@ -554,6 +553,11 @@ class _ConsignorShipmentDetailScreenState
                 ),
               ],
               const SizedBox(height: 16),
+              ConsignorShipmentPaymentSection(
+                shipmentId: s.id,
+                enabled: _driverSelected || assignedByStatus,
+              ),
+              const SizedBox(height: 16),
               _InfoCard(
                 title: context.l10n.gdnControl,
                 icon: Icons.assignment_turned_in_outlined,
@@ -563,30 +567,30 @@ class _ConsignorShipmentDetailScreenState
                   else if (_resolvingDriverSelection)
                     const LinearProgressIndicator()
                   else if (!gdnControlEnabled)
-                    const Text(
-                      'GDN control becomes available once admin selects and assigns a driver.',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.gdnControlOnceAdminSelects,
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         height: 1.4,
                       ),
                     )
                   else if (_assignmentId == null)
-                    const Text(
-                      'Waiting for driver assignment. Once assigned, create GDN before driver can continue status updates.',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.waitingForDriverAssignment,
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         height: 1.4,
                       ),
                     )
                   else ...[
-                    _kv('ASSIGNMENT', _assignmentId!),
+                    _kv(context.l10n.assignmentLabelCap, _assignmentId!),
                     _docDivider(),
                     if (_gdnMessage != null) ...[
-                      _kv('STATUS', _gdnMessage!),
+                      _kv(context.l10n.statusLabelCap, _gdnMessage!),
                       const SizedBox(height: 12),
                     ],
                     GlPrimaryButton(
-                      label: _gdnCreated ? 'View GDN form' : 'Open GDN form',
+                      label: _gdnCreated ? context.l10n.viewGdnForm : context.l10n.openGdnForm,
                       icon: _gdnCreated
                           ? Icons.lock_rounded
                           : Icons.description_outlined,
@@ -610,30 +614,30 @@ class _ConsignorShipmentDetailScreenState
                   if (_resolvingAssignment)
                     const LinearProgressIndicator()
                   else if (_assignmentId == null)
-                    const Text(
-                      'GRN control becomes available after driver assignment is active.',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.grnControlAfterDriverAssignment,
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         height: 1.4,
                       ),
                     )
                   else if (!grnControlEnabled)
-                    const Text(
-                      'GRN can be created after the driver confirms offloaded status.',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.grnCreatedAfterOffload,
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         height: 1.4,
                       ),
                     )
                   else ...[
-                    _kv('ASSIGNMENT', _assignmentId!),
+                    _kv(context.l10n.assignmentLabelCap, _assignmentId!),
                     _docDivider(),
                     if (_grnMessage != null) ...[
-                      _kv('STATUS', _grnMessage!),
+                      _kv(context.l10n.statusLabelCap, _grnMessage!),
                       const SizedBox(height: 12),
                     ],
                     GlPrimaryButton(
-                      label: _grnCreated ? 'View GRN form' : 'Open GRN form',
+                      label: _grnCreated ? context.l10n.viewGrnForm : context.l10n.openGrnForm,
                       icon: _grnCreated
                           ? Icons.lock_rounded
                           : Icons.inventory_rounded,
@@ -667,16 +671,16 @@ class _ConsignorShipmentDetailScreenState
                             color: AppColors.success.withValues(alpha: 0.3),
                           ),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.verified_rounded,
                               color: AppColors.success,
                             ),
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10),
                             Text(
-                              'Handover confirmed',
-                              style: TextStyle(
+                              context.l10n.handoverConfirmed,
+                              style: const TextStyle(
                                 color: AppColors.success,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -685,9 +689,9 @@ class _ConsignorShipmentDetailScreenState
                         ),
                       )
                     else ...[
-                      const Text(
-                        'After GRN is recorded, confirm final receipt here.',
-                        style: TextStyle(
+                      Text(
+                        context.l10n.afterGrnRecordedConfirm,
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           height: 1.4,
                         ),
@@ -708,12 +712,12 @@ class _ConsignorShipmentDetailScreenState
               if (canSendFeedbackToDriver) ...[
                 const SizedBox(height: 16),
                 _InfoCard(
-                  title: 'Feedback to driver',
+                  title: context.l10n.feedbackToDriver,
                   icon: Icons.chat_rounded,
                   children: [
-                    const Text(
-                      'Share delivery notes or rate your driver after handover is confirmed.',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.shareDeliveryNotesOrRate,
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         height: 1.4,
                       ),
@@ -728,7 +732,7 @@ class _ConsignorShipmentDetailScreenState
                         final sentLabel = context.l10n.feedbackSent;
                         final result = await showAssignmentFeedbackSheet(
                           context,
-                          title: 'Feedback to driver',
+                          title: context.l10n.feedbackToDriver,
                           subtitle:
                               'Your rating and comments help maintain '
                               'service quality.',
@@ -820,94 +824,6 @@ class _ConsignorShipmentDetailScreenState
   String _formatPrice(double value) {
     if (value % 1 == 0) return value.toStringAsFixed(0);
     return value.toStringAsFixed(2);
-  }
-}
-
-class _ProgressCard extends StatelessWidget {
-  const _ProgressCard({required this.progress});
-
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    final clamped = progress.clamp(0.0, 1.0);
-    final label = '${(clamped * 100).round()}%';
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.borderLight, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.04),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.show_chart_rounded,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Shipment Progress',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primaryDark,
-                  letterSpacing: -0.2,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              value: clamped,
-              minHeight: 12,
-              backgroundColor: AppColors.surfaceMuted,
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                AppColors.primary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -1065,9 +981,9 @@ class _TimelineCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 14),
-                const Text(
-                  'Route Map',
-                  style: TextStyle(
+                Text(
+                  context.l10n.routeMap,
+                  style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                     color: AppColors.primaryDark,
@@ -1089,8 +1005,8 @@ class _TimelineCard extends StatelessWidget {
               children: [
                 _dotLine(
                   Icons.upload_rounded,
-                  'Pickup Location',
-                  loading,
+                  context.l10n.pickupLocationLabel,
+                  context.translateDynamic(loading),
                   isStart: true,
                 ),
                 Container(
@@ -1101,8 +1017,8 @@ class _TimelineCard extends StatelessWidget {
                 ),
                 _dotLine(
                   Icons.flag_rounded,
-                  'Delivery Destination',
-                  offloading,
+                  context.l10n.deliveryDestinationLabel,
+                  context.translateDynamic(offloading),
                   isStart: false,
                 ),
                 const SizedBox(height: 24),
@@ -1119,9 +1035,9 @@ class _TimelineCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'PLACED ON',
-                              style: TextStyle(
+                            Text(
+                              context.l10n.placedOnLabel,
+                              style: const TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.textTertiary,
@@ -1149,9 +1065,9 @@ class _TimelineCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            const Text(
-                              'EST. ARRIVAL',
-                              style: TextStyle(
+                            Text(
+                              context.l10n.estArrivalLabel,
+                              style: const TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.textTertiary,

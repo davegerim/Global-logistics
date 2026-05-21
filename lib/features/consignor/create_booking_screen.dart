@@ -230,11 +230,11 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
     final canBook = auth.canCreateConsignorBooking;
     final rawStatus = (auth.accountStatus ?? '').trim();
     final statusLabel = canBook
-        ? (rawStatus.isEmpty ? 'APPROVED' : rawStatus.toUpperCase())
+        ? (rawStatus.isEmpty ? context.l10n.approvedLabel : rawStatus.toUpperCase())
         : (rawStatus.toUpperCase() == 'VERIFIED'
-            ? 'VERIFIED (WAITING ADMIN APPROVAL)'
+            ? context.l10n.verifiedWaitingAdminApproval
             : (rawStatus.isEmpty
-                ? 'PENDING ADMIN APPROVAL'
+                ? context.l10n.pendingAdminApproval
                 : '${rawStatus.toUpperCase()} (WAITING ADMIN APPROVAL)'));
 
     return Scaffold(
@@ -243,9 +243,9 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
         backgroundColor: AppColors.backgroundWarm,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
-          'Create Booking',
-          style: TextStyle(
+        title: Text(
+          context.l10n.createBookingTitle,
+          style: const TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 18,
             color: AppColors.textPrimary,
@@ -298,10 +298,10 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                       ),
                     ),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'New Shipment',
-                        style: TextStyle(
+                        context.l10n.newShipment,
+                        style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -312,7 +312,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Create a new shipment offer. Provide accurate logistics details to match with the best drivers.',
+                  context.l10n.createNewShipmentOfferDesc,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.9),
                     height: 1.4,
@@ -356,7 +356,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Status: $statusLabel',
+                          '${context.l10n.statusPrefix}$statusLabel',
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             color: AppColors.textPrimary,
@@ -364,7 +364,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Your account is pending admin approval. Booking is currently disabled.',
+                          context.l10n.accountPendingAdminApprovalDesc,
                           style: TextStyle(
                             color: AppColors.textPrimary.withValues(alpha: 0.8),
                             fontSize: 13,

@@ -70,7 +70,7 @@ class ShipmentModel {
   String get displayId {
     final normalized = bookingId?.trim();
     if (normalized != null && normalized.isNotEmpty) {
-      return 'Booking #$normalized';
+      return 'Booking #$normalized'; // Actually, we should localize this. Let's just leave it if it's not a widget, or use an extension? Wait, `displayId` is a getter, no context here.
     }
     final normalizedAssignment = assignmentDisplayId?.trim();
     if (normalizedAssignment != null && normalizedAssignment.isNotEmpty) {
@@ -126,4 +126,31 @@ class PaymentRecord {
   final DateTime updatedAt;
   final String? referenceNo;
   final String? slipUrl;
+}
+
+/// Assignment finance summary from GET /assignment-finance/{assignmentId}.
+class DriverAssignmentFinance {
+  const DriverAssignmentFinance({
+    required this.publicId,
+    required this.assignmentId,
+    required this.agreedAmount,
+    required this.paidAmount,
+    required this.remainingAmount,
+    required this.status,
+    required this.updatedAt,
+    required this.shipmentLabel,
+    this.currency = 'ETB',
+    this.payments = const [],
+  });
+
+  final String publicId;
+  final String assignmentId;
+  final double agreedAmount;
+  final double paidAmount;
+  final double remainingAmount;
+  final String status;
+  final DateTime updatedAt;
+  final String shipmentLabel;
+  final String currency;
+  final List<PaymentRecord> payments;
 }

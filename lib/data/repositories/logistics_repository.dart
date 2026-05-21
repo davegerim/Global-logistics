@@ -11,6 +11,7 @@ abstract class LogisticsRepository {
   Future<List<ShipmentModel>> fetchDriverAssignedShipments();
   Future<List<DocumentRef>> fetchDocumentsForAssignment(String assignmentId);
   Future<List<PaymentRecord>> fetchPayments();
+  Future<List<DriverAssignmentFinance>> fetchDriverPayouts();
 }
 
 class MockLogisticsRepository implements LogisticsRepository {
@@ -168,6 +169,23 @@ class MockLogisticsRepository implements LogisticsRepository {
         currency: 'ETB',
         status: 'Verified',
         updatedAt: _now.subtract(const Duration(days: 1)),
+      ),
+    ];
+  }
+
+  @override
+  Future<List<DriverAssignmentFinance>> fetchDriverPayouts() async {
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    return [
+      DriverAssignmentFinance(
+        publicId: 'fin_demo_1',
+        assignmentId: 'asg_demo_1',
+        agreedAmount: 18500,
+        paidAmount: 18500,
+        remainingAmount: 0,
+        status: 'PAID',
+        updatedAt: _now.subtract(const Duration(days: 2)),
+        shipmentLabel: 'GLC-76403',
       ),
     ];
   }

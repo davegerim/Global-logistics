@@ -157,8 +157,8 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
       setState(() {
         _locked = gdns.isNotEmpty;
         _stateMessage = _locked
-            ? 'GDN already generated and locked.'
-            : 'Fill the form to create GDN.';
+            ? context.l10n.gdnAlreadyGeneratedLocked
+            : context.l10n.fillFormToCreateGdn;
         if (resolved != null) {
           _applyGdnFields(resolved);
         }
@@ -199,7 +199,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
       if (!mounted) return;
       setState(() {
         _locked = true;
-        _stateMessage = 'GDN created successfully. Editing is disabled.';
+        _stateMessage = context.l10n.gdnCreatedSuccessEditingDisabled;
       });
       ref.invalidate(consignorShipmentsProvider);
       ref.invalidate(shipmentDetailProvider(widget.shipmentId));
@@ -264,27 +264,27 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                 TextField(
                   controller: _issuerCtrl,
                   enabled: !_locked,
-                  decoration: const InputDecoration(
-                    labelText: 'Issuer name *',
-                    prefixIcon: Icon(Icons.person_outline),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.issuerNameStar,
+                    prefixIcon: const Icon(Icons.person_outline),
                   ),
                 ),
                 const SizedBox(height: 10),
                 TextField(
                   controller: _consigneeCtrl,
                   enabled: !_locked,
-                  decoration: const InputDecoration(
-                    labelText: 'Consignee name *',
-                    prefixIcon: Icon(Icons.badge_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.consigneeNameStar,
+                    prefixIcon: const Icon(Icons.badge_outlined),
                   ),
                 ),
                 const SizedBox(height: 10),
                 TextField(
                   controller: _contactCtrl,
                   enabled: !_locked,
-                  decoration: const InputDecoration(
-                    labelText: 'Consignee contact *',
-                    prefixIcon: Icon(Icons.phone_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.consigneeContactStar,
+                    prefixIcon: const Icon(Icons.phone_outlined),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -294,7 +294,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                       child: TextField(
                         controller: _quantityCtrl,
                         enabled: !_locked,
-                        decoration: const InputDecoration(labelText: 'Quantity *'),
+                        decoration: InputDecoration(labelText: context.l10n.quantityStar),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -302,7 +302,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                       child: TextField(
                         controller: _packagingCtrl,
                         enabled: !_locked,
-                        decoration: const InputDecoration(labelText: 'Packaging'),
+                        decoration: InputDecoration(labelText: context.l10n.packaging),
                       ),
                     ),
                   ],
@@ -332,14 +332,14 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                   controller: _remarksCtrl,
                   enabled: !_locked,
                   maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Remarks',
-                    prefixIcon: Icon(Icons.note_alt_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.remarks,
+                    prefixIcon: const Icon(Icons.note_alt_outlined),
                   ),
                 ),
                 const SizedBox(height: 14),
                 GlPrimaryButton(
-                  label: _locked ? 'GDN already created' : context.l10n.createGdn,
+                  label: _locked ? context.l10n.gdnAlreadyCreated : context.l10n.createGdn,
                   icon: _locked ? Icons.lock_rounded : Icons.description_outlined,
                   onPressed: (_locked || _creating || _loadingState) ? null : _createGdn,
                 ),

@@ -556,4 +556,345 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vehicle => 'Vehicle';
+
+  @override
+  String get welcomeBack => 'Welcome back';
+
+  @override
+  String get quickAction => 'Quick action';
+
+  @override
+  String get createBooking => 'Create booking';
+
+  @override
+  String get createBookingTitle => 'Create Booking';
+
+  @override
+  String get statusPrefix => 'Status: ';
+
+  @override
+  String get bookingUnlocksAfterAdminApproval =>
+      'Booking unlocks after admin approval';
+
+  @override
+  String get noActiveShipmentsCreateBookingToGetStarted =>
+      'No active shipments. Create a booking to get started.';
+
+  @override
+  String get viewAll => 'View all';
+
+  @override
+  String get newShipment => 'New Shipment';
+
+  @override
+  String get createNewShipmentOfferDesc =>
+      'Create a new shipment offer. Provide accurate logistics details to match with the best drivers.';
+
+  @override
+  String get accountPendingAdminApprovalDesc =>
+      'Your account is pending admin approval. Booking is currently disabled.';
+
+  @override
+  String get fromLabel => 'From';
+
+  @override
+  String get toLabel => 'To';
+
+  @override
+  String get placedPrefix => 'Placed ';
+
+  @override
+  String get estPrefix => 'Est. ';
+
+  @override
+  String get approvedLabel => 'APPROVED';
+
+  @override
+  String get verifiedWaitingAdminApproval =>
+      'VERIFIED (waiting admin approval)';
+
+  @override
+  String get pendingAdminApproval => 'PENDING ADMIN APPROVAL';
+
+  @override
+  String get waitingAdminApproval => 'WAITING ADMIN APPROVAL';
+
+  @override
+  String get completedLabel => 'COMPLETED';
+
+  @override
+  String get cancelledLabel => 'CANCELLED';
+
+  @override
+  String get inTransitLabel => 'IN TRANSIT';
+
+  @override
+  String get arrivedLabel => 'ARRIVED';
+
+  @override
+  String get offloadedLabel => 'OFFLOADED';
+
+  @override
+  String get loadedLabel => 'LOADED';
+
+  @override
+  String get gdnGeneratedLabel => 'GDN GENERATED';
+
+  @override
+  String get grnGeneratedLabel => 'GRN GENERATED';
+
+  @override
+  String get consignorAcceptedLabel => 'CONSIGNOR ACCEPTED';
+
+  @override
+  String get driverAssignedLabel => 'DRIVER ASSIGNED';
+
+  @override
+  String get selectedLabel => 'SELECTED';
+
+  @override
+  String get consignorReceivedLabel => 'CONSIGNOR RECEIVED';
+
+  @override
+  String get adminApprovedLabel => 'ADMIN APPROVED';
+
+  @override
+  String get bookingPrefix => 'Booking #';
+
+  @override
+  String get assignmentPrefix => 'Assignment #';
+
+  @override
+  String get statusPendingReview => 'Pending review';
+
+  @override
+  String get statusAwaitingDriver => 'Awaiting driver';
+
+  @override
+  String get statusDriverAssigned => 'Driver assigned';
+
+  @override
+  String get statusGdnIssued => 'GDN issued';
+
+  @override
+  String get statusLoading => 'Loading';
+
+  @override
+  String get statusInTransit => 'In transit';
+
+  @override
+  String get statusAtDestination => 'At destination';
+
+  @override
+  String get statusOffloading => 'Offloading';
+
+  @override
+  String get statusDelivered => 'Delivered';
+
+  @override
+  String get statusCompleted => 'Completed';
+
+  @override
+  String get statusCancelled => 'Cancelled';
+
+  @override
+  String get businessProfileUpdated => 'Business profile updated';
+
+  @override
+  String get profileUpdatedSuccessfully => 'Profile updated successfully';
+
+  @override
+  String get sendButton => 'Send';
+
+  @override
+  String get openShipmentHistory => 'Open shipment history';
+
+  @override
+  String get shipmentProgress => 'Shipment Progress';
+
+  @override
+  String get weightLabelCap => 'WEIGHT';
+
+  @override
+  String get volumeLabelCap => 'VOLUME';
+
+  @override
+  String get vehicleLabelCap => 'VEHICLE';
+
+  @override
+  String get createdLabelCap => 'CREATED';
+
+  @override
+  String get priceTypeLabelCap => 'PRICE TYPE';
+
+  @override
+  String get priceLabelCap => 'PRICE';
+
+  @override
+  String get routeMap => 'Route Map';
+
+  @override
+  String get pickupLocationLabel => 'PICKUP LOCATION';
+
+  @override
+  String get deliveryDestinationLabel => 'DELIVERY DESTINATION';
+
+  @override
+  String get placedOnLabel => 'PLACED ON';
+
+  @override
+  String get estArrivalLabel => 'EST. ARRIVAL';
+
+  @override
+  String get gdnControlOnceAdminSelects =>
+      'GDN control becomes available once admin selects and assigns a driver.';
+
+  @override
+  String get grnControlAfterDriverAssignment =>
+      'GRN control becomes available after driver assignment is active.';
+
+  @override
+  String get handoverConfirmed => 'Handover confirmed';
+
+  @override
+  String get feedbackToDriver => 'Feedback to driver';
+
+  @override
+  String get shareDeliveryNotesOrRate =>
+      'Share delivery notes or rate your driver after handover is confirmed.';
+
+  @override
+  String get receiverNameRequired =>
+      'Receiver name, quantity and condition note are required.';
+
+  @override
+  String get grnExistsAndCompleted =>
+      'GRN exists and consignor confirmation is completed.';
+
+  @override
+  String get grnAlreadyCreatedConfirm =>
+      'GRN already created. Confirm final receipt on the shipment screen.';
+
+  @override
+  String get fillFormToCreateGrnAfterOffload =>
+      'Fill the form to create GRN after offloading.';
+
+  @override
+  String get grnCreatedSuccessConfirm =>
+      'GRN created successfully. Confirm final receipt on the shipment screen.';
+
+  @override
+  String get receiverNameStar => 'Receiver name *';
+
+  @override
+  String get receivedQuantityStar => 'Received quantity *';
+
+  @override
+  String get receivedWeight => 'Received weight';
+
+  @override
+  String get receivedVolume => 'Received volume';
+
+  @override
+  String get damageQuantity => 'Damage quantity';
+
+  @override
+  String get shortageQuantity => 'Shortage quantity';
+
+  @override
+  String get conditionNoteStar => 'Condition note *';
+
+  @override
+  String get receivedAt => 'Received at';
+
+  @override
+  String get grnAlreadyCreated => 'GRN already created';
+
+  @override
+  String get gdnAlreadyGeneratedLocked => 'GDN already generated and locked.';
+
+  @override
+  String get fillFormToCreateGdn => 'Fill the form to create GDN.';
+
+  @override
+  String get gdnCreatedSuccessEditingDisabled =>
+      'GDN created successfully. Editing is disabled.';
+
+  @override
+  String get issuerNameStar => 'Issuer name *';
+
+  @override
+  String get consigneeNameStar => 'Consignee name *';
+
+  @override
+  String get consigneeContactStar => 'Consignee contact *';
+
+  @override
+  String get quantityStar => 'Quantity *';
+
+  @override
+  String get packaging => 'Packaging';
+
+  @override
+  String get remarks => 'Remarks';
+
+  @override
+  String get gdnAlreadyCreated => 'GDN already created';
+
+  @override
+  String get trackingLabel => 'Tracking';
+
+  @override
+  String get trackingPoints => 'Tracking points:';
+
+  @override
+  String get latestLocationPrefix => 'Latest: lat ';
+
+  @override
+  String get lonPrefix => ' lon ';
+
+  @override
+  String get atPrefix => ' @ ';
+
+  @override
+  String get noOfferRoundsYet => 'No offer rounds yet.';
+
+  @override
+  String get latestPrice => 'Latest price:';
+
+  @override
+  String get typeLabel => 'Type';
+
+  @override
+  String get shipmentTitle => 'Shipment';
+
+  @override
+  String get waitingForDriverAssignment =>
+      'Waiting for driver assignment. Once assigned, create GDN before driver can continue status updates.';
+
+  @override
+  String get assignmentLabelCap => 'ASSIGNMENT';
+
+  @override
+  String get statusLabelCap => 'STATUS';
+
+  @override
+  String get viewGdnForm => 'View GDN form';
+
+  @override
+  String get openGdnForm => 'Open GDN form';
+
+  @override
+  String get grnCreatedAfterOffload =>
+      'GRN can be created after the driver confirms offloaded status.';
+
+  @override
+  String get viewGrnForm => 'View GRN form';
+
+  @override
+  String get openGrnForm => 'Open GRN form';
+
+  @override
+  String get afterGrnRecordedConfirm =>
+      'After GRN is recorded, confirm final receipt here.';
 }

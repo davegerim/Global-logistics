@@ -183,12 +183,12 @@ class _ConsignorGrnFormScreenState
         _consignorConfirmed =
             status == 'CONSIGNOR_RECEIVED' || status == 'COMPLETED';
         if (_consignorConfirmed) {
-          _stateMessage = 'GRN exists and consignor confirmation is completed.';
+          _stateMessage = context.l10n.grnExistsAndCompleted;
         } else if (_grnCreated) {
           _stateMessage =
-              'GRN already created. Confirm final receipt on the shipment screen.';
+              context.l10n.grnAlreadyCreatedConfirm;
         } else {
-          _stateMessage = 'Fill the form to create GRN after offloading.';
+          _stateMessage = context.l10n.fillFormToCreateGrnAfterOffload;
         }
         if (resolved != null) {
           _applyGrnFields(resolved);
@@ -234,9 +234,9 @@ class _ConsignorGrnFormScreenState
         _receivedQuantityCtrl.text.trim().isEmpty ||
         _conditionNoteCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Receiver name, quantity and condition note are required.',
+            context.l10n.receiverNameRequired,
           ),
         ),
       );
@@ -262,7 +262,7 @@ class _ConsignorGrnFormScreenState
       setState(() {
         _grnCreated = true;
         _stateMessage =
-            'GRN created successfully. Confirm final receipt on the shipment screen.';
+            context.l10n.grnCreatedSuccessConfirm;
       });
       ref.invalidate(consignorShipmentsProvider);
       ref.invalidate(shipmentDetailProvider(widget.shipmentId));
@@ -335,18 +335,18 @@ class _ConsignorGrnFormScreenState
                 TextField(
                   controller: _receiverNameCtrl,
                   enabled: _canCreateGrn,
-                  decoration: const InputDecoration(
-                    labelText: 'Receiver name *',
-                    prefixIcon: Icon(Icons.person_outline),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.receiverNameStar,
+                    prefixIcon: const Icon(Icons.person_outline),
                   ),
                 ),
                 const SizedBox(height: 10),
                 TextField(
                   controller: _receivedQuantityCtrl,
                   enabled: _canCreateGrn,
-                  decoration: const InputDecoration(
-                    labelText: 'Received quantity *',
-                    prefixIcon: Icon(Icons.numbers_rounded),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.receivedQuantityStar,
+                    prefixIcon: const Icon(Icons.numbers_rounded),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -356,8 +356,8 @@ class _ConsignorGrnFormScreenState
                       child: TextField(
                         controller: _receivedWeightCtrl,
                         enabled: _canCreateGrn,
-                        decoration: const InputDecoration(
-                          labelText: 'Received weight',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.receivedWeight,
                         ),
                       ),
                     ),
@@ -366,8 +366,8 @@ class _ConsignorGrnFormScreenState
                       child: TextField(
                         controller: _receivedVolumeCtrl,
                         enabled: _canCreateGrn,
-                        decoration: const InputDecoration(
-                          labelText: 'Received volume',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.receivedVolume,
                         ),
                       ),
                     ),
@@ -380,8 +380,8 @@ class _ConsignorGrnFormScreenState
                       child: TextField(
                         controller: _damageQtyCtrl,
                         enabled: _canCreateGrn,
-                        decoration: const InputDecoration(
-                          labelText: 'Damage quantity',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.damageQuantity,
                         ),
                       ),
                     ),
@@ -390,8 +390,8 @@ class _ConsignorGrnFormScreenState
                       child: TextField(
                         controller: _shortageQtyCtrl,
                         enabled: _canCreateGrn,
-                        decoration: const InputDecoration(
-                          labelText: 'Shortage quantity',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.shortageQuantity,
                         ),
                       ),
                     ),
@@ -402,9 +402,9 @@ class _ConsignorGrnFormScreenState
                   controller: _conditionNoteCtrl,
                   enabled: _canCreateGrn,
                   maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Condition note *',
-                    prefixIcon: Icon(Icons.note_alt_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.conditionNoteStar,
+                    prefixIcon: const Icon(Icons.note_alt_outlined),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -424,8 +424,8 @@ class _ConsignorGrnFormScreenState
                         });
                       },
                       child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Received at',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.receivedAt,
                           prefixIcon: Icon(Icons.schedule_rounded),
                         ),
                         child: Text(
@@ -439,7 +439,7 @@ class _ConsignorGrnFormScreenState
                 ),
                 const SizedBox(height: 14),
                 GlPrimaryButton(
-                  label: _grnCreated ? 'GRN already created' : context.l10n.createGrn,
+                  label: _grnCreated ? context.l10n.grnAlreadyCreated : context.l10n.createGrn,
                   icon: _grnCreated
                       ? Icons.lock_rounded
                       : Icons.inventory_2_rounded,
