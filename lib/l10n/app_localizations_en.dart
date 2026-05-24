@@ -73,7 +73,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get driverRating => 'Driver Rating';
 
   @override
-  String get libriNumber => 'Libri Number';
+  String get libriNumber => 'Libri number';
 
   @override
   String get libriDocumentAttached => 'Libri document attached';
@@ -82,7 +82,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get plateNumber => 'Plate Number';
 
   @override
-  String get insuranceNumber => 'Insurance Number';
+  String get insuranceNumber => 'Insurance number';
 
   @override
   String get insuranceDocumentAttached => 'Insurance document attached';
@@ -397,13 +397,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tryAgain => 'Try again';
 
   @override
-  String get globalLogisticsSimplified => 'Global Logistics\\nSimplified.';
+  String get globalLogisticsSimplified => 'Global Logistics\nSimplified.';
 
   @override
-  String get connectedOperations => 'Connected\\nOperations.';
+  String get connectedOperations => 'Connected\nOperations.';
 
   @override
-  String get trackEveryJourney => 'Track Every\\nJourney.';
+  String get trackEveryJourney => 'Track Every\nJourney.';
 
   @override
   String get businessNameOptional => 'Business Name (Optional)';
@@ -632,13 +632,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inTransitLabel => 'IN TRANSIT';
 
   @override
-  String get arrivedLabel => 'ARRIVED';
+  String get arrivedLabel => 'Arrived';
 
   @override
-  String get offloadedLabel => 'OFFLOADED';
+  String get offloadedLabel => 'Offloaded';
 
   @override
-  String get loadedLabel => 'LOADED';
+  String get loadedLabel => 'Loaded';
 
   @override
   String get gdnGeneratedLabel => 'GDN GENERATED';
@@ -713,7 +713,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openShipmentHistory => 'Open shipment history';
 
   @override
-  String get shipmentProgress => 'Shipment Progress';
+  String get shipmentProgress => 'Shipment progress';
 
   @override
   String get weightLabelCap => 'WEIGHT';
@@ -1173,4 +1173,476 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bottomNavProfile => 'Profile';
+
+  @override
+  String get howWouldYouLikeToUseApp => 'How would you like\nto use the app?';
+
+  @override
+  String get chooseExperienceSubtitle =>
+      'Choose the experience that fits you. You can always sign out and switch later.';
+
+  @override
+  String get consignorMessage => 'Consignor message';
+
+  @override
+  String get consignorRoleSubtitle =>
+      'Ship goods, track loads, pay, and receive delivery notes.';
+
+  @override
+  String get driverRoleSubtitle =>
+      'Receive offers, accept routes, and confirm delivery.';
+
+  @override
+  String get needToRegister => 'Need to register?';
+
+  @override
+  String get createAnAccount => 'Create an account';
+
+  @override
+  String get registrationReviewedByTeam =>
+      'Registration is reviewed by your logistics team.';
+
+  @override
+  String get walkthroughPage1Desc =>
+      'Experience the future of freight management with real-time visibility and trusted execution.';
+
+  @override
+  String get walkthroughPage2Desc =>
+      'Bring your team, drivers, and consignors together on one powerful platform.';
+
+  @override
+  String get walkthroughPage3Desc =>
+      'Stay informed with real-time updates and milestone tracking from booking to delivery.';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get nextStep => 'Next Step';
+
+  @override
+  String get signInToAccessRoutes => 'Sign in to access your routes.';
+
+  @override
+  String get enterValidTenDigitPhone => 'Enter a valid 10-digit phone number.';
+
+  @override
+  String get enterYourPassword => 'Enter your password.';
+
+  @override
+  String get splashTagline => 'Trusted freight. Real-time visibility.';
+
+  @override
+  String get driverRegStep2 =>
+      'Step 2 of 3: Enter the OTP sent to your phone to verify your identity.';
+
+  @override
+  String get consignorRegStep2 =>
+      'Step 2 of 3: Enter the OTP sent to your phone to verify your identity.';
+
+  @override
+  String get vehicleProfileTitle => 'Vehicle Profile';
+
+  @override
+  String get driverRegStep4 =>
+      'Step 4 of 4: Add your vehicle details to start accepting loads.';
+
+  @override
+  String get uploadLibriDocument => 'Upload libri document (image or PDF)';
+
+  @override
+  String get libriDocumentUploaded => 'Libri document uploaded.';
+
+  @override
+  String get uploadInsuranceDocument =>
+      'Upload insurance document (image or PDF)';
+
+  @override
+  String get insuranceDocumentUploaded => 'Insurance document uploaded.';
+
+  @override
+  String get uploadVehiclePhoto => 'Upload vehicle photo (JPG, PNG, or WebP)';
+
+  @override
+  String get vehiclePhotoInvalidType =>
+      'Please choose a JPG, PNG, or WebP image for the vehicle photo.';
+
+  @override
+  String get vehiclePhotoUploaded => 'Vehicle photo uploaded.';
+
+  @override
+  String get driverRegistrationTitle => 'Driver Registration';
+
+  @override
+  String get driverRegStep1 =>
+      'Step 1 of 3: Create your account to start receiving delivery assignments.';
+
+  @override
+  String get personalProfileTitle => 'Personal Profile';
+
+  @override
+  String get driverRegStep3 =>
+      'Step 3 of 4: Complete your driver profile with your licence details.';
+
+  @override
+  String get uploadLicenceDocument => 'Upload licence document (image or PDF)';
+
+  @override
+  String get licenceDocumentUploaded => 'Licence document uploaded.';
+
+  @override
+  String get businessProfileTitle => 'Business Profile';
+
+  @override
+  String get consignorRegStep3 =>
+      'Step 3 of 3: Add your business details to complete registration.';
+
+  @override
+  String get counterPriceRequired => 'Counter price *';
+
+  @override
+  String get remarkRequired => 'Remark *';
+
+  @override
+  String get paymentRecordNotReady =>
+      'Payment record is not ready yet. Pull to refresh.';
+
+  @override
+  String get enterValidPaidAmount => 'Enter a valid paid amount.';
+
+  @override
+  String get uploadPaymentReceipt => 'Upload a payment receipt.';
+
+  @override
+  String get paymentSubmittedSuccessfully => 'Payment submitted successfully.';
+
+  @override
+  String get viewReceipt => 'View receipt';
+
+  @override
+  String get errorPrefix => 'Error';
+
+  @override
+  String get shipmentContextNotLoaded => 'Shipment context not loaded yet.';
+
+  @override
+  String get egCounterPrice => 'e.g. 960.00';
+
+  @override
+  String get requiredVehicleTypeOptional => 'Required vehicle type (optional)';
+
+  @override
+  String get requiredVehicleNumberOptional =>
+      'Required vehicle number (optional)';
+
+  @override
+  String get loadingDateTime => 'Loading date & time';
+
+  @override
+  String get deliveryDateTime => 'Delivery date & time';
+
+  @override
+  String get waitingForAdminMessage =>
+      'Waiting for admin negotiation message. Actions will appear here once admin responds.';
+
+  @override
+  String get actions => 'Actions';
+
+  @override
+  String get yourMessage => 'Your message';
+
+  @override
+  String get noNotificationsYet => 'No notifications yet';
+
+  @override
+  String get notificationsWillShowHere =>
+      'When you get notifications, they\'ll show up here.';
+
+  @override
+  String get failedToLoadNotifications => 'Failed to load notifications';
+
+  @override
+  String get timeNow => 'now';
+
+  @override
+  String get notificationDefaultTitle => 'Notification';
+
+  @override
+  String get notificationDefaultMessage => 'You have a new update.';
+
+  @override
+  String get driverHotline => 'Driver Hotline';
+
+  @override
+  String get supportHotline => 'Support Hotline';
+
+  @override
+  String get driverSupportEmailValue => 'drivers@global-logistics.com';
+
+  @override
+  String get consignorSupportEmailValue => 'support@global-logistics.com';
+
+  @override
+  String get driverPhoneValue => '+251 911 000 000';
+
+  @override
+  String get consignorPhoneValue => '+251 900 000 000';
+
+  @override
+  String get pendingApproval => 'Pending Approval';
+
+  @override
+  String get fleetInformation => 'Fleet Information';
+
+  @override
+  String get logistics => 'Logistics';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get prioritySupportDesc => '24/7 priority support';
+
+  @override
+  String get updateDriverProfile => 'Update driver profile';
+
+  @override
+  String get updateDriverProfileSubtitle =>
+      'Photo, ID, licence, and preferred lanes';
+
+  @override
+  String get uploadProfilePhoto => 'Upload profile photo';
+
+  @override
+  String get profilePhotoUploaded => 'Profile photo uploaded.';
+
+  @override
+  String get profilePhotoAttached => 'Profile photo attached';
+
+  @override
+  String get nationalId => 'National ID';
+
+  @override
+  String get locationTrackingNotice =>
+      'Your location data is tracked only during active shipments to ensure safe and reliable delivery operations.\n\nFor the complete driver agreement and terms of service, please visit our corporate website.';
+
+  @override
+  String get loadVehicleInfo => 'Load vehicle info';
+
+  @override
+  String get paymentDetailsAdminDesc =>
+      'Payment details from admin for your assignments will appear here.';
+
+  @override
+  String get paymentHistory => 'Payment history';
+
+  @override
+  String get agreedLabel => 'Agreed';
+
+  @override
+  String get paidLabel => 'Paid';
+
+  @override
+  String get remainingLabel => 'Remaining';
+
+  @override
+  String get updatedLabel => 'Updated';
+
+  @override
+  String get refPrefix => 'Ref: ';
+
+  @override
+  String get driverLicense => 'Driver license';
+
+  @override
+  String get unableToLoadProfileRetry =>
+      'Unable to load your profile. Pull to retry.';
+
+  @override
+  String get licenseDetailsStoredDesc =>
+      'License and ID details as stored on your Global Logistics driver profile.';
+
+  @override
+  String get verificationAndCredentials => 'Verification & credentials';
+
+  @override
+  String get noLicenseDetailsDesc =>
+      'No license details were returned for your account. If you recently registered, data may still be processing.';
+
+  @override
+  String get documentLinksBrowserDesc =>
+      'Document links open in your browser. Contact support if anything needs updating.';
+
+  @override
+  String get licenseNumber => 'License number';
+
+  @override
+  String get licenseDocument => 'License document';
+
+  @override
+  String get preferredLanes => 'Preferred lanes';
+
+  @override
+  String get profilePhoto => 'Profile photo';
+
+  @override
+  String get unableToLoadVehicleRetry =>
+      'Unable to load vehicle profile. Pull to retry.';
+
+  @override
+  String get noVehicleDataYet =>
+      'No vehicle data yet. Complete registration or contact support.';
+
+  @override
+  String get registeredFleetVehicle =>
+      'Registered fleet vehicle on your driver profile.';
+
+  @override
+  String get registrationAndDocuments => 'Registration & documents';
+
+  @override
+  String get vehicleNotes => 'Vehicle notes';
+
+  @override
+  String get noAdditionalNotes => 'No additional notes on file.';
+
+  @override
+  String get photoTitle => 'Photo';
+
+  @override
+  String get truckLabel => 'Truck';
+
+  @override
+  String get noPlateLabel => 'No Plate';
+
+  @override
+  String get adminUpdatedOffer => 'Admin updated the offer details.';
+
+  @override
+  String get driverUpdatedOffer => 'Driver updated the offer details.';
+
+  @override
+  String get offerDetailsUpdated => 'Offer details updated.';
+
+  @override
+  String get noPaymentRecordsYet => 'No payment records yet';
+
+  @override
+  String get routeLabel => 'Route';
+
+  @override
+  String get goodsTypeLabel => 'Goods type';
+
+  @override
+  String get lastUpdateLabel => 'Last update';
+
+  @override
+  String get pricePrefix => 'Price: ';
+
+  @override
+  String get counterOfferTitle => 'Counter offer';
+
+  @override
+  String get timeUnknown => 'time unknown';
+
+  @override
+  String get pickupLabel => 'Pickup';
+
+  @override
+  String get dropOffLabel => 'Drop-off';
+
+  @override
+  String get gdnGrnTitle => 'GDN & GRN';
+
+  @override
+  String get documentsIssuedDesc => 'Documents issued for this assignment';
+
+  @override
+  String get noGdnGrnYetDesc =>
+      'No GDN or GRN yet. They appear when the consignor creates them.';
+
+  @override
+  String get assignedLabel => 'Assigned';
+
+  @override
+  String get transitLabel => 'Transit';
+
+  @override
+  String get waitingForGdnLabel => 'Waiting for consignor to create GDN';
+
+  @override
+  String get checkingGdn => 'Checking GDN...';
+
+  @override
+  String get gdnIsReady => 'GDN is ready';
+
+  @override
+  String get unableToVerifyGdn =>
+      'Unable to verify GDN right now. Please refresh.';
+
+  @override
+  String get assignmentIdMissingDesc =>
+      'Assignment id missing — open again after assignment is created.';
+
+  @override
+  String get feedbackToConsignorTitle => 'Feedback to consignor';
+
+  @override
+  String get feedbackToConsignorDesc =>
+      'Share delivery notes or appreciation with the shipper.';
+
+  @override
+  String get feedbackToConsignorLockedDesc =>
+      'Available once your assignment is active.';
+
+  @override
+  String get timeMinutesSuffix => 'm';
+
+  @override
+  String get timeHoursSuffix => 'h';
+
+  @override
+  String get timeDaysSuffix => 'd';
+
+  @override
+  String get timeWeeksSuffix => 'w';
+
+  @override
+  String get cancelShipmentTitle => 'Cancel shipment';
+
+  @override
+  String get reasonLabel => 'Reason';
+
+  @override
+  String get offerRejected => 'Offer rejected.';
+
+  @override
+  String get shipmentCancelled => 'Shipment cancelled.';
+
+  @override
+  String get counterOfferSent => 'Counter offer sent.';
+
+  @override
+  String get selectLoadingDateTime => 'Select loading date & time';
+
+  @override
+  String get selectDeliveryDateTime => 'Select delivery date & time';
+
+  @override
+  String get assignmentCancelled => 'Assignment cancelled';
+
+  @override
+  String get loadedConfirmed => 'Loaded confirmed';
+
+  @override
+  String get inTransitConfirmed => 'In transit confirmed';
+
+  @override
+  String get arrivalConfirmed => 'Arrival confirmed';
+
+  @override
+  String get offloadConfirmed => 'Offload confirmed';
 }

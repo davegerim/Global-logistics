@@ -1180,7 +1180,7 @@ class _ConsignorConfirmRemarkDialogState
         controller: _ctrl,
         maxLines: 3,
         decoration: InputDecoration(
-          labelText: 'Remark *',
+          labelText: context.l10n.remarkRequired,
           hintText: context.l10n.addConsignorConfirmationRemark,
         ),
       ),

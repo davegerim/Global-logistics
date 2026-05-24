@@ -78,7 +78,7 @@ class DriverPayoutsScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'No payment records yet',
+                      context.l10n.noPaymentRecordsYet,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w800,
                             color: AppColors.textPrimary,
@@ -87,7 +87,7 @@ class DriverPayoutsScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Payment details from admin for your assignments will appear here.',
+                      context.l10n.paymentDetailsAdminDesc,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: AppColors.textSecondary,
                             height: 1.45,
@@ -135,7 +135,7 @@ class DriverPayoutsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: () => ref.invalidate(driverPayoutsProvider),
-                  child: const Text('Retry'),
+                  child: Text(context.l10n.tryAgain),
                 ),
               ],
             ),
@@ -226,31 +226,31 @@ class _FinanceCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _AmountRow(
-            label: 'Agreed',
+            label: context.l10n.agreedLabel,
             value: '${DriverPayoutsScreen._formatAmount(record.agreedAmount)} $cur',
           ),
           const SizedBox(height: 8),
           _AmountRow(
-            label: 'Paid',
+            label: context.l10n.paidLabel,
             value: '${DriverPayoutsScreen._formatAmount(record.paidAmount)} $cur',
             emphasize: record.paidAmount > 0,
           ),
           const SizedBox(height: 8),
           _AmountRow(
-            label: 'Remaining',
+            label: context.l10n.remainingLabel,
             value:
                 '${DriverPayoutsScreen._formatAmount(record.remainingAmount)} $cur',
           ),
           const SizedBox(height: 12),
           _DetailLine(
             icon: Icons.calendar_today_outlined,
-            label: 'Updated',
+            label: context.l10n.updatedLabel,
             value: dateFmt.format(record.updatedAt),
           ),
           if (record.payments.isNotEmpty) ...[
             const SizedBox(height: 16),
-            const Text(
-              'Payment history',
+            Text(
+              context.l10n.paymentHistory,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
@@ -370,7 +370,7 @@ class _PaymentHistoryTile extends StatelessWidget {
                 payment.referenceNo!.trim().isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
-                'Ref: ${payment.referenceNo}',
+                '${context.l10n.refPrefix}${payment.referenceNo}',
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
@@ -381,7 +381,7 @@ class _PaymentHistoryTile extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => onOpenSlip(payment.slipUrl!),
                 icon: const Icon(Icons.receipt_long_outlined, size: 16),
-                label: const Text('View receipt'),
+                label: Text(context.l10n.viewReceipt),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   padding: EdgeInsets.zero,

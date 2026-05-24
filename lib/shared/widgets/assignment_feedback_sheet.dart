@@ -213,7 +213,7 @@ class _AssignmentFeedbackSheetState extends State<AssignmentFeedbackSheet> {
                             }
                           },
                           decoration: InputDecoration(
-                            labelText: 'Your message',
+                            labelText: context.l10n.yourMessage,
                             hintText: widget.hint,
                             alignLabelWithHint: true,
                             errorText: _errorText,

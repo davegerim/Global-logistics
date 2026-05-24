@@ -218,13 +218,13 @@ class _DriverShipmentDetailScreenState
       setState(() {
         _hasGdn = gdns.isNotEmpty;
         _gdnInfo = _hasGdn
-            ? 'GDN is ready'
-            : 'Waiting for consignor to create GDN';
+            ? context.l10n.gdnIsReady
+            : context.l10n.waitingForGdnLabel;
       });
     } catch (e) {
       if (!mounted) return;
       setState(
-        () => _gdnInfo = 'Unable to verify GDN right now. Please refresh.',
+        () => _gdnInfo = context.l10n.unableToVerifyGdn,
       );
     } finally {
       if (mounted) setState(() => _checkingGdn = false);
@@ -353,9 +353,9 @@ class _DriverShipmentDetailScreenState
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
               const SizedBox(height: 20),
-              _block('Pickup', s.loadingAddress, Icons.north_east),
+              _block(context.l10n.pickupLabel, s.loadingAddress, Icons.north_east),
               const SizedBox(height: 12),
-              _block('Drop-off', s.offloadingAddress, Icons.south_west),
+              _block(context.l10n.dropOffLabel, s.offloadingAddress, Icons.south_west),
               const SizedBox(height: 20),
               if (aid != null)
                 _DriverGdnGrnSection(
@@ -387,7 +387,7 @@ class _DriverShipmentDetailScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Shipment progress',
+                      context.l10n.shipmentProgress,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -395,12 +395,12 @@ class _DriverShipmentDetailScreenState
                     ),
                     const SizedBox(height: 10),
                     _StepTracker(
-                      steps: const [
-                        _StepMeta('Assigned', Icons.assignment_ind_rounded),
-                        _StepMeta('Loaded', Icons.inventory_2_rounded),
-                        _StepMeta('Transit', Icons.local_shipping_rounded),
-                        _StepMeta('Arrived', Icons.flag_rounded),
-                        _StepMeta('Offloaded', Icons.unarchive_rounded),
+                      steps: [
+                        _StepMeta(context.l10n.assignedLabel, Icons.assignment_ind_rounded),
+                        _StepMeta(context.l10n.loadedLabel, Icons.inventory_2_rounded),
+                        _StepMeta(context.l10n.transitLabel, Icons.local_shipping_rounded),
+                        _StepMeta(context.l10n.arrivedLabel, Icons.flag_rounded),
+                        _StepMeta(context.l10n.offloadedLabel, Icons.unarchive_rounded),
                       ],
                       currentIndex: currentStep,
                     ),
@@ -408,11 +408,11 @@ class _DriverShipmentDetailScreenState
                 ),
               ),
               const SizedBox(height: 18),
-              Text('Actions', style: Theme.of(context).textTheme.titleSmall),
+              Text(context.l10n.actions, style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 10),
               if (aid == null)
-                const Text(
-                  'Assignment id missing — open again after assignment is created.',
+                Text(
+                  context.l10n.assignmentIdMissingDesc,
                 )
               else ...[
                 Container(
@@ -436,8 +436,8 @@ class _DriverShipmentDetailScreenState
                       Expanded(
                         child: Text(
                           _checkingGdn
-                              ? 'Checking GDN...'
-                              : (_gdnInfo ?? 'Checking GDN...'),
+                              ? context.l10n.checkingGdn
+                              : (_gdnInfo ?? context.l10n.checkingGdn),
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
@@ -456,7 +456,7 @@ class _DriverShipmentDetailScreenState
                     ref,
                     aid,
                     () => api.assignmentsConfirmLoaded({'assignmentId': aid}),
-                    'Loaded confirmed',
+                    context.l10n.loadedConfirmed,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -471,7 +471,7 @@ class _DriverShipmentDetailScreenState
                     aid,
                     () =>
                         api.assignmentsConfirmInTransit({'assignmentId': aid}),
-                    'In transit confirmed',
+                    context.l10n.inTransitConfirmed,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -485,7 +485,7 @@ class _DriverShipmentDetailScreenState
                     ref,
                     aid,
                     () => api.assignmentsConfirmArrived({'assignmentId': aid}),
-                    'Arrival confirmed',
+                    context.l10n.arrivalConfirmed,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -500,7 +500,7 @@ class _DriverShipmentDetailScreenState
                     aid,
                     () =>
                         api.assignmentsConfirmOffloaded({'assignmentId': aid}),
-                    'Offload confirmed',
+                    context.l10n.offloadConfirmed,
                   ),
                 ),
                 if (!_hasGdn && !_checkingGdn && _gdnInfo != null) ...[
@@ -522,7 +522,7 @@ class _DriverShipmentDetailScreenState
                           if (remark != null && remark.isNotEmpty)
                             'remark': remark,
                         }),
-                        'Assignment cancelled',
+                        context.l10n.assignmentCancelled,
                       );
                     },
                     child: Text(context.l10n.cancelAssignment),
@@ -536,10 +536,8 @@ class _DriverShipmentDetailScreenState
                   onPressed: () async {
                     final result = await showAssignmentFeedbackSheet(
                       context,
-                      title: 'Feedback to consignor',
-                      subtitle:
-                          'Your message helps improve service and '
-                          'keeps the shipper informed.',
+                      title: context.l10n.feedbackToConsignorTitle,
+                      subtitle: context.l10n.feedbackToConsignorDesc,
                     );
                     if (!context.mounted || result == null) {
                       return;
@@ -677,7 +675,7 @@ class _DriverGdnGrnSection extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'GDN & GRN',
+                        context.l10n.gdnGrnTitle,
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
                               color: Colors.white,
@@ -686,7 +684,7 @@ class _DriverGdnGrnSection extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Documents issued for this assignment',
+                        context.l10n.documentsIssuedDesc,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.88),
                           height: 1.3,
@@ -734,7 +732,7 @@ class _DriverGdnGrnSection extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'No GDN or GRN yet. They appear when the consignor creates them.',
+                context.l10n.noGdnGrnYetDesc,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.35,
@@ -1077,7 +1075,7 @@ class _FeedbackToConsignorCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Feedback to consignor',
+                            context.l10n.feedbackToConsignorTitle,
                             style: Theme.of(context).textTheme.titleSmall
                                 ?.copyWith(
                                   fontWeight: FontWeight.w700,
@@ -1089,8 +1087,8 @@ class _FeedbackToConsignorCard extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             enabled
-                                ? 'Share delivery notes or appreciation with the shipper.'
-                                : 'Available once your assignment is active.',
+                                ? context.l10n.feedbackToConsignorDesc
+                                : context.l10n.feedbackToConsignorLockedDesc,
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   color: AppColors.textSecondary,

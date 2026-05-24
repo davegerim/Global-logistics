@@ -161,7 +161,7 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Driver Registration',
+                context.l10n.driverRegistrationTitle,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                   color: AppColors.textPrimary,
@@ -170,7 +170,7 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Step 1 of 3: Create your account to start receiving delivery assignments.',
+                context.l10n.driverRegStep1,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.4,

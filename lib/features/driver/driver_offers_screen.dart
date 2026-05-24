@@ -19,7 +19,7 @@ class DriverOffersScreen extends ConsumerStatefulWidget {
 }
 
 class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
-  String _filter = 'all';
+  String _filter = 'active';
 
   static bool _isNegotiationSettled(String? apiStatus) {
     final status = (apiStatus ?? '').toUpperCase();

@@ -131,8 +131,8 @@ class _ConsignorShipmentPaymentSectionState
     final financeId = _shipmentFinanceId;
     if (financeId == null || financeId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Payment record is not ready yet. Pull to refresh.'),
+        SnackBar(
+          content: Text(context.l10n.paymentRecordNotReady),
         ),
       );
       return;
@@ -245,8 +245,8 @@ class _ConsignorShipmentPaymentSectionState
                     final paid = double.tryParse(amt.text.trim());
                     if (paid == null || paid <= 0) {
                       messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text('Enter a valid paid amount.'),
+                        SnackBar(
+                          content: Text(context.l10n.enterValidPaidAmount),
                         ),
                       );
                       return;
@@ -254,8 +254,8 @@ class _ConsignorShipmentPaymentSectionState
                     final slipUrl = slip.text.trim();
                     if (slipUrl.isEmpty) {
                       messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text('Upload a payment receipt.'),
+                        SnackBar(
+                          content: Text(context.l10n.uploadPaymentReceipt),
                         ),
                       );
                       return;
@@ -309,7 +309,7 @@ class _ConsignorShipmentPaymentSectionState
     await _loadFinance();
     ref.invalidate(paymentsProvider);
     messenger.showSnackBar(
-      const SnackBar(content: Text('Payment submitted successfully.')),
+      SnackBar(content: Text(context.l10n.paymentSubmittedSuccessfully)),
     );
   }
 
@@ -390,7 +390,7 @@ class _ConsignorShipmentPaymentSectionState
                       const SizedBox(height: 12),
                       TextButton(
                         onPressed: _loadFinance,
-                        child: const Text('Retry'),
+                        child: Text(context.l10n.tryAgain),
                       ),
                     ],
                   )

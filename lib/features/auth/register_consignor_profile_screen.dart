@@ -144,7 +144,7 @@ class _RegisterConsignorProfileScreenState
               ),
               const SizedBox(height: 16),
               Text(
-                'Business Profile',
+                context.l10n.businessProfileTitle,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                   color: AppColors.textPrimary,
@@ -153,7 +153,7 @@ class _RegisterConsignorProfileScreenState
               ),
               const SizedBox(height: 8),
               Text(
-                'Step 3 of 3: Add your business details to complete registration.',
+                context.l10n.consignorRegStep3,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.4,
@@ -171,8 +171,8 @@ class _RegisterConsignorProfileScreenState
                 urlController: _tradeLicence,
                 folder: S3Folder.profile,
                 borderRadius: 12,
-                buttonLabel: 'Upload trade licence (image or PDF)',
-                successMessage: 'Trade licence uploaded.',
+                buttonLabel: context.l10n.uploadTradeLicence,
+                successMessage: context.l10n.tradeLicenceUploaded,
               ),
               PresignedUploadAttachedHint(
                 controller: _tradeLicence,

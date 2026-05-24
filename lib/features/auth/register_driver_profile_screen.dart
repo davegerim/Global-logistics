@@ -149,7 +149,7 @@ class _RegisterDriverProfileScreenState
               ),
               const SizedBox(height: 16),
               Text(
-                'Personal Profile',
+                context.l10n.personalProfileTitle,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                   color: AppColors.textPrimary,
@@ -158,7 +158,7 @@ class _RegisterDriverProfileScreenState
               ),
               const SizedBox(height: 8),
               Text(
-                'Step 3 of 4: Complete your driver profile with your licence details.',
+                context.l10n.driverRegStep3,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.4,
@@ -176,8 +176,8 @@ class _RegisterDriverProfileScreenState
                 urlController: _licenceDocument,
                 folder: S3Folder.profile,
                 borderRadius: 12,
-                buttonLabel: 'Upload licence document (image or PDF)',
-                successMessage: 'Licence document uploaded.',
+                buttonLabel: context.l10n.uploadLicenceDocument,
+                successMessage: context.l10n.licenceDocumentUploaded,
               ),
               PresignedUploadAttachedHint(
                 controller: _licenceDocument,

@@ -20,20 +20,7 @@ class StatusChip extends StatelessWidget {
     String labelToDisplay = labelOverride ?? _localizeStatus(context, status);
     // Try to localize known API override labels as well
     if (labelOverride != null) {
-      if (labelOverride == 'APPROVED') labelToDisplay = context.l10n.approvedLabel;
-      if (labelOverride == 'COMPLETED') labelToDisplay = context.l10n.completedLabel;
-      if (labelOverride == 'CANCELLED') labelToDisplay = context.l10n.cancelledLabel;
-      if (labelOverride == 'IN TRANSIT') labelToDisplay = context.l10n.inTransitLabel;
-      if (labelOverride == 'ARRIVED') labelToDisplay = context.l10n.arrivedLabel;
-      if (labelOverride == 'OFFLOADED') labelToDisplay = context.l10n.offloadedLabel;
-      if (labelOverride == 'LOADED') labelToDisplay = context.l10n.loadedLabel;
-      if (labelOverride == 'GDN GENERATED') labelToDisplay = context.l10n.gdnGeneratedLabel;
-      if (labelOverride == 'GRN GENERATED') labelToDisplay = context.l10n.grnGeneratedLabel;
-      if (labelOverride == 'CONSIGNOR ACCEPTED') labelToDisplay = context.l10n.consignorAcceptedLabel;
-      if (labelOverride == 'DRIVER ASSIGNED') labelToDisplay = context.l10n.driverAssignedLabel;
-      if (labelOverride == 'SELECTED') labelToDisplay = context.l10n.selectedLabel;
-      if (labelOverride == 'CONSIGNOR RECEIVED') labelToDisplay = context.l10n.consignorReceivedLabel;
-      if (labelOverride == 'ADMIN APPROVED') labelToDisplay = context.l10n.adminApprovedLabel;
+      labelToDisplay = context.translateDynamic(labelOverride!);
     }
 
     return Container(

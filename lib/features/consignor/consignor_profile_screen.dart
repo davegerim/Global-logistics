@@ -359,10 +359,10 @@ class _ConsignorProfileScreenState
             child: const Icon(Icons.phone_rounded, color: AppColors.primary),
           ),
           title: Text(
-            context.l10n.phoneSupport,
-            style: TextStyle(fontWeight: FontWeight.w700),
+            context.l10n.supportHotline,
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
-          subtitle: const Text('+251 900 000 000'),
+          subtitle: Text(context.l10n.consignorPhoneValue),
         ),
         const SizedBox(height: 16),
         ListTile(
@@ -377,9 +377,9 @@ class _ConsignorProfileScreenState
           ),
           title: Text(
             context.l10n.emailSupport,
-            style: TextStyle(fontWeight: FontWeight.w700),
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
-          subtitle: const Text('support@global-logistics.com'),
+          subtitle: Text(context.l10n.consignorSupportEmailValue),
         ),
       ],
       actionLabel: context.l10n.close,

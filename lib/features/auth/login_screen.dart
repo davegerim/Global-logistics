@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
+import 'package:global_logistics_app/core/providers/locale_provider.dart';
+import 'package:global_logistics_app/shared/widgets/app_language_toggle.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -84,8 +86,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final passwordOk = password.trim().isNotEmpty;
     if (!phoneOk || !passwordOk) {
       setState(() {
-        _phoneError = phoneOk ? null : 'Enter a valid 10-digit phone number.';
-        _passwordError = passwordOk ? null : 'Enter your password.';
+        _phoneError = phoneOk ? null : context.l10n.enterValidTenDigitPhone;
+        _passwordError = passwordOk ? null : context.l10n.enterYourPassword;
       });
       return;
     }
@@ -107,6 +109,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final role = roleParam == 'driver' ? AppRole.driver : AppRole.consignor;
     final t = Theme.of(context).textTheme;
     final auth = ref.watch(authProvider);
+    ref.watch(localeProvider);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
@@ -119,26 +122,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Top Row: Back Button Only
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 24.0, top: 16.0),
-                    child: GestureDetector(
-                      onTap: () => context.go('/role'),
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceMuted,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          color: AppColors.textPrimary,
-                          size: 20,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => context.go('/role'),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceMuted,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: AppColors.textPrimary,
+                            size: 20,
+                          ),
                         ),
                       ),
-                    ),
+                      const Spacer(),
+                      const AppLanguageToggle(),
+                    ],
                   ),
                 ),
 
@@ -188,7 +193,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 4),
                         Text(
                           role == AppRole.driver
-                              ? 'Sign in to access your routes.'
+                              ? context.l10n.signInToAccessRoutes
                               : context.l10n.signInToManageShipments,
                           style: t.bodySmall?.copyWith(
                             color: AppColors.textSecondary,

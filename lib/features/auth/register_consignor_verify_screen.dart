@@ -155,7 +155,7 @@ class _RegisterConsignorVerifyScreenState
               ),
               const SizedBox(height: 8),
               Text(
-                'Step 2 of 3: Enter the OTP sent to your phone to verify your identity.',
+                context.l10n.consignorRegStep2,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.4,

@@ -61,7 +61,7 @@ class _DriverLicenseDetailsScreenState
   }
 
   /// Collects licence-related fields from identity root and common nested maps.
-  static List<_LicenseField> _collectFields(Map<String, dynamic> raw) {
+  static List<_LicenseField> _collectFields(BuildContext context, Map<String, dynamic> raw) {
     final seen = <String>{};
     final out = <_LicenseField>[];
 
@@ -76,14 +76,14 @@ class _DriverLicenseDetailsScreenState
       out.add(_LicenseField(label, s, showAsImage: showAsImage));
     }
 
-    const directKeys = <String, String>{
-      'licenceNumber': 'License number',
-      'licenseNumber': 'License number',
-      'licenceDocument': 'License document',
-      'licenseDocument': 'License document',
-      'nationalId': 'National ID',
-      'preferredLanes': 'Preferred lanes',
-      'profilePic': 'Profile photo',
+    final directKeys = <String, String>{
+      'licenceNumber': context.l10n.licenseNumber,
+      'licenseNumber': context.l10n.licenseNumber,
+      'licenceDocument': context.l10n.licenseDocument,
+      'licenseDocument': context.l10n.licenseDocument,
+      'nationalId': context.l10n.nationalId,
+      'preferredLanes': context.l10n.preferredLanes,
+      'profilePic': context.l10n.profilePhoto,
     };
 
     void scan(Map<String, dynamic> map) {
@@ -111,7 +111,7 @@ class _DriverLicenseDetailsScreenState
     final auth = ref.watch(authProvider);
     final rawStatus = (auth.accountStatus ?? 'UNKNOWN').trim().toUpperCase();
     final fields =
-        _identity == null ? <_LicenseField>[] : _collectFields(_identity!);
+        _identity == null ? <_LicenseField>[] : _collectFields(context, _identity!);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundWarm,
@@ -123,7 +123,7 @@ class _DriverLicenseDetailsScreenState
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Driver license',
+          context.l10n.driverLicense,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: AppColors.textPrimary,
@@ -150,7 +150,7 @@ class _DriverLicenseDetailsScreenState
                   else if (_error != null)
                     _LicenseEmptyCard(
                       message:
-                          'Unable to load your profile. Pull to retry.',
+                          context.l10n.unableToLoadProfileRetry,
                       icon: Icons.badge_outlined,
                     )
                   else ...[
@@ -159,12 +159,10 @@ class _DriverLicenseDetailsScreenState
                       name: auth.displayName ?? context.l10n.driver,
                     ),
                     const SizedBox(height: 24),
-                    const _SectionLabel('Verification & credentials'),
+                    _SectionLabel(context.l10n.verificationAndCredentials),
                     if (fields.isEmpty)
-                      const _LicenseEmptyCard(
-                        message:
-                            'No license details were returned for your account. '
-                            'If you recently registered, data may still be processing.',
+                      _LicenseEmptyCard(
+                        message: context.l10n.noLicenseDetailsDesc,
                         icon: Icons.info_outline_rounded,
                       )
                     else
@@ -177,8 +175,7 @@ class _DriverLicenseDetailsScreenState
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Text(
-                        'Document links open in your browser. '
-                        'Contact support if anything needs updating.',
+                        context.l10n.documentLinksBrowserDesc,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppColors.textTertiary,
                               height: 1.4,
@@ -284,7 +281,7 @@ class _LicenseHero extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'License and ID details as stored on your Global Logistics driver profile.',
+                  context.l10n.licenseDetailsStoredDesc,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                         height: 1.45,

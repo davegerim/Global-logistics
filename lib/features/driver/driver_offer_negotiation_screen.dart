@@ -87,7 +87,7 @@ class _DriverOfferNegotiationScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Counter offer',
+              context.l10n.counterOfferTitle,
               style: Theme.of(
                 ctx,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
@@ -96,7 +96,7 @@ class _DriverOfferNegotiationScreenState
             TextField(
               controller: price,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Counter price *'),
+              decoration: InputDecoration(labelText: context.l10n.counterPriceRequired),
             ),
             const SizedBox(height: 10),
             TextField(
@@ -244,7 +244,7 @@ class _DriverOfferNegotiationScreenState
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          '${context.l10n.statusPrefix}${offer.apiStatus ?? 'OFFER'}'
+                          '${context.l10n.statusPrefix}${context.translateDynamic(offer.apiStatus ?? 'OFFER')}'
                           '  •  ${context.l10n.roundsPrefix}${rounds.length}',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
@@ -268,9 +268,9 @@ class _DriverOfferNegotiationScreenState
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: _InfoCard(
                     rows: [
-                      _InfoRow('Route', offer.routeSummary),
-                      _InfoRow('Goods type', offer.goodType ?? '—'),
-                      _InfoRow('Last update', timeFmt.format(offer.expiresAt)),
+                      _InfoRow(context.l10n.routeLabel, offer.routeSummary),
+                      _InfoRow(context.l10n.goodsTypeLabel, context.translateDynamic(offer.goodType ?? '—')),
+                      _InfoRow(context.l10n.lastUpdateLabel, timeFmt.format(offer.expiresAt)),
                       _InfoRow(context.l10n.negotiationId, offer.displayNegotiationId),
                     ],
                   ),
@@ -346,7 +346,7 @@ class _DriverOfferNegotiationScreenState
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
-                                          _roundActorTitle(item.actor),
+                                          context.translateDynamic(_roundActorTitle(item.actor)),
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w800,
@@ -359,7 +359,7 @@ class _DriverOfferNegotiationScreenState
                                         item.message!.trim().isNotEmpty) ...[
                                       const SizedBox(height: 4),
                                       Text(
-                                        item.message!,
+                                        context.translateDynamic(item.message!),
                                         style:
                                             const TextStyle(
                                               fontSize: 13,
@@ -375,7 +375,7 @@ class _DriverOfferNegotiationScreenState
                                     if (item.priceAmount != null) ...[
                                       const SizedBox(height: 6),
                                       Text(
-                                        'Price: ${item.priceAmount!.toStringAsFixed(0)} ${context.translateDynamic(offer.currency)}',
+                                        '${context.l10n.pricePrefix}${item.priceAmount!.toStringAsFixed(0)} ${context.translateDynamic(offer.currency)}',
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w800,
@@ -389,7 +389,7 @@ class _DriverOfferNegotiationScreenState
                                       child: Text(
                                         item.when != null
                                             ? timeFmt.format(item.when!)
-                                            : 'time unknown',
+                                            : context.l10n.timeUnknown,
                                         style:
                                             const TextStyle(
                                               fontSize: 10,
@@ -412,7 +412,7 @@ class _DriverOfferNegotiationScreenState
                         child: Padding(
                           padding: const EdgeInsets.all(24),
                           child: Text(
-                            'No negotiation rounds yet.',
+                            context.l10n.noOfferRoundsYet,
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(color: AppColors.textSecondary),
                           ),
@@ -531,9 +531,9 @@ class _DriverOfferNegotiationScreenState
     }
     if (parts.isEmpty) {
       final actor = (round.actorType ?? '').toUpperCase();
-      if (actor == 'ADMIN') return 'Admin updated the offer details.';
-      if (actor == 'DRIVER') return 'Driver updated the offer details.';
-      return 'Offer details updated.';
+      if (actor == 'ADMIN') return context.l10n.adminUpdatedOffer;
+      if (actor == 'DRIVER') return context.l10n.driverUpdatedOffer;
+      return context.l10n.offerDetailsUpdated;
     }
     return parts.join(' • ');
   }
@@ -552,7 +552,7 @@ class _DriverOfferNegotiationScreenState
       case _RoundActor.admin:
         return context.l10n.adminMessage;
       case _RoundActor.system:
-        return 'System message';
+        return context.translateDynamic('System message');
     }
   }
 

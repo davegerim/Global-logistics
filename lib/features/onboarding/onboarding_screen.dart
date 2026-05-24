@@ -3,38 +3,38 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/data/storage/app_launch_preferences.dart';
+import 'package:global_logistics_app/core/providers/locale_provider.dart';
+import 'package:global_logistics_app/shared/widgets/app_language_toggle.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   late final PageController _pageController;
   int _currentPage = 0;
 
   List<_WalkthroughData> get _pages => [
     _WalkthroughData(
       title: context.l10n.globalLogisticsSimplified,
-      description:
-          'Experience the future of freight management with real-time visibility and trusted execution.',
+      description: context.l10n.walkthroughPage1Desc,
       imagePath: 'assets/images/shutterstock_1292121985-scaled (1).jpg',
       accentColor: AppColors.primary,
     ),
     _WalkthroughData(
       title: context.l10n.connectedOperations,
-      description:
-          'Bring your team, drivers, and consignors together on one powerful platform.',
+      description: context.l10n.walkthroughPage2Desc,
       imagePath: 'assets/images/f94634998aa00df20afd13beb197d04d.jpg',
       accentColor: AppColors.primaryLight,
     ),
     _WalkthroughData(
       title: context.l10n.trackEveryJourney,
-      description:
-          'Stay informed with real-time updates and milestone tracking from booking to delivery.',
+      description: context.l10n.walkthroughPage3Desc,
       imagePath: 'assets/images/54596645_2.webp',
       accentColor: AppColors.gold,
     ),
@@ -72,6 +72,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
+    ref.watch(localeProvider);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -127,14 +128,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     size: 20,
                   ),
                 ),
+                const AppLanguageToggle(lightOnDark: true),
+                const SizedBox(width: 8),
                 TextButton(
                   onPressed: _goToRoleSelection,
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.white.withValues(alpha: 0.8),
                   ),
-                  child: const Text(
-                    'Skip',
-                    style: TextStyle(fontWeight: FontWeight.w600),
+                  child: Text(
+                    context.l10n.skip,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -223,8 +226,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Expanded(
                         child: GlPrimaryButton(
                           label: _currentPage == _pages.length - 1
-                              ? 'Get Started'
-                              : 'Next Step',
+                              ? context.l10n.getStarted
+                              : context.l10n.nextStep,
                           onPressed: _nextPage,
                         ),
                       ),

@@ -1,14 +1,18 @@
-import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
+import 'package:global_logistics_app/core/providers/locale_provider.dart';
+import 'package:global_logistics_app/shared/widgets/app_language_toggle.dart';
 
-class RoleSelectionScreen extends StatelessWidget {
+class RoleSelectionScreen extends ConsumerWidget {
   const RoleSelectionScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final t = Theme.of(context).textTheme;
+    ref.watch(localeProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
@@ -29,11 +33,13 @@ class RoleSelectionScreen extends StatelessWidget {
                     ),
                     icon: const Icon(Icons.arrow_back_rounded),
                   ),
+                  const Spacer(),
+                  const AppLanguageToggle(),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
-                'How would you like\nto use the app?',
+                context.l10n.howWouldYouLikeToUseApp,
                 style: t.headlineMedium?.copyWith(
                   height: 1.2,
                   fontWeight: FontWeight.w800,
@@ -41,7 +47,7 @@ class RoleSelectionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Choose the experience that fits you. You can always sign out and switch later.',
+                context.l10n.chooseExperienceSubtitle,
                 style: t.bodyLarge?.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.5,
@@ -50,8 +56,7 @@ class RoleSelectionScreen extends StatelessWidget {
               const SizedBox(height: 28),
               _RoleCard(
                 title: context.l10n.consignor,
-                subtitle:
-                    'Ship goods, track loads, pay, and receive delivery notes.',
+                subtitle: context.l10n.consignorRoleSubtitle,
                 icon: Icons.inventory_2_outlined,
                 accent: AppColors.primary,
                 onTap: () => context.push('/login?role=consignor'),
@@ -59,8 +64,7 @@ class RoleSelectionScreen extends StatelessWidget {
               const SizedBox(height: 14),
               _RoleCard(
                 title: context.l10n.driver,
-                subtitle:
-                    'Receive offers, accept routes, and confirm delivery.',
+                subtitle: context.l10n.driverRoleSubtitle,
                 icon: Icons.local_shipping_outlined,
                 accent: AppColors.gold,
                 onTap: () => context.push('/login?role=driver'),
@@ -73,38 +77,38 @@ class RoleSelectionScreen extends StatelessWidget {
                       context: context,
                       showDragHandle: true,
                       backgroundColor: AppColors.surface,
-                      builder: (context) => Padding(
+                      builder: (sheetContext) => Padding(
                         padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
-                              'Create an account',
+                              sheetContext.l10n.createAnAccount,
                               style: t.titleLarge,
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Registration is reviewed by your logistics team.',
+                              sheetContext.l10n.registrationReviewedByTeam,
                               style: t.bodyMedium,
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 24),
                             FilledButton(
                               onPressed: () {
-                                Navigator.pop(context);
+                                Navigator.pop(sheetContext);
                                 context.push('/register-consignor');
                               },
-                              child: Text(context.l10n.registerAsConsignor),
+                              child: Text(sheetContext.l10n.registerAsConsignor),
                             ),
                             const SizedBox(height: 10),
                             OutlinedButton(
                               onPressed: () {
-                                Navigator.pop(context);
+                                Navigator.pop(sheetContext);
                                 context.push('/register-driver');
                               },
-                              child: Text(context.l10n.registerAsDriver),
+                              child: Text(sheetContext.l10n.registerAsDriver),
                             ),
                           ],
                         ),
@@ -112,7 +116,7 @@ class RoleSelectionScreen extends StatelessWidget {
                     );
                   },
                   child: Text(
-                    'Need to register?',
+                    context.l10n.needToRegister,
                     style: t.labelLarge?.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w700,

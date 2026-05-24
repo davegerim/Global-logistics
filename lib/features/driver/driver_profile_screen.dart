@@ -78,28 +78,28 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
           '',
     );
     await _showPremiumSheet(
-      title: 'Update driver profile',
-      subtitle: 'Photo, ID, licence, and preferred lanes',
+      title: context.l10n.updateDriverProfile,
+      subtitle: context.l10n.updateDriverProfileSubtitle,
       icon: Icons.badge_outlined,
       children: [
         PresignedUrlUploadRow(
           urlController: profilePic,
           folder: S3Folder.profile,
           allowPdf: false,
-          buttonLabel: 'Upload profile photo',
-          successMessage: 'Profile photo uploaded.',
+          buttonLabel: context.l10n.uploadProfilePhoto,
+          successMessage: context.l10n.profilePhotoUploaded,
         ),
         PresignedUploadAttachedHint(
           controller: profilePic,
-          message: 'Profile photo attached',
+          message: context.l10n.profilePhotoAttached,
         ),
-        _buildInput(nationalId, 'National ID'),
+        _buildInput(nationalId, context.l10n.nationalId),
         _buildInput(licenceNumber, context.l10n.licenceNumber),
         PresignedUrlUploadRow(
           urlController: licenceDocument,
           folder: S3Folder.profile,
-          buttonLabel: 'Upload licence document (image or PDF)',
-          successMessage: 'Licence document uploaded.',
+          buttonLabel: context.l10n.uploadLicenceDocument,
+          successMessage: context.l10n.licenceDocumentUploaded,
         ),
         PresignedUploadAttachedHint(
           controller: licenceDocument,
@@ -107,7 +107,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
         ),
         _buildInput(preferredLanes, context.l10n.preferredLanesOptional),
       ],
-      actionLabel: 'Save Changes',
+      actionLabel: context.l10n.saveChanges,
       onAction: () async {
         try {
           await ref.read(backendApiProvider).driversUpdate(
@@ -277,47 +277,6 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
     );
   }
 
-  Future<void> _changePassword() async {
-    await _showPremiumSheet(
-      title: context.l10n.securityAndAccess,
-      subtitle:
-          context.l10n.passwordChangesRequireMfa,
-      icon: Icons.shield_outlined,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppColors.warning.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.mark_email_read_outlined,
-                color: AppColors.warning,
-                size: 24,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'Please check your registered email for password reset instructions.',
-                  style: TextStyle(
-                    color: AppColors.warning.withValues(alpha: 0.9),
-                    fontWeight: FontWeight.w600,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-      actionLabel: 'Send Reset Link',
-      onAction: () async {},
-    );
-  }
-
   Future<void> _showLanguagePicker() async {
     await showAppLanguagePickerSheet(context, ref);
     if (mounted) setState(() {});
@@ -329,16 +288,16 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
       subtitle: context.l10n.driverPolicies,
       icon: Icons.policy_outlined,
       children: [
-        const Text(
-          'Your location data is tracked only during active shipments to ensure safe and reliable delivery operations.\n\nFor the complete driver agreement and terms of service, please visit our corporate website.',
-          style: TextStyle(
+        Text(
+          context.l10n.locationTrackingNotice,
+          style: const TextStyle(
             color: AppColors.textSecondary,
             height: 1.6,
             fontSize: 15,
           ),
         ),
       ],
-      actionLabel: 'Acknowledge',
+      actionLabel: context.l10n.acknowledge,
       onAction: () async {},
     );
   }
@@ -359,11 +318,11 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
             ),
             child: const Icon(Icons.phone_rounded, color: AppColors.primary),
           ),
-          title: const Text(
-            'Driver Hotline',
-            style: TextStyle(fontWeight: FontWeight.w700),
+          title: Text(
+            context.l10n.driverHotline,
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
-          subtitle: const Text('+251 911 000 000'),
+          subtitle: Text(context.l10n.driverPhoneValue),
         ),
         const SizedBox(height: 16),
         ListTile(
@@ -378,9 +337,9 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
           ),
           title: Text(
             context.l10n.emailSupport,
-            style: TextStyle(fontWeight: FontWeight.w700),
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
-          subtitle: const Text('drivers@global-logistics.com'),
+          subtitle: Text(context.l10n.driverSupportEmailValue),
         ),
       ],
       actionLabel: context.l10n.close,
@@ -393,7 +352,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
     final auth = ref.watch(authProvider);
     final rawStatus = (auth.accountStatus ?? 'UNKNOWN').trim().toUpperCase();
     final approvalPending = !auth.canViewDriverOffers;
-    final statusLabel = approvalPending ? 'Pending Approval' : rawStatus;
+    final statusLabel = approvalPending ? context.l10n.pendingApproval : rawStatus;
     final statusColor = approvalPending ? AppColors.warning : AppColors.success;
     final assignments = ref.watch(driverActiveAssignmentsProvider);
     final profilePicUrl =
@@ -543,10 +502,10 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        _buildStatCard(
-                          title: 'Reviews',
-                          value: RoleProfileUtils.formatReviewCount(reviewCount),
-                        ),
+        _buildStatCard(
+          title: context.l10n.reviews,
+          value: RoleProfileUtils.formatReviewCount(reviewCount),
+        ),
                         const SizedBox(width: 16),
                         const Expanded(child: SizedBox()),
                       ],
@@ -555,7 +514,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                   const SizedBox(height: 32),
 
                   // Grouped Settings Lists
-                  const _ListHeader('Fleet Information'),
+                  _ListHeader(context.l10n.fleetInformation),
                   _buildListGroup([
                     _buildListItem(
                       Icons.edit_outlined,
@@ -567,8 +526,8 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                       Icons.local_shipping_outlined,
                       context.l10n.vehicleDetailsTitle,
                       _vehicle != null
-                          ? '${_vehicle!['type'] ?? 'Truck'} · ${_vehicle!['plateNumber'] ?? 'No Plate'}'
-                          : 'Load vehicle info',
+                          ? '${_vehicle!['type'] ?? context.l10n.truckLabel} · ${_vehicle!['plateNumber'] ?? context.l10n.noPlateLabel}'
+                          : context.l10n.loadVehicleInfo,
                       onTap: () => context.push('/driver/profile/vehicle'),
                     ),
                     _buildListItem(
@@ -579,14 +538,8 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                     ),
                   ]),
 
-                  const _ListHeader('Account Details'),
+                  _ListHeader(context.l10n.accountDetails),
                   _buildListGroup([
-                    _buildListItem(
-                      Icons.shield_outlined,
-                      'Security',
-                      'Password & 2FA',
-                      onTap: _changePassword,
-                    ),
                     _buildListItem(
                       Icons.payments_outlined,
                       context.l10n.payments,
@@ -595,7 +548,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                     ),
                   ]),
 
-                  const _ListHeader('Logistics'),
+                  _ListHeader(context.l10n.logistics),
                   _buildListGroup([
                     _buildListItem(
                       Icons.route_outlined,
@@ -611,11 +564,11 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                     ),
                   ]),
 
-                  const _ListHeader('Preferences & Support'),
+                  _ListHeader(context.l10n.preferencesAndSupport),
                   _buildListGroup([
                     _buildListItem(
                       Icons.language_rounded,
-                      'Language',
+                      context.l10n.language,
                       currentAppLanguageLabel(context, ref),
                       onTap: _showLanguagePicker,
                     ),
@@ -633,7 +586,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                     _buildListItem(
                       Icons.headset_mic_outlined,
                       context.l10n.helpDesk,
-                      '24/7 priority support',
+                      context.l10n.prioritySupportDesc,
                       onTap: _showSupport,
                     ),
                     _buildListItem(

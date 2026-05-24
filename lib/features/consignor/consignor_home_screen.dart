@@ -280,7 +280,7 @@ class ConsignorHomeScreen extends ConsumerWidget {
               child: Center(child: CircularProgressIndicator()),
             ),
             error: (e, _) =>
-                SliverFillRemaining(child: Center(child: Text('Error: $e'))),
+                SliverFillRemaining(child: Center(child: Text('${context.l10n.errorPrefix}: $e'))),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],

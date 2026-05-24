@@ -385,13 +385,13 @@ class AppLocalizationsAm extends AppLocalizations {
   String get tryAgain => 'እንደገና ሞክር';
 
   @override
-  String get globalLogisticsSimplified => 'ግሎባል ሎጂስቲክስ\\nበቀላል።';
+  String get globalLogisticsSimplified => 'ግሎባል ሎጂስቲክስ\nበቀላል።';
 
   @override
-  String get connectedOperations => 'የተገናኙ\\nስራዎች።';
+  String get connectedOperations => 'የተገናኙ\nስራዎች።';
 
   @override
-  String get trackEveryJourney => 'እያንዳንዱን ጉዞ\\nይከታተሉ።';
+  String get trackEveryJourney => 'እያንዳንዱን ጉዞ\nይከታተሉ።';
 
   @override
   String get businessNameOptional => 'የድርጅት ስም (አማራጭ)';
@@ -999,27 +999,27 @@ class AppLocalizationsAm extends AppLocalizations {
   String get updateCompanyAndTradeLicence => 'የኩባንያዎን ስም እና የንግድ ፈቃድ ያዘምኑ';
 
   @override
-  String get uploadTradeLicence => 'የንግድ ፈቃድ ይስቀሉ (ምስል ወይም PDF)';
+  String get uploadTradeLicence => 'የንግድ ፈቃድ ይስቀሉ (ምስል ወይም ፒዲኤፍ)';
 
   @override
-  String get tradeLicenceUploaded => 'የንግድ ፈቃድ ተስቀልቷል።';
+  String get tradeLicenceUploaded => 'የንግድ ፈቃድ ተጭኗል።';
 
   @override
-  String get saveChanges => 'ለውጦችን አስቀምጥ';
+  String get saveChanges => 'ለውጦችን ያስቀምጡ';
 
   @override
   String get passwordResetEmailInstructions =>
       'ለይለፍ ቃል ዳግም ማስጀመሪያ መመሪያዎች ለተመዘገበው ኢሜይልዎ ይመልከቱ።';
 
   @override
-  String get sendResetLink => 'ዳግም ማስጀመሪያ ሊንክ ላክ';
+  String get sendResetLink => 'ማስጀመሪያ ሊንክ ላክ';
 
   @override
   String get privacyPolicyText =>
       'የእርስዎ መረጃ በጥብቅ የድርጅት ግላዊነት ፖሊሲዎች በጥበቃ ስር ነው። የማጓጓዣ መለኪያዎችን ወይም የግል ዝርዝሮችን ለያልተፈቀዱ ሶስተኞች አንጋራም።\n\nሙሉ የአገልግሎት ውሎችን ለማንበብ ድረ-ገጻችንን ይጎብኙ።';
 
   @override
-  String get acknowledge => 'ተቀበል';
+  String get acknowledge => 'አረጋግጣለሁ';
 
   @override
   String successfullySavedToDownloads(String filename) {
@@ -1144,4 +1144,462 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get bottomNavProfile => 'መገለጫ';
+
+  @override
+  String get howWouldYouLikeToUseApp => 'መተግበሪያውን እንዴት\nመጠቀም ይፈልጋሉ?';
+
+  @override
+  String get chooseExperienceSubtitle =>
+      'ለእርስዎ የሚስማማውን ልምድ ይምረጡ። በማንኛውም ጊዜ መውጣት እና መቀየር ይችላሉ።';
+
+  @override
+  String get consignorMessage => 'የአስጫኝ መልእክት';
+
+  @override
+  String get consignorRoleSubtitle =>
+      'ሸቀጣችሁን ይላኩ፣ ጭነቶችን ይከታተሉ፣ ይክፈሉ እና የማስረከቢያ ማስታወሻዎችን ይቀበሉ።';
+
+  @override
+  String get driverRoleSubtitle => 'ቅርብያዎችን ይቀበሉ፣ መንገዶችን ይቀበሉ እና ማስረከብን ያረጋግጡ።';
+
+  @override
+  String get needToRegister => 'መመዝገብ ይፈልጋሉ?';
+
+  @override
+  String get createAnAccount => 'መለያ ይፍጠሩ';
+
+  @override
+  String get registrationReviewedByTeam => 'ምዝገባው በሎጂስቲክስ ቡድንዎ ይገመገማል።';
+
+  @override
+  String get walkthroughPage1Desc =>
+      'በቅጽበት ታይነት እና በተመሰጠረ አስፈጻሚነት የጭነት አስተዳደሩን የወደፊት ልምድ ይቀበሉ።';
+
+  @override
+  String get walkthroughPage2Desc =>
+      'ቡድንዎን፣ አሽከርካሪዎችን እና አስጫኞችን በአንድ ኃይለኛ መድረክ ላይ ያገናኙ።';
+
+  @override
+  String get walkthroughPage3Desc =>
+      'ከምዝገባ እስከ ማስረከብ በቅጽበት ዝማኔዎች እና የደረሰኝ እንቅስቃሴ መከታተያ ይቆዩ።';
+
+  @override
+  String get skip => 'ዝለል';
+
+  @override
+  String get getStarted => 'ይጀምሩ';
+
+  @override
+  String get nextStep => 'ቀጣይ እርምጃ';
+
+  @override
+  String get signInToAccessRoutes => 'መንገዶችዎን ለመድረስ ይግቡ።';
+
+  @override
+  String get enterValidTenDigitPhone => 'ትክክለኛ 10 አሃዝ ስልክ ቁጥር ያስገቡ።';
+
+  @override
+  String get enterYourPassword => 'የይለፍ ቃልዎን ያስገቡ።';
+
+  @override
+  String get splashTagline => 'የታመነ ጭነት። በቅጽበት ታይነት።';
+
+  @override
+  String get driverRegStep2 =>
+      'ደረጃ 2 ከ 3: ማንነትዎን ለማረጋገጥ ወደ ስልክዎ የተላከውን የOTP ኮድ ያስገቡ።';
+
+  @override
+  String get consignorRegStep2 =>
+      'ደረጃ 2 ከ 3: ማንነትዎን ለማረጋገጥ ወደ ስልክዎ የተላከውን የOTP ኮድ ያስገቡ።';
+
+  @override
+  String get vehicleProfileTitle => 'የተሽከርካሪ መገለጫ';
+
+  @override
+  String get driverRegStep4 => 'ደረጃ 4 ከ 4: ጭነቶችን ለመቀበል የተሽከርካሪዎን ዝርዝሮች ያክሉ።';
+
+  @override
+  String get uploadLibriDocument => 'የሊብሬ ሰነድ ይስቀሉ (ምስል ወይም ፒዲኤፍ)';
+
+  @override
+  String get libriDocumentUploaded => 'የሊብሬ ሰነድ ተጭኗል።';
+
+  @override
+  String get uploadInsuranceDocument => 'የኢንሹራንስ ሰነድ ይስቀሉ (ምስል ወይም ፒዲኤፍ)';
+
+  @override
+  String get insuranceDocumentUploaded => 'የኢንሹራንስ ሰነድ ተጭኗል።';
+
+  @override
+  String get uploadVehiclePhoto => 'የተሽከርካሪ ፎቶ ይስቀሉ (JPG፣ PNG ወይም WebP)';
+
+  @override
+  String get vehiclePhotoInvalidType =>
+      'እባክዎ ለተሽከርካሪው ፎቶ የJPG፣ PNG ወይም WebP ምስል ይምረጡ።';
+
+  @override
+  String get vehiclePhotoUploaded => 'የተሽከርካሪ ፎቶ ተጭኗል።';
+
+  @override
+  String get driverRegistrationTitle => 'የአሽከርካሪ ምዝገባ';
+
+  @override
+  String get driverRegStep1 => 'ደረጃ 1 ከ 3: የጭነት ምደባዎችን መቀበል ለመጀመር መለያዎን ይፍጠሩ።';
+
+  @override
+  String get personalProfileTitle => 'የግል መገለጫ';
+
+  @override
+  String get driverRegStep3 => 'ደረጃ 3 ከ 4: የአሽከርካሪ መገለጫዎን በፍቃድዎ ዝርዝሮች ያጠናቅቁ።';
+
+  @override
+  String get uploadLicenceDocument => 'የመንጃ ፈቃድ ሰነድ ይስቀሉ (ምስል ወይም ፒዲኤፍ)';
+
+  @override
+  String get licenceDocumentUploaded => 'የመንጃ ፈቃድ ሰነድ ተጭኗል።';
+
+  @override
+  String get businessProfileTitle => 'የንግድ መገለጫ';
+
+  @override
+  String get consignorRegStep3 => 'ደረጃ 3 ከ 3: ምዝገባውን ለማጠናቀቅ የንግድ ዝርዝሮችዎን ያክሉ።';
+
+  @override
+  String get counterPriceRequired => 'የተጠየቀው ዋጋ *';
+
+  @override
+  String get remarkRequired => 'አስተያየት *';
+
+  @override
+  String get paymentRecordNotReady =>
+      'የክፍያ መዝገብ ገና ዝግጁ አይደለም። ለማደስ ወደ ታች ይጎትቱ።';
+
+  @override
+  String get enterValidPaidAmount => 'ትክክለኛ የተከፈለ መጠን ያስገቡ።';
+
+  @override
+  String get uploadPaymentReceipt => 'የክፍያ ደረሰኝ ይስቀሉ።';
+
+  @override
+  String get paymentSubmittedSuccessfully => 'ክፍያው በተሳካ ሁኔታ ገብቷል።';
+
+  @override
+  String get viewReceipt => 'ደረሰኝ ይመልከቱ';
+
+  @override
+  String get errorPrefix => 'ስህተት';
+
+  @override
+  String get shipmentContextNotLoaded => 'የጭነት አውድ ገና አልተጫነም።';
+
+  @override
+  String get egCounterPrice => 'ለምሳሌ 960.00';
+
+  @override
+  String get requiredVehicleTypeOptional => 'የሚፈለገው የተሽከርካሪ አይነት (አማራጭ)';
+
+  @override
+  String get requiredVehicleNumberOptional => 'የሚፈለገው የተሽከርካሪ ቁጥር (አማራጭ)';
+
+  @override
+  String get loadingDateTime => 'የመጫኛ ቀን እና ሰዓት';
+
+  @override
+  String get deliveryDateTime => 'የማስረከቢያ ቀን እና ሰዓት';
+
+  @override
+  String get waitingForAdminMessage =>
+      'የአስተዳዳሪ ድርድር መልእክት በመጠባበቅ ላይ... አስተዳዳሪው ምላሽ ሲሰጥ እርምጃዎች እዚህ ይታያሉ።';
+
+  @override
+  String get actions => 'እርምጃዎች';
+
+  @override
+  String get yourMessage => 'የእርስዎ መልእክት';
+
+  @override
+  String get noNotificationsYet => 'እስካሁን ምንም ማሳወቂያዎች የሉም';
+
+  @override
+  String get notificationsWillShowHere => 'ማሳወቂያዎች ሲደርሱዎት እዚህ ይታያሉ።';
+
+  @override
+  String get failedToLoadNotifications => 'ማሳወቂያዎችን መጫን አልተሳካም';
+
+  @override
+  String get timeNow => 'አሁን';
+
+  @override
+  String get notificationDefaultTitle => 'ማሳወቂያ';
+
+  @override
+  String get notificationDefaultMessage => 'አዲስ ዝማኔ አለዎት።';
+
+  @override
+  String get driverHotline => 'የአሽከርካሪ የስልክ መስመር';
+
+  @override
+  String get supportHotline => 'የድጋፍ ስልክ';
+
+  @override
+  String get driverSupportEmailValue => 'drivers@global-logistics.com';
+
+  @override
+  String get consignorSupportEmailValue => 'support@global-logistics.com';
+
+  @override
+  String get driverPhoneValue => '+251 911 000 000';
+
+  @override
+  String get consignorPhoneValue => '+251 900 000 000';
+
+  @override
+  String get pendingApproval => 'ማረጋገጫ በመጠባበቅ ላይ';
+
+  @override
+  String get fleetInformation => 'የተሽከርካሪ መረጃ';
+
+  @override
+  String get logistics => 'ሎጂስቲክስ';
+
+  @override
+  String get language => 'ቋንቋ';
+
+  @override
+  String get prioritySupportDesc => '24/7 ፈጣን ድጋፍ';
+
+  @override
+  String get updateDriverProfile => 'የአሽከርካሪ መገለጫ አዘምን';
+
+  @override
+  String get updateDriverProfileSubtitle => 'ፎቶ፣ መታወቂያ፣ መንጃ ፈቃድ እና ተመራጭ መንገዶች';
+
+  @override
+  String get uploadProfilePhoto => 'የመገለጫ ፎቶ ይስቀሉ';
+
+  @override
+  String get profilePhotoUploaded => 'የመገለጫ ፎቶ ተጭኗል።';
+
+  @override
+  String get profilePhotoAttached => 'የመገለጫ ፎቶ ተያይዟል';
+
+  @override
+  String get nationalId => 'ብሄራዊ መታወቂያ';
+
+  @override
+  String get locationTrackingNotice =>
+      'ደህንነቱ የተጠበቀ የማስረከቢያ ስራዎችን ለማረጋገጥ የአካባቢዎ መረጃ የሚከታተለው ገባሪ ጭነቶች በሚኖሩበት ጊዜ ብቻ ነው።\n\nለሙሉ የአሽከርካሪ ስምምነት እና የአገልግሎት ውሎች ድረ-ገጻችንን ይጎብኙ።';
+
+  @override
+  String get loadVehicleInfo => 'የተሽከርካሪ መረጃ ጫን';
+
+  @override
+  String get paymentDetailsAdminDesc =>
+      'ለስራዎ ከአስተዳዳሪ የሚላኩ የክፍያ ዝርዝሮች እዚህ ይታያሉ።';
+
+  @override
+  String get paymentHistory => 'የክፍያ ታሪክ';
+
+  @override
+  String get agreedLabel => 'የተስማሙበት';
+
+  @override
+  String get paidLabel => 'የተከፈለው';
+
+  @override
+  String get remainingLabel => 'ቀሪ';
+
+  @override
+  String get updatedLabel => 'የተዘመነው';
+
+  @override
+  String get refPrefix => 'ማጣቀሻ: ';
+
+  @override
+  String get driverLicense => 'የመንጃ ፈቃድ';
+
+  @override
+  String get unableToLoadProfileRetry => 'መገለጫዎን መጫን አልተቻለም። ለማደስ ይጎትቱ።';
+
+  @override
+  String get licenseDetailsStoredDesc =>
+      'የመንጃ ፈቃድ እና መታወቂያ ዝርዝሮች በግሎባል ሎጂስቲክስ የአሽከርካሪ መገለጫዎ ላይ እንደተቀመጠው።';
+
+  @override
+  String get verificationAndCredentials => 'ማረጋገጫ እና ማስረጃዎች';
+
+  @override
+  String get noLicenseDetailsDesc =>
+      'ለመለያዎ ምንም የመንጃ ፈቃድ ዝርዝሮች አልተገኙም። በቅርብ ጊዜ ከተመዘገቡ፣ ውሂቡ አሁንም በመስተናገድ ላይ ሊሆን ይችላል።';
+
+  @override
+  String get documentLinksBrowserDesc =>
+      'የሰነድ ሊንኮች በብሮውዘርዎ ይከፈታሉ። መዘመን ያለበት ነገር ካለ ድጋፍ ሰጪዎችን ያነጋግሩ።';
+
+  @override
+  String get licenseNumber => 'የፈቃድ ቁጥር';
+
+  @override
+  String get licenseDocument => 'የፈቃድ ሰነድ';
+
+  @override
+  String get preferredLanes => 'ተመራጭ መንገዶች';
+
+  @override
+  String get profilePhoto => 'የመገለጫ ፎቶ';
+
+  @override
+  String get unableToLoadVehicleRetry => 'የተሽከርካሪ መገለጫ መጫን አልተቻለም። ለማደስ ይጎትቱ።';
+
+  @override
+  String get noVehicleDataYet =>
+      'ምንም የተሽከርካሪ ውሂብ የለም። ምዝገባን ያጠናቅቁ ወይም ድጋፍን ያነጋግሩ።';
+
+  @override
+  String get registeredFleetVehicle => 'በአሽከርካሪ መገለጫዎ ላይ የተመዘገበ ተሽከርካሪ።';
+
+  @override
+  String get registrationAndDocuments => 'ምዝገባ እና ሰነዶች';
+
+  @override
+  String get vehicleNotes => 'የተሽከርካሪ ማስታወሻዎች';
+
+  @override
+  String get noAdditionalNotes => 'በመዝገቡ ላይ ምንም ተጨማሪ ማስታወሻዎች የሉም።';
+
+  @override
+  String get photoTitle => 'ፎቶ';
+
+  @override
+  String get truckLabel => 'የጭነት መኪና';
+
+  @override
+  String get noPlateLabel => 'ታርጋ የለውም';
+
+  @override
+  String get adminUpdatedOffer => 'አስተዳዳሪው የዋጋ ድርድሩን ዝርዝሮች አዘምኗል።';
+
+  @override
+  String get driverUpdatedOffer => 'አሽከርካሪው የዋጋ ድርድሩን ዝርዝሮች አዘምኗል።';
+
+  @override
+  String get offerDetailsUpdated => 'የዋጋ ድርድሩ ዝርዝሮች ተዘምነዋል።';
+
+  @override
+  String get noPaymentRecordsYet => 'እስካሁን ምንም የክፍያ መዝገብ የለም';
+
+  @override
+  String get routeLabel => 'መንገድ';
+
+  @override
+  String get goodsTypeLabel => 'የእቃ ዓይነት';
+
+  @override
+  String get lastUpdateLabel => 'የመጨረሻ ዝማኔ';
+
+  @override
+  String get pricePrefix => 'ዋጋ: ';
+
+  @override
+  String get counterOfferTitle => 'የዋጋ ድርድር';
+
+  @override
+  String get timeUnknown => 'ጊዜው አይታወቅም';
+
+  @override
+  String get pickupLabel => 'መጫኛ';
+
+  @override
+  String get dropOffLabel => 'ማራገፊያ';
+
+  @override
+  String get gdnGrnTitle => 'የጭነት/የማስረከቢያ ሰነዶች';
+
+  @override
+  String get documentsIssuedDesc => 'ለዚህ ምደባ የተሰጡ ሰነዶች';
+
+  @override
+  String get noGdnGrnYetDesc =>
+      'ምንም የጭነት/ማስረከቢያ ሰነድ ገና የለም። አሰሪው ሲፈጥራቸው እዚህ ይታያሉ።';
+
+  @override
+  String get assignedLabel => 'ተመድቧል';
+
+  @override
+  String get transitLabel => 'በመንገድ ላይ';
+
+  @override
+  String get waitingForGdnLabel => 'አሰሪው የጭነት ሰነድ እስኪፈጥር በመጠባበቅ ላይ';
+
+  @override
+  String get checkingGdn => 'የጭነት ሰነድ በመፈለግ ላይ...';
+
+  @override
+  String get gdnIsReady => 'የጭነት ሰነድ ዝግጁ ነው';
+
+  @override
+  String get unableToVerifyGdn =>
+      'በአሁኑ ጊዜ የጭነት ሰነድ ማረጋገጥ አልተቻለም። እባክዎ ገፁን ያድሱ።';
+
+  @override
+  String get assignmentIdMissingDesc =>
+      'የምደባ መታወቂያ ጠፍቷል — ምደባው ከተፈጠረ በኋላ እንደገና ይክፈቱ።';
+
+  @override
+  String get feedbackToConsignorTitle => 'ለአሰሪው አስተያየት';
+
+  @override
+  String get feedbackToConsignorDesc =>
+      'የማስረከቢያ ማስታወሻዎችን ወይም አድናቆትን ለአሰሪው ያካፍሉ።';
+
+  @override
+  String get feedbackToConsignorLockedDesc => 'ምደባዎ ገባሪ ሲሆን መጠቀም ይቻላል።';
+
+  @override
+  String get timeMinutesSuffix => 'ደ';
+
+  @override
+  String get timeHoursSuffix => 'ሰ';
+
+  @override
+  String get timeDaysSuffix => 'ቀ';
+
+  @override
+  String get timeWeeksSuffix => 'ሳ';
+
+  @override
+  String get cancelShipmentTitle => 'ጭነት ይሰርዙ';
+
+  @override
+  String get reasonLabel => 'ምክንያት';
+
+  @override
+  String get offerRejected => 'ቅናሹ ተቀባይነት አላገኘም።';
+
+  @override
+  String get shipmentCancelled => 'ጭነቱ ተሰርዟል።';
+
+  @override
+  String get counterOfferSent => 'የዋጋ ድርድር ተልኳል።';
+
+  @override
+  String get selectLoadingDateTime => 'የመጫኛ ቀን እና ሰዓት ይምረጡ';
+
+  @override
+  String get selectDeliveryDateTime => 'የማስረከቢያ ቀን እና ሰዓት ይምረጡ';
+
+  @override
+  String get assignmentCancelled => 'ምደባው ተሰርዟል';
+
+  @override
+  String get loadedConfirmed => 'መጫኑ ተረጋግጧል';
+
+  @override
+  String get inTransitConfirmed => 'በመንገድ ላይ መሆኑ ተረጋግጧል';
+
+  @override
+  String get arrivalConfirmed => 'መድረሱ ተረጋግጧል';
+
+  @override
+  String get offloadConfirmed => 'ማራገፉ ተረጋግጧል';
 }

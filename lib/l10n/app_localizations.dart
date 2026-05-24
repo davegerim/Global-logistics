@@ -221,7 +221,7 @@ abstract class AppLocalizations {
   /// No description provided for @libriNumber.
   ///
   /// In en, this message translates to:
-  /// **'Libri Number'**
+  /// **'Libri number'**
   String get libriNumber;
 
   /// No description provided for @libriDocumentAttached.
@@ -239,7 +239,7 @@ abstract class AppLocalizations {
   /// No description provided for @insuranceNumber.
   ///
   /// In en, this message translates to:
-  /// **'Insurance Number'**
+  /// **'Insurance number'**
   String get insuranceNumber;
 
   /// No description provided for @insuranceDocumentAttached.
@@ -851,19 +851,19 @@ abstract class AppLocalizations {
   /// No description provided for @globalLogisticsSimplified.
   ///
   /// In en, this message translates to:
-  /// **'Global Logistics\\nSimplified.'**
+  /// **'Global Logistics\nSimplified.'**
   String get globalLogisticsSimplified;
 
   /// No description provided for @connectedOperations.
   ///
   /// In en, this message translates to:
-  /// **'Connected\\nOperations.'**
+  /// **'Connected\nOperations.'**
   String get connectedOperations;
 
   /// No description provided for @trackEveryJourney.
   ///
   /// In en, this message translates to:
-  /// **'Track Every\\nJourney.'**
+  /// **'Track Every\nJourney.'**
   String get trackEveryJourney;
 
   /// No description provided for @businessNameOptional.
@@ -1301,19 +1301,19 @@ abstract class AppLocalizations {
   /// No description provided for @arrivedLabel.
   ///
   /// In en, this message translates to:
-  /// **'ARRIVED'**
+  /// **'Arrived'**
   String get arrivedLabel;
 
   /// No description provided for @offloadedLabel.
   ///
   /// In en, this message translates to:
-  /// **'OFFLOADED'**
+  /// **'Offloaded'**
   String get offloadedLabel;
 
   /// No description provided for @loadedLabel.
   ///
   /// In en, this message translates to:
-  /// **'LOADED'**
+  /// **'Loaded'**
   String get loadedLabel;
 
   /// No description provided for @gdnGeneratedLabel.
@@ -1463,7 +1463,7 @@ abstract class AppLocalizations {
   /// No description provided for @shipmentProgress.
   ///
   /// In en, this message translates to:
-  /// **'Shipment Progress'**
+  /// **'Shipment progress'**
   String get shipmentProgress;
 
   /// No description provided for @weightLabelCap.
@@ -2329,6 +2329,882 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile'**
   String get bottomNavProfile;
+
+  /// No description provided for @howWouldYouLikeToUseApp.
+  ///
+  /// In en, this message translates to:
+  /// **'How would you like\nto use the app?'**
+  String get howWouldYouLikeToUseApp;
+
+  /// No description provided for @chooseExperienceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the experience that fits you. You can always sign out and switch later.'**
+  String get chooseExperienceSubtitle;
+
+  /// No description provided for @consignorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Consignor message'**
+  String get consignorMessage;
+
+  /// No description provided for @consignorRoleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ship goods, track loads, pay, and receive delivery notes.'**
+  String get consignorRoleSubtitle;
+
+  /// No description provided for @driverRoleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive offers, accept routes, and confirm delivery.'**
+  String get driverRoleSubtitle;
+
+  /// No description provided for @needToRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Need to register?'**
+  String get needToRegister;
+
+  /// No description provided for @createAnAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account'**
+  String get createAnAccount;
+
+  /// No description provided for @registrationReviewedByTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration is reviewed by your logistics team.'**
+  String get registrationReviewedByTeam;
+
+  /// No description provided for @walkthroughPage1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience the future of freight management with real-time visibility and trusted execution.'**
+  String get walkthroughPage1Desc;
+
+  /// No description provided for @walkthroughPage2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bring your team, drivers, and consignors together on one powerful platform.'**
+  String get walkthroughPage2Desc;
+
+  /// No description provided for @walkthroughPage3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay informed with real-time updates and milestone tracking from booking to delivery.'**
+  String get walkthroughPage3Desc;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// No description provided for @nextStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Step'**
+  String get nextStep;
+
+  /// No description provided for @signInToAccessRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to access your routes.'**
+  String get signInToAccessRoutes;
+
+  /// No description provided for @enterValidTenDigitPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid 10-digit phone number.'**
+  String get enterValidTenDigitPhone;
+
+  /// No description provided for @enterYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password.'**
+  String get enterYourPassword;
+
+  /// No description provided for @splashTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Trusted freight. Real-time visibility.'**
+  String get splashTagline;
+
+  /// No description provided for @driverRegStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2 of 3: Enter the OTP sent to your phone to verify your identity.'**
+  String get driverRegStep2;
+
+  /// No description provided for @consignorRegStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2 of 3: Enter the OTP sent to your phone to verify your identity.'**
+  String get consignorRegStep2;
+
+  /// No description provided for @vehicleProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle Profile'**
+  String get vehicleProfileTitle;
+
+  /// No description provided for @driverRegStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 4 of 4: Add your vehicle details to start accepting loads.'**
+  String get driverRegStep4;
+
+  /// No description provided for @uploadLibriDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload libri document (image or PDF)'**
+  String get uploadLibriDocument;
+
+  /// No description provided for @libriDocumentUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Libri document uploaded.'**
+  String get libriDocumentUploaded;
+
+  /// No description provided for @uploadInsuranceDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload insurance document (image or PDF)'**
+  String get uploadInsuranceDocument;
+
+  /// No description provided for @insuranceDocumentUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Insurance document uploaded.'**
+  String get insuranceDocumentUploaded;
+
+  /// No description provided for @uploadVehiclePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload vehicle photo (JPG, PNG, or WebP)'**
+  String get uploadVehiclePhoto;
+
+  /// No description provided for @vehiclePhotoInvalidType.
+  ///
+  /// In en, this message translates to:
+  /// **'Please choose a JPG, PNG, or WebP image for the vehicle photo.'**
+  String get vehiclePhotoInvalidType;
+
+  /// No description provided for @vehiclePhotoUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle photo uploaded.'**
+  String get vehiclePhotoUploaded;
+
+  /// No description provided for @driverRegistrationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver Registration'**
+  String get driverRegistrationTitle;
+
+  /// No description provided for @driverRegStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 3: Create your account to start receiving delivery assignments.'**
+  String get driverRegStep1;
+
+  /// No description provided for @personalProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Profile'**
+  String get personalProfileTitle;
+
+  /// No description provided for @driverRegStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 3 of 4: Complete your driver profile with your licence details.'**
+  String get driverRegStep3;
+
+  /// No description provided for @uploadLicenceDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload licence document (image or PDF)'**
+  String get uploadLicenceDocument;
+
+  /// No description provided for @licenceDocumentUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Licence document uploaded.'**
+  String get licenceDocumentUploaded;
+
+  /// No description provided for @businessProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Profile'**
+  String get businessProfileTitle;
+
+  /// No description provided for @consignorRegStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 3 of 3: Add your business details to complete registration.'**
+  String get consignorRegStep3;
+
+  /// No description provided for @counterPriceRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Counter price *'**
+  String get counterPriceRequired;
+
+  /// No description provided for @remarkRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Remark *'**
+  String get remarkRequired;
+
+  /// No description provided for @paymentRecordNotReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment record is not ready yet. Pull to refresh.'**
+  String get paymentRecordNotReady;
+
+  /// No description provided for @enterValidPaidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid paid amount.'**
+  String get enterValidPaidAmount;
+
+  /// No description provided for @uploadPaymentReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a payment receipt.'**
+  String get uploadPaymentReceipt;
+
+  /// No description provided for @paymentSubmittedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment submitted successfully.'**
+  String get paymentSubmittedSuccessfully;
+
+  /// No description provided for @viewReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'View receipt'**
+  String get viewReceipt;
+
+  /// No description provided for @errorPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get errorPrefix;
+
+  /// No description provided for @shipmentContextNotLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipment context not loaded yet.'**
+  String get shipmentContextNotLoaded;
+
+  /// No description provided for @egCounterPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 960.00'**
+  String get egCounterPrice;
+
+  /// No description provided for @requiredVehicleTypeOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Required vehicle type (optional)'**
+  String get requiredVehicleTypeOptional;
+
+  /// No description provided for @requiredVehicleNumberOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Required vehicle number (optional)'**
+  String get requiredVehicleNumberOptional;
+
+  /// No description provided for @loadingDateTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading date & time'**
+  String get loadingDateTime;
+
+  /// No description provided for @deliveryDateTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery date & time'**
+  String get deliveryDateTime;
+
+  /// No description provided for @waitingForAdminMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for admin negotiation message. Actions will appear here once admin responds.'**
+  String get waitingForAdminMessage;
+
+  /// No description provided for @actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get actions;
+
+  /// No description provided for @yourMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your message'**
+  String get yourMessage;
+
+  /// No description provided for @noNotificationsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get noNotificationsYet;
+
+  /// No description provided for @notificationsWillShowHere.
+  ///
+  /// In en, this message translates to:
+  /// **'When you get notifications, they\'ll show up here.'**
+  String get notificationsWillShowHere;
+
+  /// No description provided for @failedToLoadNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load notifications'**
+  String get failedToLoadNotifications;
+
+  /// No description provided for @timeNow.
+  ///
+  /// In en, this message translates to:
+  /// **'now'**
+  String get timeNow;
+
+  /// No description provided for @notificationDefaultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification'**
+  String get notificationDefaultTitle;
+
+  /// No description provided for @notificationDefaultMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You have a new update.'**
+  String get notificationDefaultMessage;
+
+  /// No description provided for @driverHotline.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver Hotline'**
+  String get driverHotline;
+
+  /// No description provided for @supportHotline.
+  ///
+  /// In en, this message translates to:
+  /// **'Support Hotline'**
+  String get supportHotline;
+
+  /// No description provided for @driverSupportEmailValue.
+  ///
+  /// In en, this message translates to:
+  /// **'drivers@global-logistics.com'**
+  String get driverSupportEmailValue;
+
+  /// No description provided for @consignorSupportEmailValue.
+  ///
+  /// In en, this message translates to:
+  /// **'support@global-logistics.com'**
+  String get consignorSupportEmailValue;
+
+  /// No description provided for @driverPhoneValue.
+  ///
+  /// In en, this message translates to:
+  /// **'+251 911 000 000'**
+  String get driverPhoneValue;
+
+  /// No description provided for @consignorPhoneValue.
+  ///
+  /// In en, this message translates to:
+  /// **'+251 900 000 000'**
+  String get consignorPhoneValue;
+
+  /// No description provided for @pendingApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Approval'**
+  String get pendingApproval;
+
+  /// No description provided for @fleetInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Fleet Information'**
+  String get fleetInformation;
+
+  /// No description provided for @logistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Logistics'**
+  String get logistics;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @prioritySupportDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'24/7 priority support'**
+  String get prioritySupportDesc;
+
+  /// No description provided for @updateDriverProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Update driver profile'**
+  String get updateDriverProfile;
+
+  /// No description provided for @updateDriverProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo, ID, licence, and preferred lanes'**
+  String get updateDriverProfileSubtitle;
+
+  /// No description provided for @uploadProfilePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload profile photo'**
+  String get uploadProfilePhoto;
+
+  /// No description provided for @profilePhotoUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo uploaded.'**
+  String get profilePhotoUploaded;
+
+  /// No description provided for @profilePhotoAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo attached'**
+  String get profilePhotoAttached;
+
+  /// No description provided for @nationalId.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID'**
+  String get nationalId;
+
+  /// No description provided for @locationTrackingNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Your location data is tracked only during active shipments to ensure safe and reliable delivery operations.\n\nFor the complete driver agreement and terms of service, please visit our corporate website.'**
+  String get locationTrackingNotice;
+
+  /// No description provided for @loadVehicleInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Load vehicle info'**
+  String get loadVehicleInfo;
+
+  /// No description provided for @paymentDetailsAdminDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment details from admin for your assignments will appear here.'**
+  String get paymentDetailsAdminDesc;
+
+  /// No description provided for @paymentHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment history'**
+  String get paymentHistory;
+
+  /// No description provided for @agreedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Agreed'**
+  String get agreedLabel;
+
+  /// No description provided for @paidLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get paidLabel;
+
+  /// No description provided for @remainingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
+  String get remainingLabel;
+
+  /// No description provided for @updatedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated'**
+  String get updatedLabel;
+
+  /// No description provided for @refPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Ref: '**
+  String get refPrefix;
+
+  /// No description provided for @driverLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver license'**
+  String get driverLicense;
+
+  /// No description provided for @unableToLoadProfileRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load your profile. Pull to retry.'**
+  String get unableToLoadProfileRetry;
+
+  /// No description provided for @licenseDetailsStoredDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'License and ID details as stored on your Global Logistics driver profile.'**
+  String get licenseDetailsStoredDesc;
+
+  /// No description provided for @verificationAndCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification & credentials'**
+  String get verificationAndCredentials;
+
+  /// No description provided for @noLicenseDetailsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'No license details were returned for your account. If you recently registered, data may still be processing.'**
+  String get noLicenseDetailsDesc;
+
+  /// No description provided for @documentLinksBrowserDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Document links open in your browser. Contact support if anything needs updating.'**
+  String get documentLinksBrowserDesc;
+
+  /// No description provided for @licenseNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'License number'**
+  String get licenseNumber;
+
+  /// No description provided for @licenseDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'License document'**
+  String get licenseDocument;
+
+  /// No description provided for @preferredLanes.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred lanes'**
+  String get preferredLanes;
+
+  /// No description provided for @profilePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo'**
+  String get profilePhoto;
+
+  /// No description provided for @unableToLoadVehicleRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load vehicle profile. Pull to retry.'**
+  String get unableToLoadVehicleRetry;
+
+  /// No description provided for @noVehicleDataYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No vehicle data yet. Complete registration or contact support.'**
+  String get noVehicleDataYet;
+
+  /// No description provided for @registeredFleetVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered fleet vehicle on your driver profile.'**
+  String get registeredFleetVehicle;
+
+  /// No description provided for @registrationAndDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration & documents'**
+  String get registrationAndDocuments;
+
+  /// No description provided for @vehicleNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle notes'**
+  String get vehicleNotes;
+
+  /// No description provided for @noAdditionalNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'No additional notes on file.'**
+  String get noAdditionalNotes;
+
+  /// No description provided for @photoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get photoTitle;
+
+  /// No description provided for @truckLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Truck'**
+  String get truckLabel;
+
+  /// No description provided for @noPlateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'No Plate'**
+  String get noPlateLabel;
+
+  /// No description provided for @adminUpdatedOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin updated the offer details.'**
+  String get adminUpdatedOffer;
+
+  /// No description provided for @driverUpdatedOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver updated the offer details.'**
+  String get driverUpdatedOffer;
+
+  /// No description provided for @offerDetailsUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer details updated.'**
+  String get offerDetailsUpdated;
+
+  /// No description provided for @noPaymentRecordsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No payment records yet'**
+  String get noPaymentRecordsYet;
+
+  /// No description provided for @routeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Route'**
+  String get routeLabel;
+
+  /// No description provided for @goodsTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Goods type'**
+  String get goodsTypeLabel;
+
+  /// No description provided for @lastUpdateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last update'**
+  String get lastUpdateLabel;
+
+  /// No description provided for @pricePrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Price: '**
+  String get pricePrefix;
+
+  /// No description provided for @counterOfferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Counter offer'**
+  String get counterOfferTitle;
+
+  /// No description provided for @timeUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'time unknown'**
+  String get timeUnknown;
+
+  /// No description provided for @pickupLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup'**
+  String get pickupLabel;
+
+  /// No description provided for @dropOffLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop-off'**
+  String get dropOffLabel;
+
+  /// No description provided for @gdnGrnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'GDN & GRN'**
+  String get gdnGrnTitle;
+
+  /// No description provided for @documentsIssuedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents issued for this assignment'**
+  String get documentsIssuedDesc;
+
+  /// No description provided for @noGdnGrnYetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'No GDN or GRN yet. They appear when the consignor creates them.'**
+  String get noGdnGrnYetDesc;
+
+  /// No description provided for @assignedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned'**
+  String get assignedLabel;
+
+  /// No description provided for @transitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Transit'**
+  String get transitLabel;
+
+  /// No description provided for @waitingForGdnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for consignor to create GDN'**
+  String get waitingForGdnLabel;
+
+  /// No description provided for @checkingGdn.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking GDN...'**
+  String get checkingGdn;
+
+  /// No description provided for @gdnIsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'GDN is ready'**
+  String get gdnIsReady;
+
+  /// No description provided for @unableToVerifyGdn.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to verify GDN right now. Please refresh.'**
+  String get unableToVerifyGdn;
+
+  /// No description provided for @assignmentIdMissingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment id missing — open again after assignment is created.'**
+  String get assignmentIdMissingDesc;
+
+  /// No description provided for @feedbackToConsignorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback to consignor'**
+  String get feedbackToConsignorTitle;
+
+  /// No description provided for @feedbackToConsignorDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Share delivery notes or appreciation with the shipper.'**
+  String get feedbackToConsignorDesc;
+
+  /// No description provided for @feedbackToConsignorLockedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Available once your assignment is active.'**
+  String get feedbackToConsignorLockedDesc;
+
+  /// No description provided for @timeMinutesSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'m'**
+  String get timeMinutesSuffix;
+
+  /// No description provided for @timeHoursSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'h'**
+  String get timeHoursSuffix;
+
+  /// No description provided for @timeDaysSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'d'**
+  String get timeDaysSuffix;
+
+  /// No description provided for @timeWeeksSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'w'**
+  String get timeWeeksSuffix;
+
+  /// No description provided for @cancelShipmentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel shipment'**
+  String get cancelShipmentTitle;
+
+  /// No description provided for @reasonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get reasonLabel;
+
+  /// No description provided for @offerRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer rejected.'**
+  String get offerRejected;
+
+  /// No description provided for @shipmentCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipment cancelled.'**
+  String get shipmentCancelled;
+
+  /// No description provided for @counterOfferSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Counter offer sent.'**
+  String get counterOfferSent;
+
+  /// No description provided for @selectLoadingDateTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Select loading date & time'**
+  String get selectLoadingDateTime;
+
+  /// No description provided for @selectDeliveryDateTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Select delivery date & time'**
+  String get selectDeliveryDateTime;
+
+  /// No description provided for @assignmentCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment cancelled'**
+  String get assignmentCancelled;
+
+  /// No description provided for @loadedConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Loaded confirmed'**
+  String get loadedConfirmed;
+
+  /// No description provided for @inTransitConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'In transit confirmed'**
+  String get inTransitConfirmed;
+
+  /// No description provided for @arrivalConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrival confirmed'**
+  String get arrivalConfirmed;
+
+  /// No description provided for @offloadConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Offload confirmed'**
+  String get offloadConfirmed;
 }
 
 class _AppLocalizationsDelegate

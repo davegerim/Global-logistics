@@ -32,7 +32,9 @@ class ApiLogisticsRepository implements LogisticsRepository {
     if (_role == AppRole.driver) {
       final assigned = await fetchDriverAssignedShipments();
       for (final shipment in assigned) {
-        if (shipment.id == id || shipment.publicId == id) {
+        if (shipment.id == id ||
+            shipment.publicId == id ||
+            shipment.assignmentId == id) {
           return shipment;
         }
       }

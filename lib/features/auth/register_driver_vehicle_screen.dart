@@ -161,7 +161,7 @@ class _RegisterDriverVehicleScreenState
               ),
               const SizedBox(height: 16),
               Text(
-                'Vehicle Profile',
+                context.l10n.vehicleProfileTitle,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                   color: AppColors.textPrimary,
@@ -170,7 +170,7 @@ class _RegisterDriverVehicleScreenState
               ),
               const SizedBox(height: 8),
               Text(
-                'Step 4 of 4: Add your vehicle details to start accepting loads.',
+                context.l10n.driverRegStep4,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.4,
@@ -188,8 +188,8 @@ class _RegisterDriverVehicleScreenState
                 urlController: _libriDocument,
                 folder: S3Folder.profile,
                 borderRadius: 12,
-                buttonLabel: 'Upload libri document (image or PDF)',
-                successMessage: 'Libri document uploaded.',
+                buttonLabel: context.l10n.uploadLibriDocument,
+                successMessage: context.l10n.libriDocumentUploaded,
               ),
               PresignedUploadAttachedHint(
                 controller: _libriDocument,
@@ -209,8 +209,8 @@ class _RegisterDriverVehicleScreenState
                 urlController: _insuranceDocument,
                 folder: S3Folder.profile,
                 borderRadius: 12,
-                buttonLabel: 'Upload insurance document (image or PDF)',
-                successMessage: 'Insurance document uploaded.',
+                buttonLabel: context.l10n.uploadInsuranceDocument,
+                successMessage: context.l10n.insuranceDocumentUploaded,
               ),
               PresignedUploadAttachedHint(
                 controller: _insuranceDocument,
@@ -231,10 +231,9 @@ class _RegisterDriverVehicleScreenState
                 folder: S3Folder.profile,
                 allowPdf: false,
                 borderRadius: 12,
-                buttonLabel: 'Upload vehicle photo (JPG, PNG, or WebP)',
-                invalidTypeMessage:
-                    'Please choose a JPG, PNG, or WebP image for the vehicle photo.',
-                successMessage: 'Vehicle photo uploaded.',
+                buttonLabel: context.l10n.uploadVehiclePhoto,
+                invalidTypeMessage: context.l10n.vehiclePhotoInvalidType,
+                successMessage: context.l10n.vehiclePhotoUploaded,
               ),
               PresignedUploadAttachedHint(
                 controller: _photo,

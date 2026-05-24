@@ -37,7 +37,7 @@ class _ConsignorNegotiationScreenState
   Future<void> _rejectOffer() async {
     final reason = await _promptText(
       title: context.l10n.rejectOffer,
-      hint: 'Reason',
+      hint: context.l10n.reasonLabel,
       requiredField: true,
     );
     if (!mounted || reason == null) return;
@@ -46,13 +46,13 @@ class _ConsignorNegotiationScreenState
         'shipmentId': widget.shipmentId,
         'reason': reason,
       });
-    }, success: 'Offer rejected.');
+    }, success: context.l10n.offerRejected);
   }
 
   Future<void> _cancelShipment() async {
     final reason = await _promptText(
-      title: 'Cancel shipment',
-      hint: 'Reason',
+      title: context.l10n.cancelShipmentTitle,
+      hint: context.l10n.reasonLabel,
       requiredField: true,
     );
     if (!mounted || reason == null) return;
@@ -61,7 +61,7 @@ class _ConsignorNegotiationScreenState
         'shipmentId': widget.shipmentId,
         'reason': reason,
       });
-    }, success: 'Shipment cancelled.');
+    }, success: context.l10n.shipmentCancelled);
   }
 
   Future<void> _counterOffer() async {
@@ -71,7 +71,7 @@ class _ConsignorNegotiationScreenState
     if (shipment == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Shipment context not loaded yet.')),
+          SnackBar(content: Text(context.l10n.shipmentContextNotLoaded)),
         );
       }
       return;
@@ -80,7 +80,7 @@ class _ConsignorNegotiationScreenState
     if (!mounted || form == null) return;
     await _runAction(() async {
       await ref.read(backendApiProvider).shipmentsConsignorCounterOffer(form);
-    }, success: 'Counter offer sent.');
+    }, success: context.l10n.counterOfferSent);
   }
 
   Future<void> _runAction(
@@ -183,7 +183,7 @@ class _ConsignorNegotiationScreenState
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Counter offer',
+                    context.l10n.counterOfferTitle,
                     style: Theme.of(
                       ctx,
                     ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
@@ -192,24 +192,24 @@ class _ConsignorNegotiationScreenState
                   TextField(
                     controller: price,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Counter price *',
-                      hintText: 'e.g. 960.00',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.counterPriceRequired,
+                        hintText: context.l10n.egCounterPrice,
                     ),
                   ),
                   const SizedBox(height: 10),
                   TextField(
                     controller: vehicleType,
-                    decoration: const InputDecoration(
-                      labelText: 'Required vehicle type (optional)',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.requiredVehicleTypeOptional,
                     ),
                   ),
                   const SizedBox(height: 10),
                   TextField(
                     controller: vehicleNumber,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Required vehicle number (optional)',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.requiredVehicleNumberOptional,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -225,13 +225,13 @@ class _ConsignorNegotiationScreenState
                       });
                     },
                     child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Loading date & time',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.loadingDateTime,
                         suffixIcon: Icon(Icons.schedule_rounded),
                       ),
                       child: Text(
                         loadingValue == null
-                            ? 'Select loading date & time'
+                            ? context.l10n.selectLoadingDateTime
                             : displayFmt.format(loadingValue!.toLocal()),
                       ),
                     ),
@@ -251,13 +251,13 @@ class _ConsignorNegotiationScreenState
                       });
                     },
                     child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Delivery date & time',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.deliveryDateTime,
                         suffixIcon: Icon(Icons.event_available_rounded),
                       ),
                       child: Text(
                         deliveryValue == null
-                            ? 'Select delivery date & time'
+                            ? context.l10n.selectDeliveryDateTime
                             : displayFmt.format(deliveryValue!.toLocal()),
                       ),
                     ),
@@ -398,7 +398,7 @@ class _ConsignorNegotiationScreenState
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        '${context.l10n.statusPrefix}$status'
+                        '${context.l10n.statusPrefix}${context.translateDynamic(status)}'
                         '${latestPrice != null ? '  •  ${context.l10n.latestPrice} $latestPrice' : ''}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.white,
@@ -477,7 +477,7 @@ class _ConsignorNegotiationScreenState
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
-                                          _timelineActorTitle(e.actor),
+                                          context.translateDynamic(_timelineActorTitle(e.actor)),
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w800,
@@ -489,7 +489,7 @@ class _ConsignorNegotiationScreenState
                                     if (e.message != null && e.message!.trim().isNotEmpty) ...[
                                       const SizedBox(height: 4),
                                       Text(
-                                        e.message!,
+                                        context.translateDynamic(e.message!),
                                         style: const TextStyle(
                                           fontSize: 13,
                                           height: 1.3,
@@ -500,7 +500,7 @@ class _ConsignorNegotiationScreenState
                                     if (e.price != null) ...[
                                       const SizedBox(height: 6),
                                       Text(
-                                        'Price: ${e.price}',
+                                        '${context.l10n.pricePrefix}${e.price}',
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w800,
@@ -512,7 +512,7 @@ class _ConsignorNegotiationScreenState
                                     Align(
                                       alignment: Alignment.centerRight,
                                       child: Text(
-                                        e.when != null ? fmt.format(e.when!) : 'time unknown',
+                                        e.when != null ? fmt.format(e.when!) : context.l10n.timeUnknown,
                                         style: const TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w600,
@@ -559,7 +559,7 @@ class _ConsignorNegotiationScreenState
                           Expanded(
                             child: _buildActionBtn(
                               icon: Icons.thumb_down_alt_outlined,
-                              label: 'Reject',
+                              label: context.l10n.decline,
                               onPressed: _busy ? null : _rejectOffer,
                               isPrimary: false,
                             ),
@@ -603,8 +603,7 @@ class _ConsignorNegotiationScreenState
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Waiting for admin negotiation message. '
-                              'Actions will appear here once admin responds.',
+                              context.l10n.waitingForAdminMessage,
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(color: AppColors.textSecondary),
                             ),
@@ -739,11 +738,11 @@ class _ConsignorNegotiationScreenState
   String _timelineActorTitle(_TimelineActor actor) {
     switch (actor) {
       case _TimelineActor.admin:
-        return 'Admin message';
+        return context.l10n.adminMessage;
       case _TimelineActor.consignor:
-        return 'Consignor message';
+        return context.l10n.consignorMessage;
       case _TimelineActor.system:
-        return 'System message';
+        return context.translateDynamic('System message');
     }
   }
 

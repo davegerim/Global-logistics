@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
+import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
+import 'package:global_logistics_app/core/providers/locale_provider.dart';
 import 'package:global_logistics_app/data/storage/app_launch_preferences.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -60,6 +62,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    ref.watch(localeProvider);
 
     return Scaffold(
       body: Container(
@@ -159,7 +162,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Trusted freight. Real-time visibility.',
+                          context.l10n.splashTagline,
                           style: textTheme.bodyMedium?.copyWith(
                             color: Colors.white.withValues(alpha: 0.75),
                             letterSpacing: 0.3,

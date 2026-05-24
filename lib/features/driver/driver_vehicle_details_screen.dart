@@ -125,7 +125,7 @@ class _DriverVehicleDetailsScreenState
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Vehicle details',
+          context.l10n.vehicleDetailsTitle,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: AppColors.textPrimary,
@@ -152,13 +152,13 @@ class _DriverVehicleDetailsScreenState
                   else if (_error != null)
                     _EmptyCard(
                       message:
-                          'Unable to load vehicle profile. Pull to retry.',
+                          context.l10n.unableToLoadVehicleRetry,
                       icon: Icons.local_shipping_outlined,
                     )
                   else if (v == null || v.isEmpty)
-                    const _EmptyCard(
+                    _EmptyCard(
                       message:
-                          'No vehicle data yet. Complete registration or contact support.',
+                          context.l10n.noVehicleDataYet,
                       icon: Icons.directions_car_outlined,
                     )
                   else ...[
@@ -167,11 +167,11 @@ class _DriverVehicleDetailsScreenState
                       plate: _pick(v, ['plateNumber', 'plate', 'licensePlate']),
                     ),
                     const SizedBox(height: 24),
-                    const _SectionLabel('Registration & documents'),
+                    _SectionLabel(context.l10n.registrationAndDocuments),
                     _InfoCard(
                       children: [
                         _DetailRow(
-                          label: 'Libri number',
+                          label: context.l10n.libriNumber,
                           value: _pick(v, ['libriNumber', 'libri_no']),
                           emptyHint: '—',
                         ),
@@ -184,7 +184,7 @@ class _DriverVehicleDetailsScreenState
                           ),
                         ),
                         _DetailRow(
-                          label: 'Insurance number',
+                          label: context.l10n.insuranceNumber,
                           value:
                               _pick(v, ['insuranceNumber', 'insurance_number']),
                           emptyHint: '—',
@@ -200,7 +200,7 @@ class _DriverVehicleDetailsScreenState
                       ],
                     ),
                     const SizedBox(height: 16),
-                    const _SectionLabel('Vehicle notes'),
+                    _SectionLabel(context.l10n.vehicleNotes),
                     _InfoCard(
                       children: [
                         Padding(
@@ -212,7 +212,7 @@ class _DriverVehicleDetailsScreenState
                             alignment: Alignment.centerLeft,
                             child: Text(
                               _pick(v, ['details', 'description']).isEmpty
-                                  ? 'No additional notes on file.'
+                                  ? context.l10n.noAdditionalNotes
                                   : _pick(v, ['details', 'description']),
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
@@ -227,7 +227,7 @@ class _DriverVehicleDetailsScreenState
                     ),
                     if (_pick(v, ['photo', 'photoUrl', 'imageUrl']).isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      const _SectionLabel('Photo'),
+                      _SectionLabel(context.l10n.photoTitle),
                       _VehiclePhotoCard(
                         url: _pick(v, ['photo', 'photoUrl', 'imageUrl']),
                       ),
@@ -320,7 +320,7 @@ class _HeroVehicleSummary extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'Registered fleet vehicle on your driver profile.',
+            context.l10n.registeredFleetVehicle,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.88),
               fontSize: 13,
