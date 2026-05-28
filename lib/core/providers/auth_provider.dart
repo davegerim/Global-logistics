@@ -9,6 +9,7 @@ import 'package:global_logistics_app/core/network/token_refresh_executor.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/services/device_location_service.dart';
+import 'package:global_logistics_app/core/tracking/tracking_policy.dart';
 import 'package:global_logistics_app/data/storage/app_launch_preferences.dart';
 import 'package:global_logistics_app/data/storage/token_cache.dart';
 import 'package:global_logistics_app/data/storage/token_storage.dart';
@@ -308,13 +309,27 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final api = ref.read(backendApiProvider);
       final assignments = await api.assignmentsDriver();
-      if (assignments.isEmpty || assignments.first is! Map) return;
-      final first = (assignments.first as Map).cast<String, dynamic>();
-      final assignmentId =
-          first['publicId']?.toString() ??
-          first['assignmentId']?.toString() ??
-          first['id']?.toString();
-      if (assignmentId == null || assignmentId.trim().isEmpty) return;
+      String? assignmentId;
+      for (final raw in assignments) {
+        if (raw is! Map) continue;
+        final assignment = raw.cast<String, dynamic>();
+        final candidateId =
+            assignment['publicId']?.toString() ??
+            assignment['assignmentId']?.toString() ??
+            assignment['id']?.toString();
+        if (candidateId == null || candidateId.trim().isEmpty) continue;
+        final status =
+            assignment['status']?.toString() ??
+            assignment['currentStatus']?.toString();
+        if (!canRunDriverTrackingLoop(status, hasGdn: true)) continue;
+        final gdns = await api.gdnOfAssignment(candidateId);
+        if (!canRunDriverTrackingLoop(status, hasGdn: gdns.isNotEmpty)) {
+          continue;
+        }
+        assignmentId = candidateId;
+        break;
+      }
+      if (assignmentId == null) return;
       final location = await DeviceLocationService.current();
       final recordedAt = DateTime.fromMillisecondsSinceEpoch(
         DateTime.now().toUtc().millisecondsSinceEpoch,

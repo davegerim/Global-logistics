@@ -490,7 +490,7 @@ class _DrivingTruckState extends State<DrivingTruck>
             children: [
               // 1. Realistic Moving Road elevated so the car can cover it
               Positioned(
-                bottom: 20, // Pushed the road higher up in the stack
+                bottom: 45, // Pushed the road higher up in the stack
                 child: SizedBox(
                   height: 40, // Taller road
                   width: 340,
@@ -502,16 +502,19 @@ class _DrivingTruckState extends State<DrivingTruck>
 
               // 2. Dynamic shadow anchored directly ON the road
               Positioned(
-                bottom: 20, // Exact same level as the road
-                child: Transform.scale(
-                  scale: shadowScale,
-                  child: Container(
-                    width: 140,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      borderRadius: const BorderRadius.all(
-                        Radius.elliptical(140, 6),
+                bottom: 45, // Exact same level as the road
+                child: Transform.translate(
+                  offset: const Offset(-30, 0), // Shift left to center the visible part of the truck
+                  child: Transform.scale(
+                    scale: shadowScale,
+                    child: Container(
+                      width: 140,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        borderRadius: const BorderRadius.all(
+                          Radius.elliptical(140, 6),
+                        ),
                       ),
                     ),
                   ),
@@ -523,16 +526,19 @@ class _DrivingTruckState extends State<DrivingTruck>
                 bottom:
                     -8 +
                     bounce, // Negative value physically forces the tires over the road
-                child: Transform(
-                  alignment: Alignment.bottomCenter,
-                  transform: Matrix4.identity()..rotateZ(wobble),
-                  child: Image.asset(
-                    'assets/images/Gemini_Generated_Image.png',
-                    height: 200, // Slightly larger truck
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.local_shipping_rounded,
-                      size: 100,
-                      color: AppColors.primary,
+                child: Transform.translate(
+                  offset: const Offset(-30, 0), // Shift left to center the visible part of the truck
+                  child: Transform(
+                    alignment: Alignment.bottomCenter,
+                    transform: Matrix4.identity()..rotateZ(wobble),
+                    child: Image.asset(
+                      'assets/images/green_truck.png',
+                      height: 200, // Slightly larger truck
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.local_shipping_rounded,
+                        size: 100,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                 ),

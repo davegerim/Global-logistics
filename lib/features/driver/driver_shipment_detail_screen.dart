@@ -10,6 +10,7 @@ import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/repository_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/core/services/device_location_service.dart';
+import 'package:global_logistics_app/core/tracking/tracking_policy.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/storage/assignment_feedback_preferences.dart';
 import 'package:global_logistics_app/features/documents/gdn_grn_document_sheet.dart';
@@ -67,8 +68,11 @@ class _DriverShipmentDetailScreenState
       _trackingTimer = null;
       return;
     }
-    if (state == AppLifecycleState.resumed && _trackedAssignmentId != null) {
-      _startTrackingLoop(_trackedAssignmentId!);
+    if (state == AppLifecycleState.resumed) {
+      ref.invalidate(shipmentDetailProvider(widget.shipmentId));
+      if (_trackedAssignmentId != null && !_checkingGdn) {
+        _refreshGdnState(_trackedAssignmentId!);
+      }
     }
   }
 
@@ -121,14 +125,17 @@ class _DriverShipmentDetailScreenState
     String assignmentId,
     Future<void> Function() call,
     String label,
+    String? trackingStatus,
   ) async {
     try {
       await call();
-      await _recordTracking(
-        assignmentId,
-        reason: 'status:$label',
-        throwOnFailure: false,
-      );
+      if (canSendDriverTrackingUpdate(trackingStatus, hasGdn: _hasGdn)) {
+        await _recordTracking(
+          assignmentId,
+          reason: 'status:$label',
+          throwOnFailure: false,
+        );
+      }
       ref.invalidate(shipmentDetailProvider(widget.shipmentId));
       ref.invalidate(driverAssignedShipmentsProvider);
       if (context.mounted) {
@@ -151,7 +158,11 @@ class _DriverShipmentDetailScreenState
     }
   }
 
-  void _startTrackingLoop(String assignmentId) {
+  void _startTrackingLoop(String assignmentId, String? status) {
+    if (!canRunDriverTrackingLoop(status, hasGdn: _hasGdn)) {
+      _stopTrackingLoop();
+      return;
+    }
     if (_trackedAssignmentId != assignmentId || _trackingTimer == null) {
       _trackingTimer?.cancel();
       _trackedAssignmentId = assignmentId;
@@ -223,9 +234,7 @@ class _DriverShipmentDetailScreenState
       });
     } catch (e) {
       if (!mounted) return;
-      setState(
-        () => _gdnInfo = context.l10n.unableToVerifyGdn,
-      );
+      setState(() => _gdnInfo = context.l10n.unableToVerifyGdn);
     } finally {
       if (mounted) setState(() => _checkingGdn = false);
     }
@@ -301,20 +310,22 @@ class _DriverShipmentDetailScreenState
           }
           final aid = s.assignmentId;
           final status = (s.apiStatusLabel ?? '').trim().toUpperCase();
-          final shouldTrackInBackground =
-              status == 'IN_TRANSIT' || status == 'ARRIVED';
+          final shouldTrackInBackground = canRunDriverTrackingLoop(
+            status,
+            hasGdn: _hasGdn,
+          );
           if (aid == null) {
             _stopTrackingLoop();
           } else if (!_checkingGdn && _gdnInfo == null) {
             _refreshGdnState(aid);
             if (shouldTrackInBackground) {
-              _startTrackingLoop(aid);
+              _startTrackingLoop(aid, status);
             } else {
               _stopTrackingLoop();
             }
           } else {
             if (shouldTrackInBackground) {
-              _startTrackingLoop(aid);
+              _startTrackingLoop(aid, status);
             } else {
               _stopTrackingLoop();
             }
@@ -353,9 +364,17 @@ class _DriverShipmentDetailScreenState
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
               const SizedBox(height: 20),
-              _block(context.l10n.pickupLabel, s.loadingAddress, Icons.north_east),
+              _block(
+                context.l10n.pickupLabel,
+                s.loadingAddress,
+                Icons.north_east,
+              ),
               const SizedBox(height: 12),
-              _block(context.l10n.dropOffLabel, s.offloadingAddress, Icons.south_west),
+              _block(
+                context.l10n.dropOffLabel,
+                s.offloadingAddress,
+                Icons.south_west,
+              ),
               const SizedBox(height: 20),
               if (aid != null)
                 _DriverGdnGrnSection(
@@ -396,11 +415,26 @@ class _DriverShipmentDetailScreenState
                     const SizedBox(height: 10),
                     _StepTracker(
                       steps: [
-                        _StepMeta(context.l10n.assignedLabel, Icons.assignment_ind_rounded),
-                        _StepMeta(context.l10n.loadedLabel, Icons.inventory_2_rounded),
-                        _StepMeta(context.l10n.transitLabel, Icons.local_shipping_rounded),
-                        _StepMeta(context.l10n.arrivedLabel, Icons.flag_rounded),
-                        _StepMeta(context.l10n.offloadedLabel, Icons.unarchive_rounded),
+                        _StepMeta(
+                          context.l10n.assignedLabel,
+                          Icons.assignment_ind_rounded,
+                        ),
+                        _StepMeta(
+                          context.l10n.loadedLabel,
+                          Icons.inventory_2_rounded,
+                        ),
+                        _StepMeta(
+                          context.l10n.transitLabel,
+                          Icons.local_shipping_rounded,
+                        ),
+                        _StepMeta(
+                          context.l10n.arrivedLabel,
+                          Icons.flag_rounded,
+                        ),
+                        _StepMeta(
+                          context.l10n.offloadedLabel,
+                          Icons.unarchive_rounded,
+                        ),
                       ],
                       currentIndex: currentStep,
                     ),
@@ -408,12 +442,13 @@ class _DriverShipmentDetailScreenState
                 ),
               ),
               const SizedBox(height: 18),
-              Text(context.l10n.actions, style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                context.l10n.actions,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
               const SizedBox(height: 10),
               if (aid == null)
-                Text(
-                  context.l10n.assignmentIdMissingDesc,
-                )
+                Text(context.l10n.assignmentIdMissingDesc)
               else ...[
                 Container(
                   padding: const EdgeInsets.all(14),
@@ -457,6 +492,7 @@ class _DriverShipmentDetailScreenState
                     aid,
                     () => api.assignmentsConfirmLoaded({'assignmentId': aid}),
                     context.l10n.loadedConfirmed,
+                    'LOADED',
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -472,6 +508,7 @@ class _DriverShipmentDetailScreenState
                     () =>
                         api.assignmentsConfirmInTransit({'assignmentId': aid}),
                     context.l10n.inTransitConfirmed,
+                    'IN_TRANSIT',
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -486,6 +523,7 @@ class _DriverShipmentDetailScreenState
                     aid,
                     () => api.assignmentsConfirmArrived({'assignmentId': aid}),
                     context.l10n.arrivalConfirmed,
+                    'ARRIVED',
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -501,6 +539,7 @@ class _DriverShipmentDetailScreenState
                     () =>
                         api.assignmentsConfirmOffloaded({'assignmentId': aid}),
                     context.l10n.offloadConfirmed,
+                    'OFFLOADED',
                   ),
                 ),
                 if (!_hasGdn && !_checkingGdn && _gdnInfo != null) ...[
@@ -523,6 +562,7 @@ class _DriverShipmentDetailScreenState
                             'remark': remark,
                         }),
                         context.l10n.assignmentCancelled,
+                        'CANCELLED',
                       );
                     },
                     child: Text(context.l10n.cancelAssignment),
