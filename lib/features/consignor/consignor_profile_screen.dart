@@ -145,20 +145,22 @@ class _ConsignorProfileScreenState
     TextEditingController controller,
     String label, {
     TextInputType? type,
+    bool readOnly = false,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceHighlight,
+        color: readOnly ? AppColors.surfaceHighlight.withValues(alpha: 0.5) : AppColors.surfaceHighlight,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.borderLight, width: 1.5),
       ),
       child: TextField(
         controller: controller,
         keyboardType: type,
-        style: const TextStyle(
+        readOnly: readOnly,
+        style: TextStyle(
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: readOnly ? AppColors.textSecondary : AppColors.textPrimary,
         ),
         decoration: InputDecoration(
           labelText: label,
@@ -250,6 +252,9 @@ class _ConsignorProfileScreenState
     final ln = TextEditingController(
       text: _profile?['lastName'] as String? ?? '',
     );
+    final phone = TextEditingController(
+      text: _profile?['phone'] as String? ?? ref.read(authProvider).phone ?? '',
+    );
     await _showPremiumSheet(
       title: context.l10n.personalDetails,
       subtitle: context.l10n.updateCorporateIdentity,
@@ -257,6 +262,7 @@ class _ConsignorProfileScreenState
       children: [
         _buildInput(fn, context.l10n.firstName),
         _buildInput(ln, context.l10n.lastName),
+        _buildInput(phone, context.l10n.phoneNumber, readOnly: true),
       ],
       actionLabel: context.l10n.saveChanges,
       onAction: () async {
@@ -493,6 +499,17 @@ class _ConsignorProfileScreenState
                                 const SizedBox(height: 4),
                                 Text(
                                   auth.displayName!,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                              if (auth.phone != null && auth.phone!.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  auth.phone!,
                                   style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,

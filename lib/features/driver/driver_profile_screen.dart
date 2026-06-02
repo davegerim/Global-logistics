@@ -450,6 +450,17 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                                   color: Colors.white,
                                 ),
                               ),
+                              if (auth.phone != null && auth.phone!.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  auth.phone!,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                  ),
+                                ),
+                              ],
                               const SizedBox(height: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(
