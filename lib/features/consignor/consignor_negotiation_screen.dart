@@ -7,6 +7,7 @@ import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/consignor_active_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:global_logistics_app/core/utils/negotiation_status_utils.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
@@ -377,7 +378,7 @@ class _ConsignorNegotiationScreenState
             (e) => e.actor == _TimelineActor.admin,
           );
           final isSettled =
-              _isNegotiationSettled(status) || shipment.status == ShipmentStatus.completed;
+              isNegotiationSettled(status) || shipment.status == ShipmentStatus.completed;
 
           return Column(
             children: [
@@ -744,17 +745,6 @@ class _ConsignorNegotiationScreenState
       case _TimelineActor.system:
         return context.translateDynamic('System message');
     }
-  }
-
-  bool _isNegotiationSettled(String? statusValue) {
-    final status = (statusValue ?? '').toUpperCase();
-    if (status.isEmpty) return false;
-    return status.contains('ACCEPTED') ||
-        status.contains('APPROVED') ||
-        status.contains('ASSIGNED') ||
-        status.contains('SETTLED') ||
-        status.contains('COMPLETED') ||
-        status.contains('CLOSED');
   }
 
   Widget _buildSettledBanner() {

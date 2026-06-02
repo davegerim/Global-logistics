@@ -10,10 +10,14 @@ class ShipmentCard extends StatelessWidget {
     super.key,
     required this.shipment,
     this.onTap,
+    this.assignmentStatuses = const [],
+    this.assignmentsLoading = false,
   });
 
   final ShipmentModel shipment;
   final VoidCallback? onTap;
+  final List<String> assignmentStatuses;
+  final bool assignmentsLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +50,14 @@ class ShipmentCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             shipment.displayId
-                                .replaceAll('Booking #', context.l10n.bookingPrefix)
-                                .replaceAll('Assignment #', context.l10n.assignmentPrefix),
+                                .replaceAll(
+                                  'Booking #',
+                                  context.l10n.bookingPrefix,
+                                )
+                                .replaceAll(
+                                  'Assignment #',
+                                  context.l10n.assignmentPrefix,
+                                ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: t.titleMedium?.copyWith(
@@ -63,6 +73,11 @@ class ShipmentCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (assignmentsLoading ||
+                        assignmentStatuses.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      _assignmentStatusSection(context),
+                    ],
                     const SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.only(right: 110),
@@ -80,7 +95,9 @@ class ShipmentCard extends StatelessWidget {
                             context,
                             Icons.download_rounded,
                             context.l10n.toLabel,
-                            context.translateDynamic(shipment.offloadingAddress),
+                            context.translateDynamic(
+                              shipment.offloadingAddress,
+                            ),
                           ),
                         ],
                       ),
@@ -134,6 +151,42 @@ class ShipmentCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _assignmentStatusSection(BuildContext context) {
+    if (assignmentsLoading) {
+      return const LinearProgressIndicator(minHeight: 4);
+    }
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: assignmentStatuses.map((status) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(99),
+              border: Border.all(color: AppColors.borderLight),
+            ),
+            child: Text(
+              context.translateDynamic(status),
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

@@ -23,6 +23,7 @@ class _ConsignorDocumentsScreenState
     extends ConsumerState<ConsignorDocumentsScreen> {
   String? _assignmentId;
   String? _shipmentId;
+  List<String> _assignments = const [];
   bool _loadingAssignment = false;
   String _selectedType = 'ALL';
   Future<List<DocumentRef>>? _documentsFuture;
@@ -31,17 +32,31 @@ class _ConsignorDocumentsScreenState
     setState(() {
       _loadingAssignment = true;
       _shipmentId = shipmentPublicId;
+      _assignments = const [];
+      _assignmentId = null;
+      _documentsFuture = null;
     });
     try {
       final list = await ref
           .read(backendApiProvider)
           .assignmentsConsignorOfShipment(shipmentPublicId);
-      String? aid;
-      if (list.isNotEmpty && list.first is Map) {
-        aid = ((list.first as Map)['assignmentId'] as String?);
+      final assignments = <String>[];
+      for (final item in list) {
+        if (item is! Map) continue;
+        final row = item.cast<String, dynamic>();
+        final assignmentId =
+            row['assignmentId']?.toString().trim().isNotEmpty == true
+            ? row['assignmentId']!.toString().trim()
+            : row['publicId']?.toString().trim().isNotEmpty == true
+            ? row['publicId']!.toString().trim()
+            : row['id']?.toString().trim();
+        if (assignmentId == null || assignmentId.isEmpty) continue;
+        assignments.add(assignmentId);
       }
+      final aid = assignments.isEmpty ? null : assignments.first;
       if (mounted) {
         setState(() {
+          _assignments = assignments;
           _assignmentId = aid;
           _documentsFuture = aid == null
               ? null
@@ -54,6 +69,15 @@ class _ConsignorDocumentsScreenState
     } catch (_) {
       if (mounted) setState(() => _loadingAssignment = false);
     }
+  }
+
+  void _selectAssignment(String assignmentId) {
+    setState(() {
+      _assignmentId = assignmentId;
+      _documentsFuture = ref
+          .read(logisticsRepositoryProvider)
+          .fetchDocumentsForAssignment(assignmentId);
+    });
   }
 
   @override
@@ -225,8 +249,14 @@ class _ConsignorDocumentsScreenState
                                 value: s.id,
                                 child: Text(
                                   s.displayId
-                                      .replaceAll('Booking #', context.l10n.bookingPrefix)
-                                      .replaceAll('Assignment #', context.l10n.assignmentPrefix),
+                                      .replaceAll(
+                                        'Booking #',
+                                        context.l10n.bookingPrefix,
+                                      )
+                                      .replaceAll(
+                                        'Assignment #',
+                                        context.l10n.assignmentPrefix,
+                                      ),
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
                                   style: const TextStyle(
@@ -246,6 +276,58 @@ class _ConsignorDocumentsScreenState
                   ],
                 ),
               ),
+              if (_assignments.length > 1) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.borderLight,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _assignmentId,
+                    isExpanded: true,
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: AppColors.primary,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.assignmentsTitle,
+                      labelStyle: const TextStyle(
+                        color: AppColors.textTertiary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    items: _assignments
+                        .map(
+                          (assignmentId) => DropdownMenuItem<String>(
+                            value: assignmentId,
+                            child: Text(
+                              '${context.l10n.assignmentPrefix}$assignmentId',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value == null || value == _assignmentId) return;
+                      _selectAssignment(value);
+                    },
+                  ),
+                ),
+              ],
               const SizedBox(height: 18),
               if (_loadingAssignment)
                 const LinearProgressIndicator()
@@ -370,11 +452,8 @@ class _ConsignorDocumentsScreenState
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
-        onTap: () => showGdnGrnDocumentSheet(
-          context,
-          documentRef: d,
-          dateFmt: fmt,
-        ),
+        onTap: () =>
+            showGdnGrnDocumentSheet(context, documentRef: d, dateFmt: fmt),
         borderRadius: BorderRadius.circular(20),
         child: Ink(
           padding: const EdgeInsets.all(20),

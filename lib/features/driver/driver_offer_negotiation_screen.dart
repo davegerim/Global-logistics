@@ -7,6 +7,7 @@ import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/driver_offers_provider.dart';
 import 'package:global_logistics_app/core/services/device_location_service.dart';
+import 'package:global_logistics_app/core/utils/negotiation_status_utils.dart';
 import 'package:global_logistics_app/data/models/driver_offer_model.dart';
 import 'package:intl/intl.dart';
 
@@ -222,7 +223,7 @@ class _DriverOfferNegotiationScreenState
           }
           final rounds = _buildTimeline(offer);
           final hasRounds = rounds.isNotEmpty;
-          final isSettled = _isNegotiationSettled(offer.apiStatus);
+          final isSettled = isNegotiationSettled(offer.apiStatus);
           return Column(
             children: [
               GestureDetector(
@@ -554,19 +555,6 @@ class _DriverOfferNegotiationScreenState
       case _RoundActor.system:
         return context.translateDynamic('System message');
     }
-  }
-
-  bool _isNegotiationSettled(String? apiStatus) {
-    final status = (apiStatus ?? '').toUpperCase();
-    if (status.isEmpty) return false;
-    return status.contains('ACCEPTED') ||
-        status.contains('APPROVED') ||
-        status.contains('ASSIGNED') ||
-        status.contains('SELECTED') ||
-        status.contains('AGREED') ||
-        status.contains('SETTLED') ||
-        status.contains('COMPLETED') ||
-        status.contains('CLOSED');
   }
 
   Widget _buildSettledBanner() {

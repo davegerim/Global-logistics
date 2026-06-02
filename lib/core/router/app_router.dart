@@ -223,7 +223,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: 'shipment/:id',
             builder: (context, state) {
               final id = state.pathParameters['id']!;
-              return ConsignorShipmentDetailScreen(shipmentId: id);
+              final assignmentId = state.uri.queryParameters['assignment'];
+              return ConsignorShipmentDetailScreen(
+                shipmentId: id,
+                initialAssignmentId: assignmentId,
+              );
             },
           ),
           GoRoute(
@@ -252,9 +256,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                   state.uri.queryParameters['goods'] ?? 'Shipment';
               if (assignmentId == null || assignmentId.isEmpty) {
                 return Scaffold(
-                  body: Center(
-                    child: Text(context.l10n.assignmentRequiredGdn),
-                  ),
+                  body: Center(child: Text(context.l10n.assignmentRequiredGdn)),
                 );
               }
               return ConsignorGdnFormScreen(
@@ -274,9 +276,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                   state.uri.queryParameters['status'] ?? '';
               if (assignmentId == null || assignmentId.isEmpty) {
                 return Scaffold(
-                  body: Center(
-                    child: Text(context.l10n.assignmentRequiredGrn),
-                  ),
+                  body: Center(child: Text(context.l10n.assignmentRequiredGrn)),
                 );
               }
               return ConsignorGrnFormScreen(

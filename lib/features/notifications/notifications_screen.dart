@@ -129,8 +129,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         route = _routeForShipment(type, refId, prefix, isDriver);
         break;
       case 'ASSIGNMENT':
-        // refId is an assignment ID; driver detail screen resolves it
-        route = '$prefix/shipment/$refId';
+        if (isDriver) {
+          route = '$prefix/shipment/$refId';
+        } else {
+          // For consignor, force assignment context in detail screen.
+          route = '$prefix/shipment/$refId?assignment=$refId';
+        }
         break;
       case 'NEGOTIATION':
         if (isDriver) {
@@ -220,12 +224,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       case 'ASSIGNMENT':
       case 'ASSIGNMENT_UPDATE':
       case 'ASSIGNMENT_STATUS':
-        return '$prefix/shipment/$refId';
+        if (isDriver) return '$prefix/shipment/$refId';
+        return '$prefix/shipment/$refId?assignment=$refId';
       case 'GDN':
       case 'GDN_UPDATE':
       case 'GRN':
       case 'GRN_UPDATE':
-        return '$prefix/shipment/$refId';
+        if (isDriver) return '$prefix/shipment/$refId';
+        return '$prefix/shipment/$refId?assignment=$refId';
       case 'TRACKING':
       case 'LOCATION':
         if (!isDriver) {
@@ -371,8 +377,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                 Expanded(
                                   child: Text(
                                     context.translateDynamic(item.message),
-                                    style: Theme.of(context).textTheme.bodyMedium
-                                        ?.copyWith(color: AppColors.textPrimary),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: AppColors.textPrimary,
+                                        ),
                                   ),
                                 ),
                                 if (item.referenceId != null &&

@@ -7,6 +7,7 @@ import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/driver_offers_provider.dart';
+import 'package:global_logistics_app/core/utils/negotiation_status_utils.dart';
 import 'package:global_logistics_app/data/models/driver_offer_model.dart';
 import 'package:global_logistics_app/core/services/device_location_service.dart';
 import 'package:intl/intl.dart';
@@ -20,19 +21,6 @@ class DriverOffersScreen extends ConsumerStatefulWidget {
 
 class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
   String _filter = 'active';
-
-  static bool _isNegotiationSettled(String? apiStatus) {
-    final status = (apiStatus ?? '').toUpperCase();
-    if (status.isEmpty) return false;
-    return status.contains('ACCEPTED') ||
-        status.contains('APPROVED') ||
-        status.contains('ASSIGNED') ||
-        status.contains('SELECTED') ||
-        status.contains('AGREED') ||
-        status.contains('SETTLED') ||
-        status.contains('COMPLETED') ||
-        status.contains('CLOSED');
-  }
 
   Future<void> _accept(
     BuildContext context,
@@ -150,8 +138,8 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
 
   List<DriverOfferModel> _applyFilter(List<DriverOfferModel> list, String filter) {
     return switch (filter) {
-      'active' => list.where((o) => !_isNegotiationSettled(o.apiStatus)).toList(),
-      'settled' => list.where((o) => _isNegotiationSettled(o.apiStatus)).toList(),
+      'active' => list.where((o) => !isNegotiationSettled(o.apiStatus)).toList(),
+      'settled' => list.where((o) => isNegotiationSettled(o.apiStatus)).toList(),
       _ => list,
     };
   }
@@ -290,7 +278,7 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                         separatorBuilder: (_, _) => const SizedBox(height: 14),
                         itemBuilder: (context, i) {
                           final o = filtered[i];
-                          final isSettled = _isNegotiationSettled(o.apiStatus);
+                          final isSettled = isNegotiationSettled(o.apiStatus);
                           return Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(

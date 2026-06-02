@@ -16,9 +16,14 @@ import 'package:global_logistics_app/shared/widgets/status_chip.dart';
 import 'package:intl/intl.dart';
 
 class ConsignorShipmentDetailScreen extends ConsumerStatefulWidget {
-  const ConsignorShipmentDetailScreen({super.key, required this.shipmentId});
+  const ConsignorShipmentDetailScreen({
+    super.key,
+    required this.shipmentId,
+    this.initialAssignmentId,
+  });
 
   final String shipmentId;
+  final String? initialAssignmentId;
 
   @override
   ConsumerState<ConsignorShipmentDetailScreen> createState() =>
@@ -44,6 +49,7 @@ class _ConsignorShipmentDetailScreenState
   };
 
   String? _assignmentId;
+  List<_AssignmentOption> _assignments = const [];
   bool _resolvingAssignment = false;
   bool _gdnCreated = false;
   String? _gdnMessage;
@@ -57,6 +63,99 @@ class _ConsignorShipmentDetailScreenState
   /// After one completed resolution (success or failure), do not auto-retry until refresh.
   bool _assignmentResolutionAttempted = false;
   bool _resolveAssignmentScheduled = false;
+  bool _resolvingShipmentFromAssignment = false;
+  String? _shipmentIdFromAssignment;
+
+  String? _normalizedInitialAssignmentId() {
+    final raw = widget.initialAssignmentId?.trim();
+    if (raw == null || raw.isEmpty) return null;
+    return raw;
+  }
+
+  bool _isRouteAssignmentLocked() {
+    final initial = _normalizedInitialAssignmentId();
+    if (initial == null) return false;
+    final selected = _assignmentId?.trim();
+    if (selected == null || selected.isEmpty) return false;
+    return selected == initial;
+  }
+
+  List<_AssignmentOption> _assignmentOptionsFromApi(List<dynamic> rows) {
+    final out = <_AssignmentOption>[];
+    for (final item in rows) {
+      if (item is! Map) continue;
+      final row = item.cast<String, dynamic>();
+      final assignmentId =
+          row['assignmentId']?.toString().trim().isNotEmpty == true
+          ? row['assignmentId']!.toString().trim()
+          : row['publicId']?.toString().trim().isNotEmpty == true
+          ? row['publicId']!.toString().trim()
+          : row['id']?.toString().trim();
+      if (assignmentId == null || assignmentId.isEmpty) continue;
+      final rawStatus =
+          row['status']?.toString() ??
+          row['assignmentStatus']?.toString() ??
+          row['currentStatus']?.toString() ??
+          '';
+      final status = rawStatus.trim().toUpperCase();
+      out.add(_AssignmentOption(assignmentId: assignmentId, status: status));
+    }
+    return out;
+  }
+
+  Future<void> _selectAssignment(String assignmentId, {String? status}) async {
+    if (!mounted) return;
+    setState(() {
+      _assignmentId = assignmentId;
+      _assignmentApiStatus = status;
+      _gdnCreated = false;
+      _grnCreated = false;
+      _gdnMessage = null;
+      _grnMessage = null;
+      _feedbackLoadedForAid = null;
+      _feedbackToDriverSubmitted = false;
+    });
+    await _refreshGdnState(assignmentId);
+    await _refreshGrnState(assignmentId);
+  }
+
+  Future<void> _resolveShipmentFromAssignmentIfNeeded() async {
+    final assignmentId = _normalizedInitialAssignmentId();
+    if (assignmentId == null || _resolvingShipmentFromAssignment) return;
+    if (_shipmentIdFromAssignment != null) return;
+    setState(() => _resolvingShipmentFromAssignment = true);
+    try {
+      final payload = await ref.read(consignorActiveProvider.future);
+      if (payload is! List) return;
+      for (final item in payload) {
+        if (item is! Map) continue;
+        final shipment = item.cast<String, dynamic>();
+        final selectedDrivers = shipment['selectedDrivers'];
+        if (selectedDrivers is! List) continue;
+        for (final raw in selectedDrivers) {
+          if (raw is! Map) continue;
+          final row = raw.cast<String, dynamic>();
+          final candidate =
+              row['assignmentId']?.toString().trim().isNotEmpty == true
+              ? row['assignmentId']!.toString().trim()
+              : row['publicId']?.toString().trim().isNotEmpty == true
+              ? row['publicId']!.toString().trim()
+              : row['id']?.toString().trim();
+          if (candidate == assignmentId) {
+            final shipmentId = shipment['publicId']?.toString().trim();
+            if (shipmentId != null && shipmentId.isNotEmpty && mounted) {
+              setState(() => _shipmentIdFromAssignment = shipmentId);
+            }
+            return;
+          }
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _resolvingShipmentFromAssignment = false);
+      }
+    }
+  }
 
   void _scheduleAssignmentResolutionIfNeeded(
     ShipmentModel s, {
@@ -101,29 +200,38 @@ class _ConsignorShipmentDetailScreenState
         assignments = await api.assignmentsConsignorOfShipment(candidate);
         if (assignments.isNotEmpty) break;
       }
+      final options = _assignmentOptionsFromApi(assignments);
       String? found;
       String? resolvedAssignmentStatus;
-      if (assignments.isNotEmpty && assignments.first is Map) {
-        final row = (assignments.first as Map).cast<String, dynamic>();
-        found =
-            (row['assignmentId'] as String?) ??
-            (row['publicId'] as String?) ??
-            (row['id'] as String?);
-        final rawStatus =
-            row['status'] ?? row['assignmentStatus'] ?? row['currentStatus'];
-        if (rawStatus is String && rawStatus.trim().isNotEmpty) {
-          resolvedAssignmentStatus = rawStatus.trim().toUpperCase();
+      if (options.isNotEmpty) {
+        final preferred = _normalizedInitialAssignmentId();
+        _AssignmentOption selected = options.first;
+        if (_assignmentId != null) {
+          for (final option in options) {
+            if (option.assignmentId == _assignmentId) {
+              selected = option;
+              break;
+            }
+          }
+        } else if (preferred != null) {
+          for (final option in options) {
+            if (option.assignmentId == preferred) {
+              selected = option;
+              break;
+            }
+          }
         }
+        found = selected.assignmentId;
+        resolvedAssignmentStatus = selected.status;
+      } else {
+        found = await _assignmentIdFromActiveShipment(s);
       }
-      found ??= await _assignmentIdFromActiveShipment(s);
       if (!mounted) return;
       setState(() {
-        _assignmentId = found;
-        _assignmentApiStatus = resolvedAssignmentStatus;
+        _assignments = options;
       });
       if (found != null) {
-        await _refreshGdnState(found);
-        await _refreshGrnState(found);
+        await _selectAssignment(found, status: resolvedAssignmentStatus);
       }
     } catch (_) {
     } finally {
@@ -249,6 +357,16 @@ class _ConsignorShipmentDetailScreenState
     return _assignedOrLaterStatuses.contains(status);
   }
 
+  String? _effectiveDetailStatusLabel(ShipmentModel shipment) {
+    final assignmentStatus = (_assignmentApiStatus ?? '').trim().toUpperCase();
+    if (_assignmentId != null && assignmentStatus.isNotEmpty) {
+      return assignmentStatus;
+    }
+    final bookingStatus = (shipment.apiStatusLabel ?? '').trim().toUpperCase();
+    if (bookingStatus.isEmpty) return null;
+    return bookingStatus;
+  }
+
   bool _canOpenGrnControl(String assignmentStatus) {
     switch (assignmentStatus) {
       case 'OFFLOADED':
@@ -295,13 +413,17 @@ class _ConsignorShipmentDetailScreenState
   @override
   void didUpdateWidget(covariant ConsignorShipmentDetailScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.shipmentId != widget.shipmentId) {
+    if (oldWidget.shipmentId != widget.shipmentId ||
+        oldWidget.initialAssignmentId != widget.initialAssignmentId) {
       _assignmentResolutionAttempted = false;
       _resolveAssignmentScheduled = false;
       _assignmentId = null;
+      _assignments = const [];
       _assignmentApiStatus = null;
       _feedbackLoadedForAid = null;
       _feedbackToDriverSubmitted = false;
+      _shipmentIdFromAssignment = null;
+      _resolvingShipmentFromAssignment = false;
     }
   }
 
@@ -349,7 +471,9 @@ class _ConsignorShipmentDetailScreenState
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
     } finally {
       if (mounted && _confirmingHandover) {
         setState(() => _confirmingHandover = false);
@@ -402,6 +526,10 @@ class _ConsignorShipmentDetailScreenState
         data: (shipments) {
           final s = _findShipment(shipments);
           if (s == null) {
+            _resolveShipmentFromAssignmentIfNeeded();
+            if (_resolvingShipmentFromAssignment) {
+              return const Center(child: CircularProgressIndicator());
+            }
             return Center(child: Text(context.l10n.shipmentNotFound));
           }
           _resolveDriverSelectionIfNeeded(s);
@@ -414,6 +542,7 @@ class _ConsignorShipmentDetailScreenState
               (_assignmentApiStatus ?? s.apiStatusLabel ?? '')
                   .trim()
                   .toUpperCase();
+          final detailStatusLabel = _effectiveDetailStatusLabel(s);
           final gdnControlEnabled =
               _driverSelected || (assignedByStatus && _assignmentId != null);
           final grnControlEnabled =
@@ -467,7 +596,7 @@ class _ConsignorShipmentDetailScreenState
                           const SizedBox(width: 12),
                           StatusChip(
                             status: s.status,
-                            labelOverride: s.apiStatusLabel,
+                            labelOverride: detailStatusLabel,
                           ),
                         ],
                       ),
@@ -476,20 +605,38 @@ class _ConsignorShipmentDetailScreenState
                         title: context.l10n.shipmentDetails,
                         icon: Icons.inventory_2_outlined,
                         children: [
-                          _kv(context.l10n.weightLabelCap, _formatMetric(s.weightKg)),
+                          _kv(
+                            context.l10n.weightLabelCap,
+                            _formatMetric(s.weightKg),
+                          ),
                           _docDivider(),
-                          _kv(context.l10n.volumeLabelCap, _formatMetric(s.volumeM3)),
+                          _kv(
+                            context.l10n.volumeLabelCap,
+                            _formatMetric(s.volumeM3),
+                          ),
                           _docDivider(),
-                          _kv(context.l10n.vehicleLabelCap, context.translateDynamic(s.vehicleType)),
+                          _kv(
+                            context.l10n.vehicleLabelCap,
+                            context.translateDynamic(s.vehicleType),
+                          ),
                           _docDivider(),
-                          _kv(context.l10n.createdLabelCap, fmt.format(s.placedAt)),
+                          _kv(
+                            context.l10n.createdLabelCap,
+                            fmt.format(s.placedAt),
+                          ),
                           if (s.paymentMethod != null) ...[
                             _docDivider(),
-                            _kv(context.l10n.priceTypeLabelCap, context.translateDynamic(s.paymentMethod!)),
+                            _kv(
+                              context.l10n.priceTypeLabelCap,
+                              context.translateDynamic(s.paymentMethod!),
+                            ),
                           ],
                           if (s.priceOffer != null) ...[
                             _docDivider(),
-                            _kv(context.l10n.priceLabelCap, _formatPrice(s.priceOffer!)),
+                            _kv(
+                              context.l10n.priceLabelCap,
+                              _formatPrice(s.priceOffer!),
+                            ),
                           ],
                         ],
                       ),
@@ -583,14 +730,16 @@ class _ConsignorShipmentDetailScreenState
                       ),
                     )
                   else ...[
-                    _kv(context.l10n.assignmentLabelCap, _assignmentId!),
-                    _docDivider(),
+                    _assignmentSelector(context),
+                    const SizedBox(height: 12),
                     if (_gdnMessage != null) ...[
                       _kv(context.l10n.statusLabelCap, _gdnMessage!),
                       const SizedBox(height: 12),
                     ],
                     GlPrimaryButton(
-                      label: _gdnCreated ? context.l10n.viewGdnForm : context.l10n.openGdnForm,
+                      label: _gdnCreated
+                          ? context.l10n.viewGdnForm
+                          : context.l10n.openGdnForm,
                       icon: _gdnCreated
                           ? Icons.lock_rounded
                           : Icons.description_outlined,
@@ -630,14 +779,16 @@ class _ConsignorShipmentDetailScreenState
                       ),
                     )
                   else ...[
-                    _kv(context.l10n.assignmentLabelCap, _assignmentId!),
-                    _docDivider(),
+                    _assignmentSelector(context),
+                    const SizedBox(height: 12),
                     if (_grnMessage != null) ...[
                       _kv(context.l10n.statusLabelCap, _grnMessage!),
                       const SizedBox(height: 12),
                     ],
                     GlPrimaryButton(
-                      label: _grnCreated ? context.l10n.viewGrnForm : context.l10n.openGrnForm,
+                      label: _grnCreated
+                          ? context.l10n.viewGrnForm
+                          : context.l10n.openGrnForm,
                       icon: _grnCreated
                           ? Icons.lock_rounded
                           : Icons.inventory_rounded,
@@ -807,8 +958,9 @@ class _ConsignorShipmentDetailScreenState
   }
 
   ShipmentModel? _findShipment(List<ShipmentModel> shipments) {
+    final candidateShipmentId = _shipmentIdFromAssignment ?? widget.shipmentId;
     for (final s in shipments) {
-      if (s.id == widget.shipmentId || s.publicId == widget.shipmentId) {
+      if (s.id == candidateShipmentId || s.publicId == candidateShipmentId) {
         return s;
       }
     }
@@ -825,6 +977,50 @@ class _ConsignorShipmentDetailScreenState
     if (value % 1 == 0) return value.toStringAsFixed(0);
     return value.toStringAsFixed(2);
   }
+
+  Widget _assignmentSelector(BuildContext context) {
+    if (_assignments.length <= 1 || _isRouteAssignmentLocked()) {
+      return _kv(context.l10n.assignmentLabelCap, _assignmentId ?? '—');
+    }
+    return DropdownButtonFormField<String>(
+      initialValue: _assignmentId,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: context.l10n.assignmentsTitle,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      items: _assignments
+          .map(
+            (assignment) => DropdownMenuItem<String>(
+              value: assignment.assignmentId,
+              child: Text(_assignmentDropdownLabel(assignment.assignmentId)),
+            ),
+          )
+          .toList(),
+      onChanged: (value) async {
+        if (value == null || value == _assignmentId) return;
+        String? status;
+        for (final option in _assignments) {
+          if (option.assignmentId == value) {
+            status = option.status;
+            break;
+          }
+        }
+        await _selectAssignment(value, status: status);
+      },
+    );
+  }
+
+  String _assignmentDropdownLabel(String assignmentId) {
+    return '${context.l10n.assignmentPrefix}$assignmentId';
+  }
+}
+
+class _AssignmentOption {
+  const _AssignmentOption({required this.assignmentId, required this.status});
+
+  final String assignmentId;
+  final String status;
 }
 
 Widget _kv(String k, String v) {
