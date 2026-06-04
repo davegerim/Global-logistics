@@ -845,6 +845,73 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gdnAlreadyCreated => 'GDN already created';
 
   @override
+  String get voidGdn => 'Void GDN';
+
+  @override
+  String get voidGrn => 'Void GRN';
+
+  @override
+  String get voidGdnTitle => 'Void this GDN?';
+
+  @override
+  String get voidGrnTitle => 'Void this GRN?';
+
+  @override
+  String get voidGdnMessage =>
+      'The current GDN will be marked void and kept on record. You can then create a new GDN.';
+
+  @override
+  String get voidGrnMessage =>
+      'The current GRN will be marked void and kept on record. You can then create a new GRN.';
+
+  @override
+  String get voidDocumentReasonHint => 'Reason (optional)';
+
+  @override
+  String get voidDocumentConfirm => 'Void document';
+
+  @override
+  String get voidDocumentSuccess =>
+      'Document voided. You can create a replacement.';
+
+  @override
+  String get documentVoidAndReplacedSuccess =>
+      'Previous document voided and a new one was created.';
+
+  @override
+  String get documentVoidedCreateFailed =>
+      'Document was voided but creating the replacement failed. Update the form and tap Create to try again.';
+
+  @override
+  String get documentStatusIssued => 'Issued';
+
+  @override
+  String get documentStatusVoid => 'Void';
+
+  @override
+  String get gdnGrnDocumentHistory => 'Document history';
+
+  @override
+  String get gdnVoidedCreateNew =>
+      'Previous GDN was voided. Create a new GDN below.';
+
+  @override
+  String get grnVoidedCreateNew =>
+      'Previous GRN was voided. Create a new GRN below.';
+
+  @override
+  String get gdnActiveLockedVoidToReplace =>
+      'Active GDN on file. Void it to create a corrected GDN.';
+
+  @override
+  String get grnActiveLockedVoidToReplace =>
+      'Active GRN on file. Void it to create a corrected GRN.';
+
+  @override
+  String get documentVoidedBanner =>
+      'This document has been voided and is kept for reference only.';
+
+  @override
   String get trackingLabel => 'Tracking';
 
   @override

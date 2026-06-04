@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/utils/consignor_account_status_utils.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/notifications_provider.dart';
@@ -17,10 +18,8 @@ class DriverHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
-    final rawStatus = (auth.accountStatus ?? 'UNKNOWN').trim().toUpperCase();
-    final approvalPending = !auth.canViewDriverOffers;
-    final statusLabel = approvalPending ? 'Pending admin approval' : rawStatus;
-    final statusColor = approvalPending ? AppColors.warning : AppColors.success;
+    final accountStatusLabel =
+        DriverAccountStatusUtils.displayLabel(auth, context.l10n);
     final assigned = ref.watch(driverActiveAssignmentsProvider);
     final unreadAsync = ref.watch(unreadNotificationsCountProvider);
 
@@ -81,94 +80,48 @@ class DriverHomeScreen extends ConsumerWidget {
               ],
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+          if (accountStatusLabel != null)
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.warning.withValues(alpha: 0.35),
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.gold,
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.gold.withValues(alpha: 0.4),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.verified_user_outlined,
+                            size: 18,
+                            color: AppColors.warning,
                           ),
-                          child: const Icon(Icons.route, color: AppColors.primaryDark),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                context.l10n.assignedShipmentsTitle,
-                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                      color: AppColors.surface,
-                                    ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                context.l10n.assignedShipmentsDesc,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: AppColors.surface.withValues(alpha: 0.8),
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: statusColor.withValues(alpha: 0.35)),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.verified_user_outlined, size: 18, color: statusColor),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '${context.l10n.accountStatusPrefix}$statusLabel',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: statusColor,
-                              fontWeight: FontWeight.w600,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '${context.l10n.accountStatusPrefix}$accountStatusLabel',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: AppColors.warning,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                        ],
+                      ),
+                ),
               ),
             ),
-          ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
             sliver: SliverToBoxAdapter(

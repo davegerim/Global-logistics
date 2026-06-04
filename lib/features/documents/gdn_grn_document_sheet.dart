@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
+import 'package:global_logistics_app/core/utils/gdn_grn_utils.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/features/documents/gdn_grn_document_view_model.dart';
 import 'package:global_logistics_app/features/documents/gdn_grn_pdf.dart';
@@ -273,6 +274,48 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                               ),
                             ),
                           if (vm != null) ...[
+                            if (isGdnGrnVoided(vm.status) ||
+                                widget.documentRef.isVoided) ...[
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.error.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: AppColors.error.withValues(alpha: 0.35),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.block_flipped,
+                                        color: AppColors.error,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          context.l10n.documentVoidedBanner,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color: AppColors.error,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                             Padding(
                               padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                               child: Column(

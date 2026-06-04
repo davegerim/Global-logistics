@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/utils/consignor_account_status_utils.dart';
 import 'package:global_logistics_app/data/mappers/api_mappers.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/notifications_provider.dart';
@@ -34,16 +35,8 @@ class _ConsignorHomeScreenState extends ConsumerState<ConsignorHomeScreen> {
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
     final canBook = auth.canCreateConsignorBooking;
-    final rawStatus = (auth.accountStatus ?? '').trim();
-    final statusLabel = canBook
-        ? (rawStatus.isEmpty
-              ? context.l10n.approvedLabel
-              : rawStatus.toUpperCase())
-        : (rawStatus.toUpperCase() == 'VERIFIED'
-              ? context.l10n.verifiedWaitingAdminApproval
-              : (rawStatus.isEmpty
-                    ? context.l10n.pendingAdminApproval
-                    : '${rawStatus.toUpperCase()} (waiting admin approval)'));
+    final accountStatusLabel =
+        ConsignorAccountStatusUtils.homeDisplayLabel(auth, context.l10n);
     final shipments = ref.watch(consignorShipmentsProvider);
     final unreadAsync = ref.watch(unreadNotificationsCountProvider);
 
@@ -169,49 +162,45 @@ class _ConsignorHomeScreenState extends ConsumerState<ConsignorHomeScreen> {
                                     fontWeight: FontWeight.w800,
                                   ),
                             ),
-                            const SizedBox(height: 14),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.22),
+                            if (accountStatusLabel != null) ...[
+                              const SizedBox(height: 14),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.22),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.pending_actions_rounded,
+                                      size: 18,
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        '${context.l10n.statusPrefix}$accountStatusLabel · ${context.l10n.bookingUnlocksAfterAdminApproval}',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.9,
+                                              ),
+                                            ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    canBook
-                                        ? Icons.verified_rounded
-                                        : Icons.pending_actions_rounded,
-                                    size: 18,
-                                    color: canBook
-                                        ? AppColors.goldMuted
-                                        : Colors.white.withValues(alpha: 0.9),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      canBook
-                                          ? '${context.l10n.statusPrefix}$statusLabel'
-                                          : '${context.l10n.statusPrefix}$statusLabel · ${context.l10n.bookingUnlocksAfterAdminApproval}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: Colors.white.withValues(
-                                              alpha: 0.9,
-                                            ),
-                                          ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            ],
                             const SizedBox(height: 14),
                             Align(
                               alignment: Alignment.centerLeft,

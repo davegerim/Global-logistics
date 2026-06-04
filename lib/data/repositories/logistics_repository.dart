@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/data/mappers/api_mappers.dart';
 import 'package:global_logistics_app/data/models/driver_offer_model.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
@@ -89,7 +90,9 @@ class MockLogisticsRepository implements LogisticsRepository {
   @override
   Future<List<ShipmentModel>> fetchConsignorShipments() async {
     await Future<void>.delayed(const Duration(milliseconds: 400));
-    return List.from(_shipments);
+    final out = List<ShipmentModel>.from(_shipments);
+    out.sort(compareShipmentsNewestFirst);
+    return out;
   }
 
   @override

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/utils/consignor_account_status_utils.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
@@ -396,15 +397,8 @@ class _ConsignorProfileScreenState
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
-    final canBook = auth.canCreateConsignorBooking;
-    final rawStatus = (auth.accountStatus ?? '').trim();
-    final statusLabel = canBook
-        ? (rawStatus.isEmpty ? context.l10n.approvedLabel : rawStatus.toUpperCase())
-        : (rawStatus.toUpperCase() == 'VERIFIED'
-              ? context.l10n.verifiedWaitingAdminApproval
-              : (rawStatus.isEmpty
-                    ? context.l10n.pendingAdminApproval
-                    : '${rawStatus.toUpperCase()} (${context.l10n.waitingAdminApproval})'));
+    final accountStatusLabel =
+        ConsignorAccountStatusUtils.displayLabel(auth, context.l10n);
     final payments = ref.watch(paymentsProvider);
     final shipments = ref.watch(consignorShipmentsProvider);
     final rating = RoleProfileUtils.rating(_consignorProfile);
@@ -517,32 +511,30 @@ class _ConsignorProfileScreenState
                                   ),
                                 ),
                               ],
-                              const SizedBox(height: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: canBook
-                                      ? AppColors.success.withValues(alpha: 0.1)
-                                      : AppColors.warning.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  statusLabel,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
-                                    color: canBook
-                                        ? AppColors.success
-                                        : AppColors.warning,
-                                    letterSpacing: 0.5,
+                              if (accountStatusLabel != null) ...[
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.warning.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    accountStatusLabel,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.warning,
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
                                 ),
-                              ),
+                              ],
                             ],
                           ),
                         ),

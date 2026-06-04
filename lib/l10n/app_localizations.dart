@@ -1706,6 +1706,120 @@ abstract class AppLocalizations {
   /// **'GDN already created'**
   String get gdnAlreadyCreated;
 
+  /// No description provided for @voidGdn.
+  ///
+  /// In en, this message translates to:
+  /// **'Void GDN'**
+  String get voidGdn;
+
+  /// No description provided for @voidGrn.
+  ///
+  /// In en, this message translates to:
+  /// **'Void GRN'**
+  String get voidGrn;
+
+  /// No description provided for @voidGdnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Void this GDN?'**
+  String get voidGdnTitle;
+
+  /// No description provided for @voidGrnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Void this GRN?'**
+  String get voidGrnTitle;
+
+  /// No description provided for @voidGdnMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The current GDN will be marked void and kept on record. You can then create a new GDN.'**
+  String get voidGdnMessage;
+
+  /// No description provided for @voidGrnMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The current GRN will be marked void and kept on record. You can then create a new GRN.'**
+  String get voidGrnMessage;
+
+  /// No description provided for @voidDocumentReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason (optional)'**
+  String get voidDocumentReasonHint;
+
+  /// No description provided for @voidDocumentConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Void document'**
+  String get voidDocumentConfirm;
+
+  /// No description provided for @voidDocumentSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Document voided. You can create a replacement.'**
+  String get voidDocumentSuccess;
+
+  /// No description provided for @documentVoidAndReplacedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous document voided and a new one was created.'**
+  String get documentVoidAndReplacedSuccess;
+
+  /// No description provided for @documentVoidedCreateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Document was voided but creating the replacement failed. Update the form and tap Create to try again.'**
+  String get documentVoidedCreateFailed;
+
+  /// No description provided for @documentStatusIssued.
+  ///
+  /// In en, this message translates to:
+  /// **'Issued'**
+  String get documentStatusIssued;
+
+  /// No description provided for @documentStatusVoid.
+  ///
+  /// In en, this message translates to:
+  /// **'Void'**
+  String get documentStatusVoid;
+
+  /// No description provided for @gdnGrnDocumentHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Document history'**
+  String get gdnGrnDocumentHistory;
+
+  /// No description provided for @gdnVoidedCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous GDN was voided. Create a new GDN below.'**
+  String get gdnVoidedCreateNew;
+
+  /// No description provided for @grnVoidedCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous GRN was voided. Create a new GRN below.'**
+  String get grnVoidedCreateNew;
+
+  /// No description provided for @gdnActiveLockedVoidToReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Active GDN on file. Void it to create a corrected GDN.'**
+  String get gdnActiveLockedVoidToReplace;
+
+  /// No description provided for @grnActiveLockedVoidToReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Active GRN on file. Void it to create a corrected GRN.'**
+  String get grnActiveLockedVoidToReplace;
+
+  /// No description provided for @documentVoidedBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'This document has been voided and is kept for reference only.'**
+  String get documentVoidedBanner;
+
   /// No description provided for @trackingLabel.
   ///
   /// In en, this message translates to:

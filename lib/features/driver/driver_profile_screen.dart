@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/utils/consignor_account_status_utils.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
@@ -350,10 +351,8 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
-    final rawStatus = (auth.accountStatus ?? 'UNKNOWN').trim().toUpperCase();
-    final approvalPending = !auth.canViewDriverOffers;
-    final statusLabel = approvalPending ? context.l10n.pendingApproval : rawStatus;
-    final statusColor = approvalPending ? AppColors.warning : AppColors.success;
+    final accountStatusLabel =
+        DriverAccountStatusUtils.displayLabel(auth, context.l10n);
     final assignments = ref.watch(driverActiveAssignmentsProvider);
     final profilePicUrl =
         RoleProfileUtils.stringField(_driverProfile, 'profilePic');
@@ -461,29 +460,31 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                                   ),
                                 ),
                               ],
-                              const SizedBox(height: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.gold.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: AppColors.gold.withValues(alpha: 0.3),
+                              if (accountStatusLabel != null) ...[
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.gold.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: AppColors.gold.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    accountStatusLabel.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.gold,
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
                                 ),
-                                child: Text(
-                                  statusLabel.toUpperCase(),
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.gold,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
+                              ],
                             ],
                           ),
                         ),

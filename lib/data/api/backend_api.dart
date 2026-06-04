@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:global_logistics_app/core/tracking/tracking_route_coords.dart';
 
 /// Non-admin endpoints from OpenAPI (mobile: consignor + driver).
 class BackendApi {
@@ -323,9 +324,9 @@ class BackendApi {
     await _dio.post<void>('/tracking', data: req);
   }
 
-  Future<List<dynamic>> trackingRoute(String assignmentId) async {
-    final r = await _dio.get<List<dynamic>>('/tracking/$assignmentId');
-    return r.data ?? [];
+  Future<List<Map<String, dynamic>>> trackingRoute(String assignmentId) async {
+    final r = await _dio.get<dynamic>('/tracking/$assignmentId');
+    return TrackingRouteCoords.flattenRecords(r.data);
   }
 
   Future<Map<String, dynamic>> trackingLatest(String assignmentId) async {
@@ -363,6 +364,34 @@ class BackendApi {
 
   Future<Map<String, dynamic>> gdnGet(String publicId) async {
     final r = await _dio.get<Map<String, dynamic>>('/gdn/$publicId');
+    return r.data ?? {};
+  }
+
+  Future<Map<String, dynamic>> gdnVoid({
+    required String publicId,
+    String? reason,
+  }) async {
+    final r = await _dio.put<Map<String, dynamic>>(
+      '/gdn/void',
+      data: {
+        'publicId': publicId,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
+      },
+    );
+    return r.data ?? {};
+  }
+
+  Future<Map<String, dynamic>> grnVoid({
+    required String publicId,
+    String? reason,
+  }) async {
+    final r = await _dio.put<Map<String, dynamic>>(
+      '/grn/void',
+      data: {
+        'publicId': publicId,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
+      },
+    );
     return r.data ?? {};
   }
 

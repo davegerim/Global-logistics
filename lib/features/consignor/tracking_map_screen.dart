@@ -7,6 +7,8 @@ import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:global_logistics_app/core/tracking/road_snap_service.dart';
+import 'package:global_logistics_app/core/tracking/tracking_route_coords.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'dart:async';
@@ -25,7 +27,8 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
   static const LatLng _defaultCenter = LatLng(9.03, 38.74);
 
   final MapController _mapController = MapController();
-  List<dynamic> _points = const [];
+  List<Map<String, dynamic>> _points = const [];
+  List<LatLng> _roadSnappedRoute = const [];
   Map<String, dynamic>? _latest;
   String? _error;
   String? _loadedForAssignment;
@@ -86,13 +89,16 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
       final api = ref.read(backendApiProvider);
       final route = await api.trackingRoute(assignmentId);
       final latest = _extractLatestPoint(route);
+      final rawCoords = TrackingRouteCoords.toPolyline(route);
+      final snapped = await RoadSnapService.snapToRoads(rawCoords);
       if (mounted) {
         setState(() {
           _points = route;
           _latest = latest;
+          _roadSnappedRoute = snapped;
           _error = null;
         });
-        final center = _toLatLng(latest);
+        final center = TrackingRouteCoords.toLatLng(latest);
         if (center != null) {
           if (_mapReady) {
             _mapController.move(center, 14);
@@ -106,37 +112,20 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
     } finally {
       _isLoading = false;
     }
-  } 
+  }
 
-  Map<String, dynamic>? _extractLatestPoint(List<dynamic> points) {
-    for (var i = points.length - 1; i >= 0; i--) {
-      final item = points[i];
-      if (item is! Map) continue;
-      final p = item.cast<String, dynamic>();
-      if (_toLatLng(p) != null) return p;
+  Map<String, dynamic>? _extractLatestPoint(List<Map<String, dynamic>> points) {
+    final sorted = TrackingRouteCoords.sortByRecordedAt(points);
+    for (var i = sorted.length - 1; i >= 0; i--) {
+      if (TrackingRouteCoords.toLatLng(sorted[i]) != null) return sorted[i];
     }
     return null;
   }
 
-  double? _readCoord(Map<String, dynamic> m, List<String> keys) {
-    for (final k in keys) {
-      final v = m[k];
-      if (v is num) return v.toDouble();
-      if (v is String) return double.tryParse(v);
-    }
-    return null;
-  }
-
-  /// Only accepts WGS84 degrees. Some API rows include projected coordinates
-  /// (e.g. Web Mercator ~1e7) which must not be passed to [LatLng] or polylines crash.
-  LatLng? _toLatLng(Map<String, dynamic>? point) {
-    if (point == null) return null;
-    final lat = _readCoord(point, ['latitude', 'lat']);
-    final lon = _readCoord(point, ['longitude', 'lng', 'lon']);
-    if (lat == null || lon == null) return null;
-    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
-    return LatLng(lat, lon);
-  }
+  List<LatLng> _routeLatLngs() =>
+      _roadSnappedRoute.isNotEmpty
+          ? _roadSnappedRoute
+          : TrackingRouteCoords.toPolyline(_points);
 
   @override
   Widget build(BuildContext context) {
@@ -152,12 +141,14 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
             return Center(child: Text(context.l10n.shipmentNotFound));
           }
           final progress = s.progress01 ?? 0.55;
+          final routeCoords = _routeLatLngs();
           return Stack(
             children: [
               FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
-                  initialCenter: _toLatLng(_latest) ?? _defaultCenter,
+                  initialCenter:
+                      TrackingRouteCoords.toLatLng(_latest) ?? _defaultCenter,
                   initialZoom: 12,
                   onMapReady: () {
                     _mapReady = true;
@@ -175,11 +166,32 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                     userAgentPackageName:
                         'com.globallogistics.global_logistics_app',
                   ),
-                  if (_toLatLng(_latest) != null)
-                    MarkerLayer(
-                      markers: [
+                  if (routeCoords.length >= 2)
+                    PolylineLayer(
+                      polylines: [
+                        Polyline(
+                          points: routeCoords,
+                          color: AppColors.info,
+                          strokeWidth: 4,
+                        ),
+                      ],
+                    ),
+                  MarkerLayer(
+                    markers: [
+                      if (routeCoords.isNotEmpty)
                         Marker(
-                          point: _toLatLng(_latest)!,
+                          point: routeCoords.first,
+                          width: 28,
+                          height: 28,
+                          child: const Icon(
+                            Icons.trip_origin_rounded,
+                            color: AppColors.success,
+                            size: 24,
+                          ),
+                        ),
+                      if (TrackingRouteCoords.toLatLng(_latest) != null)
+                        Marker(
+                          point: TrackingRouteCoords.toLatLng(_latest)!,
                           width: 34,
                           height: 34,
                           child: const Icon(
@@ -188,8 +200,8 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                             size: 30,
                           ),
                         ),
-                      ],
-                    ),
+                    ],
+                  ),
                 ],
               ),
               SafeArea(
@@ -335,9 +347,11 @@ class _TrackingMapScreenState extends ConsumerState<TrackingMapScreen> {
                           OutlinedButton.icon(
                             onPressed: () {
                               LatLng? start;
-                              for (final item in _points) {
-                                if (item is! Map) continue;
-                                start = _toLatLng(item.cast<String, dynamic>());
+                              for (final item
+                                  in TrackingRouteCoords.sortByRecordedAt(
+                                    _points,
+                                  )) {
+                                start = TrackingRouteCoords.toLatLng(item);
                                 if (start != null) break;
                               }
                               if (start == null) return;

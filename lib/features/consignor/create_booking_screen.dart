@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/utils/consignor_account_status_utils.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
@@ -228,14 +229,8 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
     final canBook = auth.canCreateConsignorBooking;
-    final rawStatus = (auth.accountStatus ?? '').trim();
-    final statusLabel = canBook
-        ? (rawStatus.isEmpty ? context.l10n.approvedLabel : rawStatus.toUpperCase())
-        : (rawStatus.toUpperCase() == 'VERIFIED'
-            ? context.l10n.verifiedWaitingAdminApproval
-            : (rawStatus.isEmpty
-                ? context.l10n.pendingAdminApproval
-                : '${rawStatus.toUpperCase()} (WAITING ADMIN APPROVAL)'));
+    final accountStatusLabel =
+        ConsignorAccountStatusUtils.displayLabel(auth, context.l10n);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundWarm,
@@ -325,7 +320,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
           const SizedBox(height: 24),
 
           // Notice if not approved
-          if (!canBook) ...[
+          if (!canBook && accountStatusLabel != null) ...[
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -356,7 +351,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${context.l10n.statusPrefix}$statusLabel',
+                          '${context.l10n.statusPrefix}$accountStatusLabel',
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             color: AppColors.textPrimary,

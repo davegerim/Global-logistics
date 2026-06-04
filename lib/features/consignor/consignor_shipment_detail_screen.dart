@@ -7,6 +7,7 @@ import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/consignor_active_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:global_logistics_app/core/utils/gdn_grn_utils.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/storage/assignment_feedback_preferences.dart';
 import 'package:global_logistics_app/features/consignor/widgets/consignor_shipment_payment_section.dart';
@@ -250,10 +251,15 @@ class _ConsignorShipmentDetailScreenState
           .read(backendApiProvider)
           .gdnOfAssignment(assignmentId);
       if (!mounted) return;
+      final hasActive = hasActiveGdnGrn(gdns);
       setState(() {
-        _gdnCreated = gdns.isNotEmpty;
-        if (_gdnCreated) {
-          _gdnMessage = context.l10n.gdnAlreadyGeneratedLocked;
+        _gdnCreated = hasActive;
+        if (hasActive) {
+          _gdnMessage = context.l10n.gdnActiveLockedVoidToReplace;
+        } else if (gdns.isNotEmpty) {
+          _gdnMessage = context.l10n.gdnVoidedCreateNew;
+        } else {
+          _gdnMessage = null;
         }
       });
     } catch (_) {}
@@ -265,10 +271,13 @@ class _ConsignorShipmentDetailScreenState
           .read(backendApiProvider)
           .grnOfAssignment(assignmentId);
       if (!mounted) return;
+      final hasActive = hasActiveGdnGrn(grns);
       setState(() {
-        _grnCreated = grns.isNotEmpty;
-        if (_grnCreated) {
-          _grnMessage = context.l10n.grnAlreadyCreated;
+        _grnCreated = hasActive;
+        if (hasActive) {
+          _grnMessage = context.l10n.grnActiveLockedVoidToReplace;
+        } else if (grns.isNotEmpty) {
+          _grnMessage = context.l10n.grnVoidedCreateNew;
         } else {
           _grnMessage = null;
         }
@@ -559,6 +568,20 @@ class _ConsignorShipmentDetailScreenState
             padding: const EdgeInsets.all(20),
             physics: const BouncingScrollPhysics(),
             children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: GlPrimaryButton(
+                      label: context.l10n.negotiationRoom,
+                      icon: Icons.forum_rounded,
+                      onPressed: () => context.push(
+                        '/consignor/shipment/${s.id}/negotiation',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
               Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -917,20 +940,6 @@ class _ConsignorShipmentDetailScreenState
                 ),
               ],
               const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: GlPrimaryButton(
-                      label: context.l10n.negotiationRoom,
-                      icon: Icons.forum_rounded,
-                      onPressed: () => context.push(
-                        '/consignor/shipment/${s.id}/negotiation',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(

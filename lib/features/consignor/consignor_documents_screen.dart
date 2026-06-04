@@ -7,6 +7,7 @@ import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/repository_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
+import 'package:global_logistics_app/features/consignor/consignor_gdn_form_screen.dart';
 import 'package:global_logistics_app/features/documents/gdn_grn_document_sheet.dart';
 import 'package:intl/intl.dart';
 
@@ -448,6 +449,7 @@ class _ConsignorDocumentsScreenState
 
   Widget _documentCard(BuildContext context, DocumentRef d, DateFormat fmt) {
     final isGdn = d.type == 'GDN';
+    final voided = d.isVoided;
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(20),
@@ -514,6 +516,14 @@ class _ConsignorDocumentsScreenState
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    if (voided) ...[
+                      const SizedBox(height: 6),
+                      DocStatusChip(
+                        voided: true,
+                        issuedLabel: context.l10n.documentStatusIssued,
+                        voidLabel: context.l10n.documentStatusVoid,
+                      ),
+                    ],
                     if ((d.documentNumber ?? '').isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(

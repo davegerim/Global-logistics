@@ -823,6 +823,68 @@ class AppLocalizationsAm extends AppLocalizations {
   String get gdnAlreadyCreated => 'GDN አስቀድሞ ተፈጥሯል';
 
   @override
+  String get voidGdn => 'GDN ባዶ አድርግ';
+
+  @override
+  String get voidGrn => 'GRN ባዶ አድርግ';
+
+  @override
+  String get voidGdnTitle => 'ይህን GDN ባዶ ይሆን?';
+
+  @override
+  String get voidGrnTitle => 'ይህን GRN ባዶ ይሆን?';
+
+  @override
+  String get voidGdnMessage =>
+      'የአሁኑ GDN ባዶ ሆኖ በመዝገብ ይቆያል። ከዚያ አዲስ GDN መፍጠር ይቻላል።';
+
+  @override
+  String get voidGrnMessage =>
+      'የአሁኑ GRN ባዶ ሆኖ በመዝገብ ይቆያል። ከዚያ አዲስ GRN መፍጠር ይቻላል።';
+
+  @override
+  String get voidDocumentReasonHint => 'ምክንያት (አማራጭ)';
+
+  @override
+  String get voidDocumentConfirm => 'ሰነድ ባዶ አድርግ';
+
+  @override
+  String get voidDocumentSuccess => 'ሰነዉ ባዶ ሆኗል። አዲስ ማስተካከያ መፍጠር ይቻላል።';
+
+  @override
+  String get documentVoidAndReplacedSuccess => 'ቀዳሚው ሰነድ ባዶ ሆኖ አዲስ ሰነድ ተፈጥሯል።';
+
+  @override
+  String get documentVoidedCreateFailed =>
+      'ሰነዱ ባዶ ሆኗል፣ ነገር ግን አዲሱ መፍጠር አልተሳካም። ቅጽበታዊ ፎርም ያዘምኑና Create ይጫኑ።';
+
+  @override
+  String get documentStatusIssued => 'የተሰጠ';
+
+  @override
+  String get documentStatusVoid => 'ባዶ';
+
+  @override
+  String get gdnGrnDocumentHistory => 'የሰነድ ታሪክ';
+
+  @override
+  String get gdnVoidedCreateNew => 'ቀደም ሲል ያለ GDN ባዶ ሆኗል። ከታች አዲስ GDN ይፍጠሩ።';
+
+  @override
+  String get grnVoidedCreateNew => 'ቀደም ሲል ያለ GRN ባዶ ሆኗል። ከታች አዲስ GRN ይፍጠሩ።';
+
+  @override
+  String get gdnActiveLockedVoidToReplace =>
+      'ንቁ GDN አለ። ለማስተካከል ባዶ አድርገው አዲስ GDN ይፍጠሩ።';
+
+  @override
+  String get grnActiveLockedVoidToReplace =>
+      'ንቁ GRN አለ። ለማስተካከል ባዶ አድርገው አዲስ GRN ይፍጠሩ።';
+
+  @override
+  String get documentVoidedBanner => 'ይህ ሰነድ ባዶ ሆኖ ለማጣቀሻ ብቻ ይቆያል።';
+
+  @override
   String get trackingLabel => 'ክትትል';
 
   @override

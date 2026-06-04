@@ -8,6 +8,16 @@ DateTime? _parseDt(dynamic v) {
   return null;
 }
 
+/// Newest bookings first (placed date, then booking #, then public id).
+int compareShipmentsNewestFirst(ShipmentModel a, ShipmentModel b) {
+  final byPlaced = b.placedAt.compareTo(a.placedAt);
+  if (byPlaced != 0) return byPlaced;
+  final aBooking = int.tryParse(a.bookingId ?? '') ?? 0;
+  final bBooking = int.tryParse(b.bookingId ?? '') ?? 0;
+  if (aBooking != bBooking) return bBooking.compareTo(aBooking);
+  return b.publicId.compareTo(a.publicId);
+}
+
 double? _parseDouble(dynamic v) {
   if (v == null) return null;
   if (v is num) return v.toDouble();

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/utils/consignor_account_status_utils.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
@@ -148,9 +149,8 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
     if (!auth.canViewDriverOffers) {
-      final statusText = (auth.accountStatus ?? 'VERIFIED')
-          .trim()
-          .toUpperCase();
+      final accountStatusLabel =
+          DriverAccountStatusUtils.displayLabel(auth, context.l10n);
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(title: Text(context.l10n.shipmentOffers)),
@@ -181,7 +181,9 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Current status: $statusText. Your account is not approved by admin yet, so you will not receive shipment offers until approval is completed.',
+                    accountStatusLabel == null
+                        ? 'Your account is not approved by admin yet, so you will not receive shipment offers until approval is completed.'
+                        : 'Current status: $accountStatusLabel. Your account is not approved by admin yet, so you will not receive shipment offers until approval is completed.',
                     style: Theme.of(context).textTheme.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
@@ -324,6 +326,25 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: () => context.push(
+                          '/driver/offers/${o.apiNegotiationId}/negotiation',
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          foregroundColor: AppColors.textPrimary,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        icon: const Icon(Icons.forum_rounded),
+                        label: Text(context.l10n.openNegotiation),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     Text(
                       o.routeSummary,
                       style: Theme.of(context).textTheme.titleMedium,
@@ -354,25 +375,6 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                     _OfferDetailRow(
                       label: context.l10n.negotiationId,
                       value: o.displayNegotiationId,
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: () => context.push(
-                          '/driver/offers/${o.apiNegotiationId}/negotiation',
-                        ),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.gold,
-                          foregroundColor: AppColors.textPrimary,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        icon: const Icon(Icons.forum_rounded),
-                        label: Text(context.l10n.openNegotiation),
-                      ),
                     ),
                     const SizedBox(height: 12),
                     if (isSettled)

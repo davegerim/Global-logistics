@@ -24,6 +24,7 @@ class ApiLogisticsRepository implements LogisticsRepository {
         out.add(shipmentFromDto(e.cast<String, dynamic>()));
       }
     }
+    out.sort(compareShipmentsNewestFirst);
     return out;
   }
 

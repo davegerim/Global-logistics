@@ -11,6 +11,7 @@ import 'package:global_logistics_app/core/providers/repository_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/core/services/device_location_service.dart';
 import 'package:global_logistics_app/core/tracking/tracking_policy.dart';
+import 'package:global_logistics_app/core/utils/gdn_grn_utils.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/storage/assignment_feedback_preferences.dart';
 import 'package:global_logistics_app/features/documents/gdn_grn_document_sheet.dart';
@@ -226,9 +227,14 @@ class _DriverShipmentDetailScreenState
           .read(backendApiProvider)
           .gdnOfAssignment(assignmentId);
       if (!mounted) return;
+      final hasActiveGdn = gdns.any(
+        (e) =>
+            e is Map &&
+            !isGdnGrnVoidedMap(Map<String, dynamic>.from(e)),
+      );
       setState(() {
-        _hasGdn = gdns.isNotEmpty;
-        _gdnInfo = _hasGdn
+        _hasGdn = hasActiveGdn;
+        _gdnInfo = hasActiveGdn
             ? context.l10n.gdnIsReady
             : context.l10n.waitingForGdnLabel;
       });
@@ -862,6 +868,7 @@ class _DriverDocTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isGdn = doc.type == 'GDN';
+    final voided = doc.isVoided;
     return Material(
       color: AppColors.surfaceMuted,
       borderRadius: BorderRadius.circular(14),
@@ -897,7 +904,13 @@ class _DriverDocTile extends StatelessWidget {
                   children: [
                     Text(
                       doc.title,
-                      style: Theme.of(context).textTheme.titleSmall,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            decoration:
+                                voided ? TextDecoration.lineThrough : null,
+                            color: voided
+                                ? AppColors.textTertiary
+                                : null,
+                          ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -906,6 +919,16 @@ class _DriverDocTile extends StatelessWidget {
                         color: AppColors.textSecondary,
                       ),
                     ),
+                    if (voided) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        context.l10n.documentStatusVoid,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: AppColors.error,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ],
                     if ((doc.documentNumber ?? '').isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
+import 'package:global_logistics_app/core/utils/consignor_account_status_utils.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -109,7 +110,8 @@ class _DriverLicenseDetailsScreenState
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
-    final rawStatus = (auth.accountStatus ?? 'UNKNOWN').trim().toUpperCase();
+    final accountStatusLabel =
+        DriverAccountStatusUtils.displayLabel(auth, context.l10n);
     final fields =
         _identity == null ? <_LicenseField>[] : _collectFields(context, _identity!);
 
@@ -155,7 +157,7 @@ class _DriverLicenseDetailsScreenState
                     )
                   else ...[
                     _LicenseHero(
-                      statusLabel: rawStatus,
+                      statusLabel: accountStatusLabel,
                       name: auth.displayName ?? context.l10n.driver,
                     ),
                     const SizedBox(height: 24),
@@ -204,18 +206,12 @@ class _LicenseField {
 class _LicenseHero extends StatelessWidget {
   const _LicenseHero({required this.statusLabel, required this.name});
 
-  final String statusLabel;
+  final String? statusLabel;
   final String name;
 
   @override
   Widget build(BuildContext context) {
-    final approved = {
-      'APPROVED',
-      'ACTIVE',
-      'VERIFIED',
-    }.contains(statusLabel.toUpperCase());
-
-    final badgeColor = approved ? AppColors.success : AppColors.warning;
+    final badgeColor = AppColors.warning;
 
     return Container(
       width: double.infinity,
@@ -259,26 +255,28 @@ class _LicenseHero extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: badgeColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    statusLabel,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: badgeColor,
-                      letterSpacing: 0.5,
+                if (statusLabel != null) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: badgeColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      statusLabel!,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: badgeColor,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 10),
                 Text(
                   context.l10n.licenseDetailsStoredDesc,

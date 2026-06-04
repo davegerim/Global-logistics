@@ -106,6 +106,11 @@ class DocumentRef {
   final String? documentNumber;
   final String? qrCodeValue;
   final String? status;
+
+  bool get isVoided {
+    final s = status?.trim().toUpperCase();
+    return s == 'VOID' || s == 'VOIDED';
+  }
 }
 
 class PaymentRecord {
