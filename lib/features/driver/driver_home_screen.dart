@@ -25,8 +25,14 @@ class DriverHomeScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        slivers: [
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () => refreshDriverHomeData(ref),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          slivers: [
           SliverAppBar(
             pinned: true,
             backgroundColor: AppColors.surface,
@@ -147,6 +153,7 @@ class DriverHomeScreen extends ConsumerWidget {
             ),
           ),
           assigned.when(
+            skipLoadingOnReload: true,
             data: (list) {
               if (list.isEmpty) {
                 return SliverPadding(
@@ -182,6 +189,7 @@ class DriverHomeScreen extends ConsumerWidget {
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
+        ),
       ),
     );
   }

@@ -6,7 +6,9 @@ import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/consignor_active_provider.dart';
+import 'package:global_logistics_app/core/providers/payments_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:global_logistics_app/core/utils/assignment_display.dart';
 import 'package:global_logistics_app/core/utils/gdn_grn_utils.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/storage/assignment_feedback_preferences.dart';
@@ -66,6 +68,7 @@ class _ConsignorShipmentDetailScreenState
   bool _resolveAssignmentScheduled = false;
   bool _resolvingShipmentFromAssignment = false;
   String? _shipmentIdFromAssignment;
+  int _paymentRefreshSignal = 0;
 
   String? _normalizedInitialAssignmentId() {
     final raw = widget.initialAssignmentId?.trim();
@@ -99,7 +102,13 @@ class _ConsignorShipmentDetailScreenState
           row['currentStatus']?.toString() ??
           '';
       final status = rawStatus.trim().toUpperCase();
-      out.add(_AssignmentOption(assignmentId: assignmentId, status: status));
+      out.add(
+        _AssignmentOption(
+          assignmentId: assignmentId,
+          status: status,
+          sequenceNumber: out.length + 1,
+        ),
+      );
     }
     return out;
   }
@@ -190,16 +199,12 @@ class _ConsignorShipmentDetailScreenState
     setState(() => _resolvingAssignment = true);
     try {
       final api = ref.read(backendApiProvider);
-      final candidates = <String>{
-        s.id,
-        s.publicId,
-        if (s.bookingId != null && s.bookingId!.trim().isNotEmpty)
-          s.bookingId!.trim(),
-      };
+      final shipmentPublicId = s.publicId.trim().isNotEmpty
+          ? s.publicId.trim()
+          : s.id.trim();
       List<dynamic> assignments = const [];
-      for (final candidate in candidates) {
-        assignments = await api.assignmentsConsignorOfShipment(candidate);
-        if (assignments.isNotEmpty) break;
+      if (shipmentPublicId.isNotEmpty) {
+        assignments = await api.assignmentsConsignorOfShipment(shipmentPublicId);
       }
       final options = _assignmentOptionsFromApi(assignments);
       String? found;
@@ -521,8 +526,10 @@ class _ConsignorShipmentDetailScreenState
               _selectionResolvedForShipment = null;
               _assignmentResolutionAttempted = false;
               _resolveAssignmentScheduled = false;
+              setState(() => _paymentRefreshSignal++);
               ref.invalidate(consignorShipmentsProvider);
               ref.invalidate(consignorActiveProvider);
+              ref.invalidate(paymentsProvider);
             },
             icon: const Icon(
               Icons.refresh_rounded,
@@ -564,6 +571,9 @@ class _ConsignorShipmentDetailScreenState
               assignmentAllowsFeedback(assignmentStatus) &&
               !_feedbackToDriverSubmitted;
           final fmt = DateFormat.yMMMd(context.l10n.localeName);
+          final showPaymentOnDetail =
+              (!_resolvingAssignment || _assignments.isNotEmpty) &&
+              _assignments.length <= 1;
           return ListView(
             padding: const EdgeInsets.all(20),
             physics: const BouncingScrollPhysics(),
@@ -722,11 +732,14 @@ class _ConsignorShipmentDetailScreenState
                   ],
                 ),
               ],
-              const SizedBox(height: 16),
-              ConsignorShipmentPaymentSection(
-                shipmentId: s.id,
-                enabled: _driverSelected || assignedByStatus,
-              ),
+              if (showPaymentOnDetail) ...[
+                const SizedBox(height: 16),
+                ConsignorShipmentPaymentSection(
+                  shipmentId: s.id,
+                  enabled: _driverSelected || assignedByStatus,
+                  refreshSignal: _paymentRefreshSignal,
+                ),
+              ],
               const SizedBox(height: 16),
               _InfoCard(
                 title: context.l10n.gdnControl,
@@ -989,7 +1002,10 @@ class _ConsignorShipmentDetailScreenState
 
   Widget _assignmentSelector(BuildContext context) {
     if (_assignments.length <= 1 || _isRouteAssignmentLocked()) {
-      return _kv(context.l10n.assignmentLabelCap, _assignmentId ?? '—');
+      return _kv(
+        context.l10n.assignmentLabelCap,
+        _assignmentId == null ? '—' : _assignmentDisplayLabel(_assignmentId!),
+      );
     }
     return DropdownButtonFormField<String>(
       initialValue: _assignmentId,
@@ -1002,7 +1018,12 @@ class _ConsignorShipmentDetailScreenState
           .map(
             (assignment) => DropdownMenuItem<String>(
               value: assignment.assignmentId,
-              child: Text(_assignmentDropdownLabel(assignment.assignmentId)),
+              child: Text(
+                _assignmentDisplayLabel(
+                  assignment.assignmentId,
+                  sequenceNumber: assignment.sequenceNumber,
+                ),
+              ),
             ),
           )
           .toList(),
@@ -1020,16 +1041,33 @@ class _ConsignorShipmentDetailScreenState
     );
   }
 
-  String _assignmentDropdownLabel(String assignmentId) {
-    return '${context.l10n.assignmentPrefix}$assignmentId';
+  String _assignmentDisplayLabel(
+    String assignmentId, {
+    int? sequenceNumber,
+  }) {
+    final seq =
+        sequenceNumber ??
+        AssignmentDisplay.oneBasedIndexInOrder(
+          _assignments.map((a) => a.assignmentId).toList(),
+          assignmentId,
+        );
+    return AssignmentDisplay.sequenceLabel(
+      context.l10n.assignmentPrefix,
+      seq,
+    );
   }
 }
 
 class _AssignmentOption {
-  const _AssignmentOption({required this.assignmentId, required this.status});
+  const _AssignmentOption({
+    required this.assignmentId,
+    required this.status,
+    required this.sequenceNumber,
+  });
 
   final String assignmentId;
   final String status;
+  final int sequenceNumber;
 }
 
 Widget _kv(String k, String v) {

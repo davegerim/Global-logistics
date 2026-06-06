@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
+import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 
 class DriverShell extends ConsumerWidget {
   const DriverShell({super.key, required this.navigationShell});
@@ -21,6 +22,9 @@ class DriverShell extends ConsumerWidget {
         ),
       );
       return;
+    }
+    if (index == 0) {
+      refreshDriverHomeData(ref);
     }
     navigationShell.goBranch(
       index,

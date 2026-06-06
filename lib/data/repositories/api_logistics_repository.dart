@@ -1,4 +1,5 @@
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
+import 'package:global_logistics_app/core/utils/assignment_display.dart';
 import 'package:global_logistics_app/data/api/backend_api.dart';
 import 'package:global_logistics_app/data/mappers/api_mappers.dart';
 import 'package:global_logistics_app/data/models/driver_offer_model.dart';
@@ -31,7 +32,9 @@ class ApiLogisticsRepository implements LogisticsRepository {
   @override
   Future<ShipmentModel?> getShipment(String id) async {
     if (_role == AppRole.driver) {
-      final assigned = await fetchDriverAssignedShipments();
+      final assigned = AssignmentDisplay.withDriverListSequences(
+        await fetchDriverAssignedShipments(),
+      );
       for (final shipment in assigned) {
         if (shipment.id == id ||
             shipment.publicId == id ||
@@ -80,10 +83,12 @@ class ApiLogisticsRepository implements LogisticsRepository {
       if (e is Map) {
         final j = e.cast<String, dynamic>();
         final sid = j['shipmentId']?.toString() ?? '';
-        out.add(shipmentFromAssignmentDriverView(
-          j,
-          negotiationData: negByShipment[sid],
-        ));
+        out.add(
+          shipmentFromAssignmentDriverView(
+            j,
+            negotiationData: negByShipment[sid],
+          ),
+        );
       }
     }
     return out;

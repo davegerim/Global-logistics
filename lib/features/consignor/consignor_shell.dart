@@ -4,13 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
+import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 
 class ConsignorShell extends ConsumerWidget {
   const ConsignorShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
-  void _goBranch(int index) {
+  void _goBranch(WidgetRef ref, int index) {
+    if (index == 0) {
+      refreshConsignorHomeData(ref);
+    }
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
@@ -69,26 +73,26 @@ class ConsignorShell extends ConsumerWidget {
                 icon: Icons.home_rounded,
                 label: context.l10n.home,
                 selected: navigationShell.currentIndex == 0,
-                onTap: () => _goBranch(0),
+                onTap: () => _goBranch(ref, 0),
               ),
               _NavItem(
                 icon: Icons.list_alt_rounded,
                 label: context.l10n.shipments,
                 selected: navigationShell.currentIndex == 1,
-                onTap: () => _goBranch(1),
+                onTap: () => _goBranch(ref, 1),
               ),
               const SizedBox(width: 64),
               _NavItem(
                 icon: Icons.folder_open_rounded,
                 label: context.l10n.docs,
                 selected: navigationShell.currentIndex == 2,
-                onTap: () => _goBranch(2),
+                onTap: () => _goBranch(ref, 2),
               ),
               _NavItem(
                 icon: Icons.person_outline_rounded,
                 label: context.l10n.profile,
                 selected: navigationShell.currentIndex == 3,
-                onTap: () => _goBranch(3),
+                onTap: () => _goBranch(ref, 3),
               ),
             ],
           ),

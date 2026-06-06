@@ -6,6 +6,7 @@ import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/repository_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:global_logistics_app/core/utils/assignment_display.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/features/consignor/consignor_gdn_form_screen.dart';
 import 'package:global_logistics_app/features/documents/gdn_grn_document_sheet.dart';
@@ -306,11 +307,16 @@ class _ConsignorDocumentsScreenState
                       contentPadding: EdgeInsets.zero,
                     ),
                     items: _assignments
+                        .asMap()
+                        .entries
                         .map(
-                          (assignmentId) => DropdownMenuItem<String>(
-                            value: assignmentId,
+                          (entry) => DropdownMenuItem<String>(
+                            value: entry.value,
                             child: Text(
-                              '${context.l10n.assignmentPrefix}$assignmentId',
+                              AssignmentDisplay.sequenceLabel(
+                                context.l10n.assignmentPrefix,
+                                entry.key + 1,
+                              ),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                               style: const TextStyle(

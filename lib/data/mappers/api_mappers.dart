@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/utils/assignment_display.dart';
 import 'package:global_logistics_app/data/models/driver_offer_model.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
@@ -49,6 +50,19 @@ ShipmentStatus mapApiShipmentStatus(String? s) {
       return ShipmentStatus.cancelled;
     default:
       return ShipmentStatus.pendingReview;
+  }
+}
+
+/// True while a consignor booking may legitimately have zero driver assignments
+/// (negotiation / awaiting admin driver selection).
+bool consignorShipmentMayLackAssignmentsYet(ShipmentModel shipment) {
+  switch (shipment.status) {
+    case ShipmentStatus.pendingReview:
+    case ShipmentStatus.awaitingDriver:
+    case ShipmentStatus.cancelled:
+      return true;
+    default:
+      return false;
   }
 }
 
@@ -194,15 +208,63 @@ ShipmentModel shipmentFromDriverWorkspace(
   );
 }
 
+String? _assignmentDisplayIdFromApi(Map<String, dynamic> j) {
+  for (final key in [
+    'assignmentDisplayId',
+    'displayId',
+    'assignmentNumber',
+    'assignmentNo',
+  ]) {
+    final v = j[key]?.toString().trim();
+    if (v != null && v.isNotEmpty && !AssignmentDisplay.isUuidLike(v)) {
+      return v;
+    }
+  }
+  return null;
+}
+
+String? _bookingIdFromAssignmentApi(
+  Map<String, dynamic> j, {
+  Map<String, dynamic>? negotiationData,
+}) {
+  for (final source in [j, ?negotiationData]) {
+    for (final key in ['bookingId', 'bookingNumber', 'bookingNo']) {
+      final v = source[key]?.toString().trim();
+      if (v != null && v.isNotEmpty) return v;
+    }
+  }
+  return null;
+}
+
+/// Parses a 1-based assignment index from API fields when present.
+int? assignmentSequenceFromApi(Map<String, dynamic> j) {
+  for (final key in [
+    'sequenceNumber',
+    'sequence',
+    'assignmentNumber',
+    'assignmentIndex',
+    'displayNumber',
+  ]) {
+    final n = _parseInt(j[key]);
+    if (n != null && n >= 1) return n;
+  }
+  final display = _assignmentDisplayIdFromApi(j);
+  if (display != null) {
+    final n = int.tryParse(display);
+    if (n != null && n >= 1) return n;
+  }
+  return null;
+}
+
 /// Build a [ShipmentModel] from the `/assignments/driver` DTO, optionally
 /// enriched with negotiation data that carries the shipment locations.
 ShipmentModel shipmentFromAssignmentDriverView(
   Map<String, dynamic> j, {
   Map<String, dynamic>? negotiationData,
+  int? assignmentSequenceNumber,
 }) {
   final shipmentId = j['shipmentId']?.toString() ?? '';
   final assignmentPid = j['publicId']?.toString();
-  final assignmentDisplayId = j['assignmentId']?.toString();
   final st = mapAssignmentStatus(j['status'] as String?);
 
   final n = negotiationData;
@@ -225,9 +287,10 @@ ShipmentModel shipmentFromAssignmentDriverView(
     id: shipmentId,
     publicId: shipmentId,
     apiStatusLabel: j['status'] as String?,
-    assignmentId: assignmentPid ?? assignmentDisplayId,
-    assignmentDisplayId: assignmentDisplayId,
-    bookingId: j['bookingId']?.toString(),
+    assignmentId: assignmentPid ?? j['assignmentId']?.toString(),
+    assignmentDisplayId: _assignmentDisplayIdFromApi(j),
+    assignmentSequenceNumber: assignmentSequenceNumber,
+    bookingId: _bookingIdFromAssignmentApi(j, negotiationData: n),
     status: st,
     loadingAddress: loading,
     offloadingAddress: off,

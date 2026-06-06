@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:global_logistics_app/core/utils/assignment_display.dart';
 import 'package:global_logistics_app/shared/widgets/shipment_card.dart';
 
 class DriverAssignmentHistoryScreen extends ConsumerWidget {
@@ -27,7 +28,8 @@ class DriverAssignmentHistoryScreen extends ConsumerWidget {
       ),
       body: all.when(
         data: (list) {
-          if (list.isEmpty) {
+          final items = AssignmentDisplay.withDriverListSequences(list);
+          if (items.isEmpty) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -41,10 +43,10 @@ class DriverAssignmentHistoryScreen extends ConsumerWidget {
           }
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-            itemCount: list.length,
+            itemCount: items.length,
             separatorBuilder: (context, _) => const SizedBox(height: 14),
             itemBuilder: (context, i) {
-              final s = list[i];
+              final s = items[i];
               return ShipmentCard(
                 shipment: s,
                 onTap: () => context.push('/driver/shipment/${s.id}'),

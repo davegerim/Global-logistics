@@ -1,7 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:global_logistics_app/core/providers/notifications_provider.dart';
 import 'package:global_logistics_app/core/providers/repository_provider.dart';
+import 'package:global_logistics_app/core/utils/assignment_display.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
+
+Future<void> refreshDriverHomeData(WidgetRef ref) async {
+  ref.invalidate(unreadNotificationsCountProvider);
+  ref.invalidate(driverAssignedShipmentsProvider);
+  await ref.read(driverAssignedShipmentsProvider.future);
+}
+
+final consignorHomeRefreshTriggerProvider = StateProvider<int>((ref) => 0);
+
+Future<void> refreshConsignorHomeData(WidgetRef ref) async {
+  ref.read(consignorHomeRefreshTriggerProvider.notifier).state++;
+  ref.invalidate(unreadNotificationsCountProvider);
+  ref.invalidate(consignorShipmentsProvider);
+  await ref.read(consignorShipmentsProvider.future);
+}
 
 final consignorShipmentsProvider = FutureProvider<List<ShipmentModel>>((ref) {
   final repo = ref.watch(logisticsRepositoryProvider);
@@ -24,8 +41,11 @@ bool isDriverAssignmentActive(ShipmentModel s) {
 final driverActiveAssignmentsProvider = Provider<AsyncValue<List<ShipmentModel>>>((ref) {
   final all = ref.watch(driverAssignedShipmentsProvider);
   return all.when(
+    skipLoadingOnReload: true,
     data: (list) => AsyncValue.data(
-      list.where(isDriverAssignmentActive).toList(),
+      AssignmentDisplay.withDriverListSequences(
+        list.where(isDriverAssignmentActive).toList(),
+      ),
     ),
     loading: () => const AsyncValue.loading(),
     error: AsyncValue.error,

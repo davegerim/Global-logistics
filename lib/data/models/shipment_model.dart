@@ -1,3 +1,4 @@
+import 'package:global_logistics_app/core/utils/assignment_display.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
 
 class DriverSummary {
@@ -39,6 +40,7 @@ class ShipmentModel {
     this.apiStatusLabel,
     this.assignmentId,
     this.assignmentDisplayId,
+    this.assignmentSequenceNumber,
     this.bookingId,
   });
 
@@ -53,6 +55,9 @@ class ShipmentModel {
   /// Assignment public UUID when known (driver flows, tracking).
   final String? assignmentId;
   final String? assignmentDisplayId;
+
+  /// 1-based index within a booking when known (UI label only).
+  final int? assignmentSequenceNumber;
   final String loadingAddress;
   final String offloadingAddress;
   final String goodsDescription;
@@ -67,24 +72,70 @@ class ShipmentModel {
   final String? paymentMethod;
   final double? priceOffer;
 
+  ShipmentModel copyWith({int? assignmentSequenceNumber}) {
+    return ShipmentModel(
+      id: id,
+      publicId: publicId,
+      status: status,
+      loadingAddress: loadingAddress,
+      offloadingAddress: offloadingAddress,
+      goodsDescription: goodsDescription,
+      weightKg: weightKg,
+      volumeM3: volumeM3,
+      vehicleType: vehicleType,
+      timelineNote: timelineNote,
+      placedAt: placedAt,
+      estimatedDelivery: estimatedDelivery,
+      driver: driver,
+      progress01: progress01,
+      paymentMethod: paymentMethod,
+      priceOffer: priceOffer,
+      apiStatusLabel: apiStatusLabel,
+      assignmentId: assignmentId,
+      assignmentDisplayId: assignmentDisplayId,
+      assignmentSequenceNumber:
+          assignmentSequenceNumber ?? this.assignmentSequenceNumber,
+      bookingId: bookingId,
+    );
+  }
+
   String get displayId {
     final normalized = bookingId?.trim();
     if (normalized != null && normalized.isNotEmpty) {
       return 'Booking #$normalized'; // Actually, we should localize this. Let's just leave it if it's not a widget, or use an extension? Wait, `displayId` is a getter, no context here.
     }
+    final seq = assignmentSequenceNumber;
+    if (seq != null && seq >= 1) {
+      return 'Assignment #$seq';
+    }
     final normalizedAssignment = assignmentDisplayId?.trim();
-    if (normalizedAssignment != null && normalizedAssignment.isNotEmpty) {
+    if (normalizedAssignment != null &&
+        normalizedAssignment.isNotEmpty &&
+        !AssignmentDisplay.isUuidLike(normalizedAssignment)) {
       return 'Assignment #$normalizedAssignment';
+    }
+    if (assignmentId != null ||
+        (normalizedAssignment != null && normalizedAssignment.isNotEmpty)) {
+      return 'Assignment #1';
     }
     return publicId;
   }
 
   String get assignmentLabel {
+    final seq = assignmentSequenceNumber;
+    if (seq != null && seq >= 1) {
+      return 'Assignment #$seq';
+    }
     final normalized = assignmentDisplayId?.trim();
-    if (normalized != null && normalized.isNotEmpty) {
+    if (normalized != null &&
+        normalized.isNotEmpty &&
+        !AssignmentDisplay.isUuidLike(normalized)) {
       return 'Assignment #$normalized';
     }
-    return 'assignmentId: ${assignmentId ?? publicId}';
+    if (assignmentId != null) {
+      return 'Assignment #1';
+    }
+    return 'assignmentId: $publicId';
   }
 }
 

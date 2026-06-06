@@ -138,11 +138,17 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
   }
 
   List<DriverOfferModel> _applyFilter(List<DriverOfferModel> list, String filter) {
-    return switch (filter) {
+    final filtered = switch (filter) {
       'active' => list.where((o) => !isNegotiationSettled(o.apiStatus)).toList(),
       'settled' => list.where((o) => isNegotiationSettled(o.apiStatus)).toList(),
       _ => list,
     };
+
+    if (filter == 'settled') {
+      filtered.sort((a, b) => b.expiresAt.compareTo(a.expiresAt));
+    }
+
+    return filtered;
   }
 
   @override

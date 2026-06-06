@@ -18,10 +18,12 @@ class ConsignorShipmentPaymentSection extends ConsumerStatefulWidget {
     super.key,
     required this.shipmentId,
     this.enabled = true,
+    this.refreshSignal = 0,
   });
 
   final String shipmentId;
   final bool enabled;
+  final int refreshSignal;
 
   @override
   ConsumerState<ConsignorShipmentPaymentSection> createState() =>
@@ -50,7 +52,8 @@ class _ConsignorShipmentPaymentSectionState
   void didUpdateWidget(ConsignorShipmentPaymentSection oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.shipmentId != widget.shipmentId ||
-        oldWidget.enabled != widget.enabled) {
+        oldWidget.enabled != widget.enabled ||
+        oldWidget.refreshSignal != widget.refreshSignal) {
       _loadFinance();
     }
   }
@@ -127,7 +130,14 @@ class _ConsignorShipmentPaymentSectionState
     return value.toStringAsFixed(2);
   }
 
+  bool get _isFullyPaid {
+    if (_remainingAmount <= 0) return true;
+    final normalized = _status.trim().toUpperCase();
+    return normalized.contains('PAID') && !normalized.contains('UNPAID');
+  }
+
   Future<void> _openPaymentSheet() async {
+    if (_isFullyPaid) return;
     final financeId = _shipmentFinanceId;
     if (financeId == null || financeId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -422,8 +432,9 @@ class _ConsignorShipmentPaymentSectionState
                   GlPrimaryButton(
                     label: l10n.recordPayment,
                     icon: Icons.upload_file_rounded,
-                    onPressed:
-                        _shipmentFinanceId == null ? null : _openPaymentSheet,
+                    onPressed: _shipmentFinanceId == null || _isFullyPaid
+                        ? null
+                        : _openPaymentSheet,
                   ),
                 ],
               ],

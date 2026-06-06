@@ -20,6 +20,7 @@ import 'package:global_logistics_app/features/consignor/consignor_negotiation_sc
 import 'package:global_logistics_app/features/consignor/consignor_profile_screen.dart';
 import 'package:global_logistics_app/features/consignor/consignor_shipment_history_screen.dart';
 import 'package:global_logistics_app/features/consignor/consignor_shipment_detail_screen.dart';
+import 'package:global_logistics_app/features/consignor/consignor_shipment_payment_screen.dart';
 import 'package:global_logistics_app/features/consignor/consignor_shipments_screen.dart';
 import 'package:global_logistics_app/features/consignor/consignor_shell.dart';
 import 'package:global_logistics_app/features/consignor/create_booking_screen.dart';
@@ -236,6 +237,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) {
               final id = state.pathParameters['id']!;
               return ConsignorNegotiationScreen(shipmentId: id);
+            },
+          ),
+          GoRoute(
+            parentNavigatorKey: _rootNavigatorKey,
+            path: 'shipment/:id/payment',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return ConsignorShipmentPaymentScreen(shipmentId: id);
             },
           ),
           GoRoute(
