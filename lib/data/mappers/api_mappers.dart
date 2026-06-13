@@ -172,7 +172,10 @@ ShipmentModel shipmentFromDriverWorkspace(
   }
   final loading = first?['loadingLocation'] as String? ?? '—';
   final off = first?['offloadingLocation'] as String? ?? '—';
-  final good = first?['goodType'] as String? ?? 'Assignment';
+  final good = _pickGoodTypeFromMap(
+        first == null ? null : _mergeNestedShipmentFields(first),
+      ) ??
+      'Assignment';
   final price = _parseDouble(first?['priceAmount'] ?? sel?['agreedPrice']);
   return ShipmentModel(
     id: shipmentId,
@@ -256,6 +259,75 @@ int? assignmentSequenceFromApi(Map<String, dynamic> j) {
   return null;
 }
 
+Map<String, dynamic> _mergeNestedShipmentFields(Map<String, dynamic> source) {
+  final merged = Map<String, dynamic>.from(source);
+  void lift(dynamic nested) {
+    if (nested is! Map) return;
+    for (final e in nested.cast<String, dynamic>().entries) {
+      final cur = merged[e.key];
+      if (cur == null) {
+        merged[e.key] = e.value;
+        continue;
+      }
+      if (cur is String && cur.trim().isEmpty) {
+        merged[e.key] = e.value;
+      }
+    }
+  }
+
+  for (final key in [
+    'shipment',
+    'negotiation',
+    'negotiationSnapshot',
+    'overview',
+    'header',
+  ]) {
+    lift(source[key]);
+  }
+  return merged;
+}
+
+String? _pickGoodTypeFromMap(Map<String, dynamic>? map) {
+  if (map == null) return null;
+  const keys = [
+    'goodType',
+    'goodsType',
+    'goodsDescription',
+    'typeOfGoods',
+    'good_type',
+    'goods_type',
+    'goods_description',
+    'type_of_goods',
+  ];
+  for (final k in keys) {
+    final v = _nonDash(map[k]);
+    if (v != null) return v;
+  }
+  for (final nestedKey in [
+    'shipment',
+    'negotiation',
+    'overview',
+    'header',
+    'assignment',
+  ]) {
+    final nested = map[nestedKey];
+    if (nested is Map) {
+      final v = _pickGoodTypeFromMap(nested.cast<String, dynamic>());
+      if (v != null) return v;
+    }
+  }
+  final offers = map['offers'];
+  if (offers is List) {
+    for (final offer in offers.reversed) {
+      if (offer is Map) {
+        final v = _pickGoodTypeFromMap(offer.cast<String, dynamic>());
+        if (v != null) return v;
+      }
+    }
+  }
+  return null;
+}
+
 /// Build a [ShipmentModel] from the `/assignments/driver` DTO, optionally
 /// enriched with negotiation data that carries the shipment locations.
 ShipmentModel shipmentFromAssignmentDriverView(
@@ -268,14 +340,17 @@ ShipmentModel shipmentFromAssignmentDriverView(
   final st = mapAssignmentStatus(j['status'] as String?);
 
   final n = negotiationData;
+  final mergedAssignment = _mergeNestedShipmentFields(j);
+  final mergedNegotiation =
+      n == null ? null : _mergeNestedShipmentFields(n);
   final loading = _nonDash(j['loadingLocation']) ??
       _nonDash(n?['loadingLocation']) ??
       '—';
   final off = _nonDash(j['offloadingLocation']) ??
       _nonDash(n?['offloadingLocation']) ??
       '—';
-  final good = _nonDash(j['goodType']) ??
-      _nonDash(n?['goodType']) ??
+  final good = _pickGoodTypeFromMap(mergedAssignment) ??
+      _pickGoodTypeFromMap(mergedNegotiation) ??
       'Assignment';
   final weight = _parseDouble(j['weight']) ?? _parseDouble(n?['weight']) ?? 0;
   final volume = _parseDouble(j['volume']) ?? _parseDouble(n?['volume']) ?? 0;
@@ -356,7 +431,7 @@ List<DriverOfferModel> driverOffersFromApi(List<dynamic> list) {
         distanceKm: 0,
         expiresAt: updated.add(const Duration(hours: 24)),
         apiStatus: m['status'] as String?,
-        goodType: m['goodType'] as String?,
+        goodType: _pickGoodTypeFromMap(_mergeNestedShipmentFields(m)),
         rounds: rounds,
       ),
     );

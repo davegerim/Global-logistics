@@ -14,10 +14,26 @@ class AssignmentDisplay {  AssignmentDisplay._();
     return _uuid.hasMatch(t);
   }
 
-  /// [prefix] is localized and includes trailing `#` (e.g. `Assignment #`).
+  /// Zero-padded 3-digit sequence (e.g. `1` → `001`).
+  static String formatSequenceNumber(int oneBasedIndex) {
+    assert(oneBasedIndex >= 1);
+    return oneBasedIndex.toString().padLeft(3, '0');
+  }
+
+  /// Pads numeric API display ids; leaves non-numeric values unchanged.
+  static String formatDisplayNumber(String value) {
+    final trimmed = value.trim();
+    final n = int.tryParse(trimmed);
+    if (n != null && n >= 0) {
+      return n.toString().padLeft(3, '0');
+    }
+    return trimmed;
+  }
+
+  /// [prefix] is localized and includes trailing space (e.g. `Assignment `).
   static String sequenceLabel(String prefix, int oneBasedIndex) {
     assert(oneBasedIndex >= 1);
-    return '$prefix$oneBasedIndex';
+    return '$prefix${formatSequenceNumber(oneBasedIndex)}';
   }
 
   static int oneBasedIndexInOrder(
@@ -30,7 +46,7 @@ class AssignmentDisplay {  AssignmentDisplay._();
 
   /// Driver assignment lists: use 1..n within a booking when it has multiple
   /// assignments; otherwise use the row's 1-based position in [items] so
-  /// separate bookings do not all show `Assignment #1`.
+  /// separate bookings do not all show `Assignment 001`.
   static List<ShipmentModel> withDriverListSequences(
     List<ShipmentModel> items,
   ) {

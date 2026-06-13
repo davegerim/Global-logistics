@@ -39,6 +39,9 @@ class GdnGrnDocumentSheet extends ConsumerStatefulWidget {
     required this.dateFmt,
   });
 
+  static const companyPhone = '+251 94 660 8888';
+  static const companyAddress = 'Addis Ababa, Ethiopia';
+
   final DocumentRef documentRef;
   final DateFormat dateFmt;
 
@@ -197,6 +200,57 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                             borderRadius: BorderRadius.vertical(
                               top: Radius.circular(16),
                             ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Image.asset(
+                                'assets/images/gl_logo.png',
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.contain,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      context.l10n.globalLogisticsPlc,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                            color: AppColors.primaryDark,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      GdnGrnDocumentSheet.companyAddress,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: AppColors.textSecondary,
+                                          ),
+                                    ),
+                                    Text(
+                                      GdnGrnDocumentSheet.companyPhone,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: AppColors.textSecondary,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Padding(
@@ -435,7 +489,40 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                           color: AppColors.textPrimary,
                                         ),
                                   ),
-                                  if (vm.qrCodeValue.isNotEmpty) ...[
+                                  if (vm.type == 'GRN' &&
+                                      (vm.originGdnQrCodeValue.isNotEmpty ||
+                                          vm.qrCodeValue.isNotEmpty)) ...[
+                                    const SizedBox(height: 20),
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        if (vm.originGdnQrCodeValue.isNotEmpty)
+                                          Expanded(
+                                            child: _GrnQrCard(
+                                              heading: 'ORIGIN REFERENCE',
+                                              title: 'Scan to View Original GDN',
+                                              subtitle:
+                                                  'Compare loaded vs received data digitally.',
+                                              data: vm.originGdnQrCodeValue,
+                                              titleColor: AppColors.info,
+                                            ),
+                                          ),
+                                        if (vm.originGdnQrCodeValue.isNotEmpty &&
+                                            vm.qrCodeValue.isNotEmpty)
+                                          const SizedBox(width: 12),
+                                        if (vm.qrCodeValue.isNotEmpty)
+                                          Expanded(
+                                            child: _GrnQrCard(
+                                              heading: 'GRN VERIFICATION',
+                                              title: 'Document Authenticity',
+                                              subtitle:
+                                                  'Official proof of cargo receipt at destination.',
+                                              data: vm.qrCodeValue,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ] else if (vm.qrCodeValue.isNotEmpty) ...[
                                     const SizedBox(height: 20),
                                     Center(
                                       child: QrImageView(
@@ -454,7 +541,7 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
                                           ),
                                     ),
                                   ],
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 24),
                                 ],
                               ),
                             ),
@@ -525,6 +612,71 @@ class _GdnGrnDocumentSheetState extends ConsumerState<GdnGrnDocumentSheet> {
       ),
     ),
     ),
+    );
+  }
+}
+
+class _GrnQrCard extends StatelessWidget {
+  const _GrnQrCard({
+    required this.heading,
+    required this.title,
+    required this.subtitle,
+    required this.data,
+    this.titleColor,
+  });
+
+  final String heading;
+  final String title;
+  final String subtitle;
+  final String data;
+  final Color? titleColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Column(
+        children: [
+          Text(
+            heading,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textTertiary,
+                  letterSpacing: 0.4,
+                ),
+          ),
+          const SizedBox(height: 10),
+          QrImageView(
+            data: data,
+            version: QrVersions.auto,
+            size: 110,
+            backgroundColor: Colors.white,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: titleColor ?? AppColors.textPrimary,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.35,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }

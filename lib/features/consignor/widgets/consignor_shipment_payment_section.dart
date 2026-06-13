@@ -130,11 +130,7 @@ class _ConsignorShipmentPaymentSectionState
     return value.toStringAsFixed(2);
   }
 
-  bool get _isFullyPaid {
-    if (_remainingAmount <= 0) return true;
-    final normalized = _status.trim().toUpperCase();
-    return normalized.contains('PAID') && !normalized.contains('UNPAID');
-  }
+  bool get _isFullyPaid => _remainingAmount <= 0;
 
   Future<void> _openPaymentSheet() async {
     if (_isFullyPaid) return;

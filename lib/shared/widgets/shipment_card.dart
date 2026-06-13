@@ -51,11 +51,11 @@ class ShipmentCard extends StatelessWidget {
                           child: Text(
                             shipment.displayId
                                 .replaceAll(
-                                  'Booking #',
+                                  'Booking ',
                                   context.l10n.bookingPrefix,
                                 )
                                 .replaceAll(
-                                  'Assignment #',
+                                  'Assignment ',
                                   context.l10n.assignmentPrefix,
                                 ),
                             maxLines: 1,
@@ -73,6 +73,18 @@ class ShipmentCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (shipment.hasDisplayableGoodsType) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        context.translateDynamic(shipment.goodsDescription.trim()),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: t.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                     if (assignmentsLoading ||
                         assignmentStatuses.isNotEmpty) ...[
                       const SizedBox(height: 12),

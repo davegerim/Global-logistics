@@ -27,6 +27,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newBooking => 'New booking';
 
   @override
+  String get newAction => 'Create New';
+
+  @override
   String get activeAndRecent => 'Active & recent';
 
   @override
@@ -662,10 +665,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminApprovedLabel => 'ADMIN APPROVED';
 
   @override
-  String get bookingPrefix => 'Booking #';
+  String get bookingPrefix => 'Booking ';
 
   @override
-  String get assignmentPrefix => 'Assignment #';
+  String get assignmentPrefix => 'Assignment ';
 
   @override
   String get statusPendingReview => 'Pending review';
@@ -750,11 +753,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gdnControlOnceAdminSelects =>
-      'GDN control becomes available once admin selects and assigns a driver.';
+      'GDN control will be active when driver is ready to load';
 
   @override
   String get grnControlAfterDriverAssignment =>
-      'GRN control becomes available after driver assignment is active.';
+      'GRN control will be active when the driver arrives at the destination';
 
   @override
   String get handoverConfirmed => 'Handover confirmed';

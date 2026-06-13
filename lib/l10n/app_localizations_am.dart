@@ -27,6 +27,9 @@ class AppLocalizationsAm extends AppLocalizations {
   String get newBooking => 'አዲስ ትዕዛዝ';
 
   @override
+  String get newAction => 'አዲስ ፍጠር';
+
+  @override
   String get activeAndRecent => 'ገባሪ እና የቅርብ ጊዜ';
 
   @override
@@ -643,10 +646,10 @@ class AppLocalizationsAm extends AppLocalizations {
   String get adminApprovedLabel => 'በአስተዳዳሪ ጸድቋል';
 
   @override
-  String get bookingPrefix => 'ትዕዛዝ #';
+  String get bookingPrefix => 'ትዕዛዝ ';
 
   @override
-  String get assignmentPrefix => 'ስራ #';
+  String get assignmentPrefix => 'ስራ ';
 
   @override
   String get statusPendingReview => 'ግምገማ በመጠባበቅ ላይ';

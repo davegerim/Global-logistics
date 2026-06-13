@@ -23,7 +23,7 @@ class GdnGrnPdfWork {
 
 const _kCompany = 'Global Logistics PLC';
 const _kAddress = 'Addis Ababa, Ethiopia';
-const _kPhone = '+251-911-000000';
+const _kPhone = '+251 94 660 8888';
 
 final _kBorder = PdfColor.fromHex('E5E7EB');
 final _kHeaderFill = PdfColor.fromHex('F3F4F6');
@@ -238,7 +238,37 @@ Future<Uint8List> gdnGrnPdfBuildFromWork(GdnGrnPdfWork work) async {
               vm.remarks.isNotEmpty ? vm.remarks : ' ',
               style: const pw.TextStyle(fontSize: 9),
             ),
-            if (vm.qrCodeValue.isNotEmpty) ...[
+            if (vm.type == 'GRN' &&
+                (vm.originGdnQrCodeValue.isNotEmpty ||
+                    vm.qrCodeValue.isNotEmpty)) ...[
+              pw.SizedBox(height: 14),
+              pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  if (vm.originGdnQrCodeValue.isNotEmpty)
+                    pw.Expanded(
+                      child: _qrVerificationBlock(
+                        heading: 'ORIGIN REFERENCE',
+                        title: 'Scan to View Original GDN',
+                        subtitle: 'Compare loaded vs received data digitally.',
+                        data: vm.originGdnQrCodeValue,
+                      ),
+                    ),
+                  if (vm.originGdnQrCodeValue.isNotEmpty &&
+                      vm.qrCodeValue.isNotEmpty)
+                    pw.SizedBox(width: 12),
+                  if (vm.qrCodeValue.isNotEmpty)
+                    pw.Expanded(
+                      child: _qrVerificationBlock(
+                        heading: 'GRN VERIFICATION',
+                        title: 'Document Authenticity',
+                        subtitle: 'Official proof of cargo receipt at destination.',
+                        data: vm.qrCodeValue,
+                      ),
+                    ),
+                ],
+              ),
+            ] else if (vm.qrCodeValue.isNotEmpty) ...[
               pw.SizedBox(height: 14),
               pw.Center(
                 child: pw.BarcodeWidget(
@@ -261,7 +291,63 @@ Future<Uint8List> gdnGrnPdfBuildFromWork(GdnGrnPdfWork work) async {
       },
     ),
   );
-  return await doc.save();
+  return await doc.save(  );
+}
+
+pw.Widget _qrVerificationBlock({
+  required String heading,
+  required String title,
+  required String subtitle,
+  required String data,
+}) {
+  return pw.Container(
+    padding: const pw.EdgeInsets.all(10),
+    decoration: pw.BoxDecoration(
+      border: pw.Border.all(color: _kBorder, width: 0.7),
+      borderRadius: pw.BorderRadius.circular(6),
+      color: PdfColor.fromHex('F9FAFB'),
+    ),
+    child: pw.Column(
+      children: [
+        pw.Text(
+          heading,
+          style: pw.TextStyle(
+            fontSize: 7,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColors.grey700,
+            letterSpacing: 0.4,
+          ),
+        ),
+        pw.SizedBox(height: 8),
+        pw.Center(
+          child: pw.BarcodeWidget(
+            barcode: pw.Barcode.qrCode(),
+            data: data,
+            width: 84,
+            height: 84,
+          ),
+        ),
+        pw.SizedBox(height: 6),
+        pw.Text(
+          title,
+          textAlign: pw.TextAlign.center,
+          style: pw.TextStyle(
+            fontSize: 8,
+            fontWeight: pw.FontWeight.bold,
+            color: heading == 'ORIGIN REFERENCE'
+                ? PdfColor.fromHex('2563EB')
+                : PdfColors.black,
+          ),
+        ),
+        pw.SizedBox(height: 2),
+        pw.Text(
+          subtitle,
+          textAlign: pw.TextAlign.center,
+          style: pw.TextStyle(fontSize: 7, color: PdfColors.grey700),
+        ),
+      ],
+    ),
+  );
 }
 
 pw.Widget _metaBlock(String label, String value) {

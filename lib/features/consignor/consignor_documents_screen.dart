@@ -82,6 +82,20 @@ class _ConsignorDocumentsScreenState
     });
   }
 
+  /// Space above [ConsignorShell] bottom nav (SafeArea min + bar + margin).
+  double _shellBottomClearance(BuildContext context) {
+    return MediaQuery.paddingOf(context).bottom + 10 + 72 + 24;
+  }
+
+  double _dropdownMenuMaxHeight(BuildContext context) {
+    const contentAboveDropdown = 360.0;
+    final maxHeight =
+        MediaQuery.sizeOf(context).height -
+        contentAboveDropdown -
+        _shellBottomClearance(context);
+    return maxHeight < 120 ? 120 : maxHeight;
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen(consignorShipmentsProvider, (p, n) {
@@ -116,7 +130,7 @@ class _ConsignorDocumentsScreenState
           }
 
           return ListView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.fromLTRB(20, 20, 20, _shellBottomClearance(context)),
             children: [
               Stack(
                 clipBehavior: Clip.none,
@@ -232,6 +246,7 @@ class _ConsignorDocumentsScreenState
                         key: ValueKey(selected.id),
                         initialValue: selected.id,
                         isExpanded: true,
+                        menuMaxHeight: _dropdownMenuMaxHeight(context),
                         icon: const Icon(
                           Icons.keyboard_arrow_down_rounded,
                           color: AppColors.primary,
@@ -252,11 +267,11 @@ class _ConsignorDocumentsScreenState
                                 child: Text(
                                   s.displayId
                                       .replaceAll(
-                                        'Booking #',
+                                        'Booking ',
                                         context.l10n.bookingPrefix,
                                       )
                                       .replaceAll(
-                                        'Assignment #',
+                                        'Assignment ',
                                         context.l10n.assignmentPrefix,
                                       ),
                                   overflow: TextOverflow.ellipsis,
@@ -293,6 +308,7 @@ class _ConsignorDocumentsScreenState
                   child: DropdownButtonFormField<String>(
                     initialValue: _assignmentId,
                     isExpanded: true,
+                    menuMaxHeight: _dropdownMenuMaxHeight(context),
                     icon: const Icon(
                       Icons.keyboard_arrow_down_rounded,
                       color: AppColors.primary,

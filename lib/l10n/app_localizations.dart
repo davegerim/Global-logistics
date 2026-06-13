@@ -134,6 +134,12 @@ abstract class AppLocalizations {
   /// **'New booking'**
   String get newBooking;
 
+  /// No description provided for @newAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create New'**
+  String get newAction;
+
   /// No description provided for @activeAndRecent.
   ///
   /// In en, this message translates to:
@@ -1361,13 +1367,13 @@ abstract class AppLocalizations {
   /// No description provided for @bookingPrefix.
   ///
   /// In en, this message translates to:
-  /// **'Booking #'**
+  /// **'Booking '**
   String get bookingPrefix;
 
   /// No description provided for @assignmentPrefix.
   ///
   /// In en, this message translates to:
-  /// **'Assignment #'**
+  /// **'Assignment '**
   String get assignmentPrefix;
 
   /// No description provided for @statusPendingReview.
@@ -1535,13 +1541,13 @@ abstract class AppLocalizations {
   /// No description provided for @gdnControlOnceAdminSelects.
   ///
   /// In en, this message translates to:
-  /// **'GDN control becomes available once admin selects and assigns a driver.'**
+  /// **'GDN control will be active when driver is ready to load'**
   String get gdnControlOnceAdminSelects;
 
   /// No description provided for @grnControlAfterDriverAssignment.
   ///
   /// In en, this message translates to:
-  /// **'GRN control becomes available after driver assignment is active.'**
+  /// **'GRN control will be active when the driver arrives at the destination'**
   String get grnControlAfterDriverAssignment;
 
   /// No description provided for @handoverConfirmed.

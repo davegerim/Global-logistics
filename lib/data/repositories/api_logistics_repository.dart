@@ -69,24 +69,50 @@ class ApiLogisticsRepository implements LogisticsRepository {
     final negotiations = results[1];
 
     final negByShipment = <String, Map<String, dynamic>>{};
+    final negByNegotiationId = <String, Map<String, dynamic>>{};
     for (final n in negotiations) {
       if (n is! Map) continue;
       final m = n.cast<String, dynamic>();
-      final sid = m['shipmentId']?.toString();
-      if (sid != null && sid.isNotEmpty) {
-        negByShipment[sid] = m;
+      for (final key in ['shipmentId', 'shipmentPublicId', 'publicShipmentId']) {
+        final sid = m[key]?.toString();
+        if (sid != null && sid.isNotEmpty) {
+          negByShipment.putIfAbsent(sid, () => m);
+        }
       }
+      for (final key in ['negotiationId', 'publicId', 'id']) {
+        final nid = m[key]?.toString();
+        if (nid != null && nid.isNotEmpty) {
+          negByNegotiationId.putIfAbsent(nid, () => m);
+        }
+      }
+    }
+
+    Map<String, dynamic>? negotiationForAssignment(Map<String, dynamic> j) {
+      for (final key in ['shipmentId', 'shipmentPublicId', 'publicShipmentId']) {
+        final sid = j[key]?.toString();
+        if (sid != null && sid.isNotEmpty) {
+          final match = negByShipment[sid];
+          if (match != null) return match;
+        }
+      }
+      for (final key in ['negotiationId', 'negotiationPublicId']) {
+        final nid = j[key]?.toString();
+        if (nid != null && nid.isNotEmpty) {
+          final match = negByNegotiationId[nid];
+          if (match != null) return match;
+        }
+      }
+      return null;
     }
 
     final out = <ShipmentModel>[];
     for (final e in raw) {
       if (e is Map) {
         final j = e.cast<String, dynamic>();
-        final sid = j['shipmentId']?.toString() ?? '';
         out.add(
           shipmentFromAssignmentDriverView(
             j,
-            negotiationData: negByShipment[sid],
+            negotiationData: negotiationForAssignment(j),
           ),
         );
       }

@@ -72,6 +72,19 @@ class ShipmentModel {
   final String? paymentMethod;
   final double? priceOffer;
 
+  static const Set<String> _goodsTypePlaceholders = {
+    'assignment',
+    'shipment',
+    '—',
+    '-',
+  };
+
+  bool get hasDisplayableGoodsType {
+    final trimmed = goodsDescription.trim();
+    if (trimmed.isEmpty) return false;
+    return !_goodsTypePlaceholders.contains(trimmed.toLowerCase());
+  }
+
   ShipmentModel copyWith({int? assignmentSequenceNumber}) {
     return ShipmentModel(
       id: id,
@@ -102,21 +115,21 @@ class ShipmentModel {
   String get displayId {
     final normalized = bookingId?.trim();
     if (normalized != null && normalized.isNotEmpty) {
-      return 'Booking #$normalized'; // Actually, we should localize this. Let's just leave it if it's not a widget, or use an extension? Wait, `displayId` is a getter, no context here.
+      return 'Booking ${AssignmentDisplay.formatDisplayNumber(normalized)}';
     }
     final seq = assignmentSequenceNumber;
     if (seq != null && seq >= 1) {
-      return 'Assignment #$seq';
+      return 'Assignment ${AssignmentDisplay.formatSequenceNumber(seq)}';
     }
     final normalizedAssignment = assignmentDisplayId?.trim();
     if (normalizedAssignment != null &&
         normalizedAssignment.isNotEmpty &&
         !AssignmentDisplay.isUuidLike(normalizedAssignment)) {
-      return 'Assignment #$normalizedAssignment';
+      return 'Assignment ${AssignmentDisplay.formatDisplayNumber(normalizedAssignment)}';
     }
     if (assignmentId != null ||
         (normalizedAssignment != null && normalizedAssignment.isNotEmpty)) {
-      return 'Assignment #1';
+      return 'Assignment ${AssignmentDisplay.formatSequenceNumber(1)}';
     }
     return publicId;
   }
@@ -124,16 +137,16 @@ class ShipmentModel {
   String get assignmentLabel {
     final seq = assignmentSequenceNumber;
     if (seq != null && seq >= 1) {
-      return 'Assignment #$seq';
+      return 'Assignment ${AssignmentDisplay.formatSequenceNumber(seq)}';
     }
     final normalized = assignmentDisplayId?.trim();
     if (normalized != null &&
         normalized.isNotEmpty &&
         !AssignmentDisplay.isUuidLike(normalized)) {
-      return 'Assignment #$normalized';
+      return 'Assignment ${AssignmentDisplay.formatDisplayNumber(normalized)}';
     }
     if (assignmentId != null) {
-      return 'Assignment #1';
+      return 'Assignment ${AssignmentDisplay.formatSequenceNumber(1)}';
     }
     return 'assignmentId: $publicId';
   }

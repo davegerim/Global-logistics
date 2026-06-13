@@ -19,6 +19,46 @@ DateTime? gdnGrnPickDate(Map<String, dynamic> map, List<String> keys) {
   return null;
 }
 
+/// Linked GDN verification QR on GRN payloads (origin reference).
+String gdnGrnPickOriginGdnQrCode(Map<String, dynamic> map) {
+  final direct = gdnGrnPickString(map, const [
+    'gdnUrl',
+    'gdn_url',
+    'originGdnQrCodeValue',
+    'origin_gdn_qr_code_value',
+    'gdnQrCodeValue',
+    'gdn_qr_code_value',
+    'originQrCodeValue',
+    'origin_qr_code_value',
+    'gdnVerificationUrl',
+    'gdnVerifyUrl',
+    'linkedGdnQrCodeValue',
+    'linked_gdn_qr_code_value',
+  ]);
+  if (direct.isNotEmpty) return direct;
+
+  for (final key in [
+    'gdn',
+    'linkedGdn',
+    'originGdn',
+    'gdnDocument',
+    'sourceGdn',
+  ]) {
+    final v = map[key];
+    if (v is! Map) continue;
+    final nested = gdnGrnPickString(Map<String, dynamic>.from(v), const [
+      'gdnUrl',
+      'gdn_url',
+      'qrCodeValue',
+      'qr_code_value',
+      'verificationUrl',
+      'verifyUrl',
+    ]);
+    if (nested.isNotEmpty) return nested;
+  }
+  return '';
+}
+
 /// Normalized view of a GDN/GRN API payload for UI and PDF.
 class GdnGrnDocumentViewModel {
   GdnGrnDocumentViewModel._({
@@ -130,10 +170,30 @@ class GdnGrnDocumentViewModel {
           'notes',
         ]),
         qrCodeValue = gdnGrnPickString(raw, const [
+          'grnQrCodeValue',
+          'grn_qr_code_value',
+          'validateQrCodeValue',
+          'validate_qr_code_value',
+          'validationQrCodeValue',
+          'validation_qr_code_value',
           'qrCodeValue',
           'qr_code_value',
           'verificationUrl',
           'verifyUrl',
+        ]),
+        originGdnQrCodeValue = gdnGrnPickString(raw, const [
+          'gdnUrl',
+          'gdn_url',
+          'originGdnQrCodeValue',
+          'origin_gdn_qr_code_value',
+          'gdnQrCodeValue',
+          'gdn_qr_code_value',
+          'originQrCodeValue',
+          'origin_qr_code_value',
+          'gdnVerificationUrl',
+          'gdnVerifyUrl',
+          'linkedGdnQrCodeValue',
+          'linked_gdn_qr_code_value',
         ]),
         status = gdnGrnPickString(raw, const ['status']),
         publicId = gdnGrnPickString(raw, const ['publicId', 'public_id', 'id']);
@@ -214,6 +274,13 @@ class GdnGrnDocumentViewModel {
       if (plate.isNotEmpty) liftIfEmpty('vehiclePlateNo', plate);
     }
 
+    if (type == 'GRN') {
+      final originQr = gdnGrnPickOriginGdnQrCode(merged);
+      if (originQr.isNotEmpty) {
+        liftIfEmpty('originGdnQrCodeValue', originQr);
+      }
+    }
+
     return GdnGrnDocumentViewModel._(raw: merged, type: type);
   }
 
@@ -236,6 +303,7 @@ class GdnGrnDocumentViewModel {
   final String offloadingLocation;
   final String remarks;
   final String qrCodeValue;
+  final String originGdnQrCodeValue;
   final String status;
   final String publicId;
 

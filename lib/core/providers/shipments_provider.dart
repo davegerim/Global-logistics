@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:global_logistics_app/core/providers/notifications_provider.dart';
 import 'package:global_logistics_app/core/providers/repository_provider.dart';
 import 'package:global_logistics_app/core/utils/assignment_display.dart';
+import 'package:global_logistics_app/data/mappers/api_mappers.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
 
@@ -42,11 +43,13 @@ final driverActiveAssignmentsProvider = Provider<AsyncValue<List<ShipmentModel>>
   final all = ref.watch(driverAssignedShipmentsProvider);
   return all.when(
     skipLoadingOnReload: true,
-    data: (list) => AsyncValue.data(
-      AssignmentDisplay.withDriverListSequences(
-        list.where(isDriverAssignmentActive).toList(),
-      ),
-    ),
+    data: (list) {
+      final active = list.where(isDriverAssignmentActive).toList()
+        ..sort(compareShipmentsNewestFirst);
+      return AsyncValue.data(
+        AssignmentDisplay.withDriverListSequences(active),
+      );
+    },
     loading: () => const AsyncValue.loading(),
     error: AsyncValue.error,
   );

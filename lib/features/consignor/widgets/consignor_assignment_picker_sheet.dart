@@ -149,9 +149,9 @@ class ConsignorAssignmentPickerSheet extends StatelessWidget {
                 const SizedBox(height: 14),
                 Text(
                   shipment.displayId
-                      .replaceAll('Booking #', context.l10n.bookingPrefix)
+                      .replaceAll('Booking ', context.l10n.bookingPrefix)
                       .replaceAll(
-                        'Assignment #',
+                        'Assignment ',
                         context.l10n.assignmentPrefix,
                       ),
                   style: Theme.of(

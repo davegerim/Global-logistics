@@ -68,6 +68,8 @@ class _ConsignorShipmentDetailScreenState
   bool _resolveAssignmentScheduled = false;
   bool _resolvingShipmentFromAssignment = false;
   String? _shipmentIdFromAssignment;
+  bool _shipmentFromAssignmentResolveScheduled = false;
+  bool _detailSideEffectsScheduled = false;
   int _paymentRefreshSignal = 0;
 
   String? _normalizedInitialAssignmentId() {
@@ -125,6 +127,9 @@ class _ConsignorShipmentDetailScreenState
       _feedbackLoadedForAid = null;
       _feedbackToDriverSubmitted = false;
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadFeedbackToDriverState(assignmentId);
+    });
     await _refreshGdnState(assignmentId);
     await _refreshGrnState(assignmentId);
   }
@@ -165,6 +170,37 @@ class _ConsignorShipmentDetailScreenState
         setState(() => _resolvingShipmentFromAssignment = false);
       }
     }
+  }
+
+  void _scheduleShipmentFromAssignmentResolve() {
+    if (_shipmentFromAssignmentResolveScheduled ||
+        _shipmentIdFromAssignment != null ||
+        _resolvingShipmentFromAssignment) {
+      return;
+    }
+    _shipmentFromAssignmentResolveScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _shipmentFromAssignmentResolveScheduled = false;
+      if (!mounted) return;
+      _resolveShipmentFromAssignmentIfNeeded();
+    });
+  }
+
+  void _scheduleDetailSideEffects(
+    ShipmentModel s, {
+    required bool assignmentEligible,
+  }) {
+    if (!mounted || _detailSideEffectsScheduled) return;
+    _detailSideEffectsScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _detailSideEffectsScheduled = false;
+      if (!mounted) return;
+      _resolveDriverSelectionIfNeeded(s);
+      _scheduleAssignmentResolutionIfNeeded(
+        s,
+        eligible: assignmentEligible,
+      );
+    });
   }
 
   void _scheduleAssignmentResolutionIfNeeded(
@@ -438,6 +474,8 @@ class _ConsignorShipmentDetailScreenState
       _feedbackToDriverSubmitted = false;
       _shipmentIdFromAssignment = null;
       _resolvingShipmentFromAssignment = false;
+      _shipmentFromAssignmentResolveScheduled = false;
+      _detailSideEffectsScheduled = false;
     }
   }
 
@@ -539,20 +577,20 @@ class _ConsignorShipmentDetailScreenState
         ],
       ),
       body: async.when(
+        skipLoadingOnReload: true,
         data: (shipments) {
           final s = _findShipment(shipments);
           if (s == null) {
-            _resolveShipmentFromAssignmentIfNeeded();
+            _scheduleShipmentFromAssignmentResolve();
             if (_resolvingShipmentFromAssignment) {
               return const Center(child: CircularProgressIndicator());
             }
             return Center(child: Text(context.l10n.shipmentNotFound));
           }
-          _resolveDriverSelectionIfNeeded(s);
           final assignedByStatus = _isAssignedOrLater(s.apiStatusLabel);
-          _scheduleAssignmentResolutionIfNeeded(
+          _scheduleDetailSideEffects(
             s,
-            eligible: _driverSelected || assignedByStatus,
+            assignmentEligible: _driverSelected || assignedByStatus,
           );
           final assignmentStatus =
               (_assignmentApiStatus ?? s.apiStatusLabel ?? '')
@@ -563,9 +601,6 @@ class _ConsignorShipmentDetailScreenState
               _driverSelected || (assignedByStatus && _assignmentId != null);
           final grnControlEnabled =
               _assignmentId != null && _canOpenGrnControl(assignmentStatus);
-          if (_assignmentId != null && _feedbackLoadedForAid != _assignmentId) {
-            _loadFeedbackToDriverState(_assignmentId!);
-          }
           final canSendFeedbackToDriver =
               _assignmentId != null &&
               assignmentAllowsFeedback(assignmentStatus) &&
@@ -575,9 +610,61 @@ class _ConsignorShipmentDetailScreenState
               (!_resolvingAssignment || _assignments.isNotEmpty) &&
               _assignments.length <= 1;
           return ListView(
+            key: PageStorageKey<String>('consignor_shipment_detail_${s.id}'),
             padding: const EdgeInsets.all(20),
-            physics: const BouncingScrollPhysics(),
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            cacheExtent: double.infinity,
             children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.displayId
+                              .replaceAll(
+                                'Booking ',
+                                context.l10n.bookingPrefix,
+                              )
+                              .replaceAll(
+                                'Assignment ',
+                                context.l10n.assignmentPrefix,
+                              ),
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        if (s.hasDisplayableGoodsType) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            context.translateDynamic(
+                              s.goodsDescription.trim(),
+                            ),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  StatusChip(
+                    status: s.status,
+                    labelOverride: detailStatusLabel,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -592,146 +679,22 @@ class _ConsignorShipmentDetailScreenState
                 ],
               ),
               const SizedBox(height: 16),
-              Stack(
-                clipBehavior: Clip.none,
+              Row(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  s.displayId,
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -0.5,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  context.translateDynamic(s.goodsDescription),
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
+                  Expanded(
+                    child: GlPrimaryButton(
+                      label: context.l10n.liveTrackingMap,
+                      icon: Icons.map_outlined,
+                      useGoldAccent: true,
+                      onPressed: _assignmentId == null
+                          ? null
+                          : () => context.push(
+                              '/consignor/track/${s.id}?assignment=$_assignmentId',
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          StatusChip(
-                            status: s.status,
-                            labelOverride: detailStatusLabel,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      _InfoCard(
-                        title: context.l10n.shipmentDetails,
-                        icon: Icons.inventory_2_outlined,
-                        children: [
-                          _kv(
-                            context.l10n.weightLabelCap,
-                            _formatMetric(s.weightKg),
-                          ),
-                          _docDivider(),
-                          _kv(
-                            context.l10n.volumeLabelCap,
-                            _formatMetric(s.volumeM3),
-                          ),
-                          _docDivider(),
-                          _kv(
-                            context.l10n.vehicleLabelCap,
-                            context.translateDynamic(s.vehicleType),
-                          ),
-                          _docDivider(),
-                          _kv(
-                            context.l10n.createdLabelCap,
-                            fmt.format(s.placedAt),
-                          ),
-                          if (s.paymentMethod != null) ...[
-                            _docDivider(),
-                            _kv(
-                              context.l10n.priceTypeLabelCap,
-                              context.translateDynamic(s.paymentMethod!),
-                            ),
-                          ],
-                          if (s.priceOffer != null) ...[
-                            _docDivider(),
-                            _kv(
-                              context.l10n.priceLabelCap,
-                              _formatPrice(s.priceOffer!),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-                  ),
-                  Positioned(
-                    right: -10,
-                    top: 15,
-                    child: IgnorePointer(
-                      child: Hero(
-                        tag: 'shipment_vehicle_${s.id}',
-                        child: Image.asset(
-                          'assets/images/huge_truck.png',
-                          height: 110,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              _TimelineCard(
-                loading: s.loadingAddress,
-                offloading: s.offloadingAddress,
-                placed: fmt.format(s.placedAt),
-                eta: s.estimatedDelivery != null
-                    ? fmt.format(s.estimatedDelivery!)
-                    : 'TBD',
-              ),
-              if (s.timelineNote.trim().isNotEmpty) ...[
-                const SizedBox(height: 16),
-                _InfoCard(
-                  title: context.l10n.notes,
-                  icon: Icons.note_alt_outlined,
-                  children: [
-                    Text(
-                      s.timelineNote.trim(),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textPrimary,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-              if (s.driver != null) ...[
-                const SizedBox(height: 16),
-                _InfoCard(
-                  title: context.l10n.driverDetails,
-                  icon: Icons.person_pin_circle_outlined,
-                  children: [
-                    _DriverCard(
-                      name: s.driver!.name,
-                      vehicle: s.driver!.vehicleLabel ?? '—',
-                      plate: s.driver!.plate ?? '—',
-                      rating: s.driver!.rating,
-                    ),
-                  ],
-                ),
-              ],
               if (showPaymentOnDetail) ...[
                 const SizedBox(height: 16),
                 ConsignorShipmentPaymentSection(
@@ -952,22 +915,86 @@ class _ConsignorShipmentDetailScreenState
                   ],
                 ),
               ],
-              const SizedBox(height: 24),
-              Row(
+              const SizedBox(height: 16),
+              _InfoCard(
+                title: context.l10n.shipmentDetails,
+                icon: Icons.inventory_2_outlined,
                 children: [
-                  Expanded(
-                    child: GlPrimaryButton(
-                      label: context.l10n.liveTrackingMap,
-                      icon: Icons.map_outlined,
-                      useGoldAccent: true,
-                      onPressed: _assignmentId == null
-                          ? null
-                          : () => context.push(
-                              '/consignor/track/${s.id}?assignment=$_assignmentId',
-                            ),
-                    ),
+                  _kv(
+                    context.l10n.weightLabelCap,
+                    _formatMetric(s.weightKg),
                   ),
+                  _docDivider(),
+                  _kv(
+                    context.l10n.volumeLabelCap,
+                    _formatMetric(s.volumeM3),
+                  ),
+                  _docDivider(),
+                  _kv(
+                    context.l10n.vehicleLabelCap,
+                    context.translateDynamic(s.vehicleType),
+                  ),
+                  _docDivider(),
+                  _kv(
+                    context.l10n.createdLabelCap,
+                    fmt.format(s.placedAt),
+                  ),
+                  if (s.paymentMethod != null) ...[
+                    _docDivider(),
+                    _kv(
+                      context.l10n.priceTypeLabelCap,
+                      context.translateDynamic(s.paymentMethod!),
+                    ),
+                  ],
+                  if (s.priceOffer != null) ...[
+                    _docDivider(),
+                    _kv(
+                      context.l10n.priceLabelCap,
+                      _formatPrice(s.priceOffer!),
+                    ),
+                  ],
                 ],
+              ),
+              if (s.timelineNote.trim().isNotEmpty) ...[
+                const SizedBox(height: 16),
+                _InfoCard(
+                  title: context.l10n.notes,
+                  icon: Icons.note_alt_outlined,
+                  children: [
+                    Text(
+                      s.timelineNote.trim(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textPrimary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              if (s.driver != null) ...[
+                const SizedBox(height: 16),
+                _InfoCard(
+                  title: context.l10n.driverDetails,
+                  icon: Icons.person_pin_circle_outlined,
+                  children: [
+                    _DriverCard(
+                      name: s.driver!.name,
+                      vehicle: s.driver!.vehicleLabel ?? '—',
+                      plate: s.driver!.plate ?? '—',
+                      rating: s.driver!.rating,
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 16),
+              _TimelineCard(
+                loading: s.loadingAddress,
+                offloading: s.offloadingAddress,
+                placed: fmt.format(s.placedAt),
+                eta: s.estimatedDelivery != null
+                    ? fmt.format(s.estimatedDelivery!)
+                    : 'TBD',
               ),
               const SizedBox(height: 32),
             ],

@@ -144,7 +144,7 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
       _ => list,
     };
 
-    if (filter == 'settled') {
+    if (filter == 'settled' || filter == 'active') {
       filtered.sort((a, b) => b.expiresAt.compareTo(a.expiresAt));
     }
 
@@ -228,13 +228,6 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                 child: Row(
                   children: [
                     _CategoryTab(
-                      label: context.l10n.allOffers,
-                      icon: Icons.all_inbox_rounded,
-                      isSelected: _filter == 'all',
-                      onTap: () => setState(() => _filter = 'all'),
-                    ),
-                    const SizedBox(width: 8),
-                    _CategoryTab(
                       label: context.l10n.active,
                       icon: Icons.local_shipping_rounded,
                       isSelected: _filter == 'active',
@@ -246,6 +239,13 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                       icon: Icons.verified_rounded,
                       isSelected: _filter == 'settled',
                       onTap: () => setState(() => _filter = 'settled'),
+                    ),
+                    const SizedBox(width: 8),
+                    _CategoryTab(
+                      label: context.l10n.allOffers,
+                      icon: Icons.all_inbox_rounded,
+                      isSelected: _filter == 'all',
+                      onTap: () => setState(() => _filter = 'all'),
                     ),
                   ],
                 ),

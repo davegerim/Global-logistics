@@ -353,44 +353,44 @@ class _DriverShipmentDetailScreenState
             padding: const EdgeInsets.all(20),
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Text(
-                      s.displayId,
-                      style: Theme.of(context).textTheme.headlineSmall,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.displayId
+                              .replaceAll(
+                                'Booking ',
+                                context.l10n.bookingPrefix,
+                              )
+                              .replaceAll(
+                                'Assignment ',
+                                context.l10n.assignmentPrefix,
+                              ),
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        if (s.hasDisplayableGoodsType) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            context.translateDynamic(
+                              s.goodsDescription.trim(),
+                            ),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                   StatusChip(status: s.status, labelOverride: s.apiStatusLabel),
                 ],
               ),
-              const SizedBox(height: 12),
-              if (s.goodsDescription.trim().toLowerCase() != 'assignment')
-                Text(
-                  s.goodsDescription,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
               const SizedBox(height: 20),
-              _block(
-                context.l10n.pickupLabel,
-                s.loadingAddress,
-                Icons.north_east,
-              ),
-              const SizedBox(height: 12),
-              _block(
-                context.l10n.dropOffLabel,
-                s.offloadingAddress,
-                Icons.south_west,
-              ),
-              const SizedBox(height: 20),
-              if (aid != null)
-                _DriverGdnGrnSection(
-                  loading: _loadingDocuments,
-                  documents: _assignmentDocuments,
-                  dateFmt: fmt,
-                  onOpenDetail: (d) =>
-                      _showDriverDocumentSheet(context, d, fmt),
-                ),
-              if (aid != null) const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -611,6 +611,16 @@ class _DriverShipmentDetailScreenState
                   },
                 ),
               ],
+              if (aid != null) ...[
+                const SizedBox(height: 20),
+                _DriverGdnGrnSection(
+                  loading: _loadingDocuments,
+                  documents: _assignmentDocuments,
+                  dateFmt: fmt,
+                  onOpenDetail: (d) =>
+                      _showDriverDocumentSheet(context, d, fmt),
+                ),
+              ],
             ],
           );
         },
@@ -626,41 +636,6 @@ class _DriverShipmentDetailScreenState
     DateFormat fmt,
   ) async {
     await showGdnGrnDocumentSheet(context, documentRef: d, dateFmt: fmt);
-  }
-
-  Widget _block(String title, String body, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: AppColors.primary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(body),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

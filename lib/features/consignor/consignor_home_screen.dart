@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
-import 'package:global_logistics_app/core/utils/consignor_account_status_utils.dart';
 import 'package:global_logistics_app/data/mappers/api_mappers.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/notifications_provider.dart';
@@ -14,7 +13,6 @@ import 'package:global_logistics_app/data/models/shipment_status.dart';
 import 'package:global_logistics_app/features/consignor/widgets/consignor_assignment_picker_sheet.dart';
 import 'package:global_logistics_app/shared/widgets/section_header.dart';
 import 'package:global_logistics_app/shared/widgets/shipment_card.dart';
-import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 
 class ConsignorHomeScreen extends ConsumerStatefulWidget {
   const ConsignorHomeScreen({super.key});
@@ -35,10 +33,6 @@ class _ConsignorHomeScreenState extends ConsumerState<ConsignorHomeScreen> {
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
     final canBook = auth.canCreateConsignorBooking;
-    final accountStatusLabel = ConsignorAccountStatusUtils.homeDisplayLabel(
-      auth,
-      context.l10n,
-    );
     final shipments = ref.watch(consignorShipmentsProvider);
     final unreadAsync = ref.watch(unreadNotificationsCountProvider);
 
@@ -115,155 +109,24 @@ class _ConsignorHomeScreenState extends ConsumerState<ConsignorHomeScreen> {
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: AppColors.heroCardGradient,
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.25,
-                                ),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(99),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.2),
-                                  ),
-                                ),
-                                child: Text(
-                                  context.l10n.quickAction,
-                                  style: Theme.of(context).textTheme.labelLarge
-                                      ?.copyWith(
-                                        color: AppColors.goldMuted,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                context.l10n.createBooking,
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                              ),
-                              if (accountStatusLabel != null) ...[
-                                const SizedBox(height: 14),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.22,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.pending_actions_rounded,
-                                        size: 18,
-                                        color: Colors.white.withValues(
-                                          alpha: 0.9,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          '${context.l10n.statusPrefix}$accountStatusLabel · ${context.l10n.bookingUnlocksAfterAdminApproval}',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                color: Colors.white.withValues(
-                                                  alpha: 0.9,
-                                                ),
-                                              ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(height: 14),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: SizedBox(
-                                  width: 190,
-                                  child: GlPrimaryButton(
-                                    useGoldAccent: true,
-                                    showShadow: false,
-                                    label: context.l10n.newBooking,
-                                    icon: Icons.arrow_forward_rounded,
-                                    onPressed: canBook
-                                        ? () =>
-                                              context.push('/consignor/create')
-                                        : null,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Positioned(
-                          right: -10,
-                          bottom: -15,
-                          child: IgnorePointer(
-                            child: Image.asset(
-                              'assets/images/huge_truck.png',
-                              width: 150,
-                              height: 150,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 8),
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
               sliver: SliverToBoxAdapter(
                 child: SectionHeader(
                   title: context.l10n.activeAndRecent,
-                  actionLabel: context.l10n.viewAll,
-                  onAction: () => context.go('/consignor/shipments'),
+                  secondaryActionLabel: context.l10n.newAction,
+                  onSecondaryAction: () {
+                    if (canBook) {
+                      context.push('/consignor/create');
+                      return;
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Your account is verified but not admin-approved yet. Booking is disabled until approval.',
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
