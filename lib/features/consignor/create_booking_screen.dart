@@ -1,5 +1,6 @@
 import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
@@ -8,6 +9,7 @@ import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 
 /// `POST /shipments/create` — `CreateShipmentRequest` per OpenAPI.
@@ -33,6 +35,45 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
   final _price = TextEditingController();
 
   bool _busy = false;
+  DateTime? _loadingDate;
+  DateTime? _deliveryDate;
+  final Map<String, String?> _fieldErrors = {};
+
+  void _clearFieldError(String key) {
+    if (_fieldErrors.containsKey(key)) {
+      setState(() => _fieldErrors.remove(key));
+    }
+  }
+
+  bool _validateForm() {
+    final l10n = context.l10n;
+    final errors = <String, String?>{};
+
+    if (isFormFieldEmpty(_loading.text)) {
+      errors['loading'] = l10n.fieldIsRequired(l10n.loadingLocation);
+    }
+    if (isFormFieldEmpty(_offloading.text)) {
+      errors['offloading'] = l10n.fieldIsRequired(l10n.offloadingLocation);
+    }
+    if (_loadingDate == null) {
+      errors['loadingDate'] = l10n.fieldIsRequired(l10n.loadingDateTime);
+    }
+    if (_deliveryDate == null) {
+      errors['deliveryDate'] = l10n.fieldIsRequired(l10n.deliveryDateTime);
+    }
+    if (isFormFieldEmpty(_price.text)) {
+      errors['price'] = l10n.fieldIsRequired(l10n.offerPrice);
+    } else if (!isPositiveNumber(_price.text)) {
+      errors['price'] = l10n.fieldMustBeValidPositiveNumber(l10n.offerPrice);
+    }
+
+    setState(() {
+      _fieldErrors
+        ..clear()
+        ..addAll(errors);
+    });
+    return errors.isEmpty;
+  }
 
   @override
   void dispose() {
@@ -62,9 +103,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
       );
       return;
     }
-    final now = DateTime.now();
-    final loadingDate = now.add(const Duration(days: 1));
-    final deliveryDate = now.add(const Duration(days: 3));
+    if (!_validateForm()) return;
     setState(() => _busy = true);
     try {
       await ref.read(backendApiProvider).shipmentsCreate({
@@ -81,8 +120,8 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
             ? 'Any'
             : _vehicle.text.trim(),
         'requiredVehicleNumber': int.tryParse(_vehicleCount.text.trim()) ?? 1,
-        'loadingDate': loadingDate.toUtc().toIso8601String(),
-        'deliveryDate': deliveryDate.toUtc().toIso8601String(),
+        'loadingDate': _loadingDate!.toUtc().toIso8601String(),
+        'deliveryDate': _deliveryDate!.toUtc().toIso8601String(),
         'details': _timeline.text.trim(),
         'price': double.tryParse(_price.text.trim()) ?? 0,
         'priceType': 'FIXED',
@@ -107,26 +146,130 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
     }
   }
 
-  Widget _buildInput({
-    required TextEditingController controller,
+  Future<DateTime?> _pickDateTime({required DateTime initial}) async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (date == null || !mounted) return null;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial),
+    );
+    if (time == null) return null;
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+  }
+
+  Widget _buildDateInput({
     required String label,
     required IconData icon,
-    int? maxLines = 1,
-    TextInputType? keyboardType,
-    String? hint,
+    required String fieldKey,
+    required DateTime? value,
+    required Future<void> Function() onTap,
+    required String emptyHint,
+    bool required = false,
   }) {
+    final errorText = _fieldErrors[fieldKey];
+    final displayFmt = DateFormat.yMMMd().add_jm();
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.surfaceHighlight.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderLight, width: 1.0),
+        border: Border.all(
+          color: formContainerBorderColor(errorText: errorText),
+          width: formContainerBorderWidth(errorText: errorText),
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: InputDecorator(
+          isFocused: false,
+          decoration: InputDecoration(
+            isDense: true,
+            labelText: formFieldLabel(label, required: required),
+            errorText: errorText,
+            errorStyle: const TextStyle(
+              color: AppColors.error,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+            labelStyle: TextStyle(
+              color: AppColors.textSecondary.withValues(alpha: 0.8),
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
+            prefixIcon: Container(
+              alignment: Alignment.center,
+              width: 44,
+              child: Icon(
+                icon,
+                color: AppColors.primary.withValues(alpha: 0.8),
+                size: 20,
+              ),
+            ),
+            suffixIcon: Icon(
+              Icons.event_rounded,
+              color: AppColors.primary.withValues(alpha: 0.8),
+              size: 20,
+            ),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 10,
+            ),
+          ),
+          child: Text(
+            value == null ? emptyHint : displayFmt.format(value.toLocal()),
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: value == null
+                  ? AppColors.textSecondary.withValues(alpha: 0.5)
+                  : AppColors.textPrimary,
+              fontSize: value == null ? 13 : 14,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInput({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required String fieldKey,
+    int? maxLines = 1,
+    TextInputType? keyboardType,
+    String? hint,
+    bool required = false,
+  }) {
+    final errorText = _fieldErrors[fieldKey];
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceHighlight.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: formContainerBorderColor(errorText: errorText),
+          width: formContainerBorderWidth(errorText: errorText),
+        ),
       ),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
         minLines: maxLines == null ? 1 : null,
         keyboardType: keyboardType,
+        onChanged: (_) => _clearFieldError(fieldKey),
         style: const TextStyle(
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
@@ -134,8 +277,14 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
         ),
         decoration: InputDecoration(
           isDense: true,
-          labelText: label,
+          labelText: formFieldLabel(label, required: required),
           hintText: hint,
+          errorText: errorText,
+          errorStyle: const TextStyle(
+            color: AppColors.error,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
           labelStyle: TextStyle(
             color: AppColors.textSecondary.withValues(alpha: 0.8),
             fontWeight: FontWeight.w500,
@@ -382,18 +531,63 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
             children: [
               _buildInput(
                 controller: _loading,
+                fieldKey: 'loading',
                 label: context.l10n.loadingLocation,
                 hint: 'e.g. Addis Ababa, Warehouse A',
                 icon: Icons.upload_rounded,
+                required: true,
+              ),
+              _buildDateInput(
+                label: context.l10n.loadingDateTime,
+                icon: Icons.schedule_rounded,
+                fieldKey: 'loadingDate',
+                value: _loadingDate,
+                emptyHint: context.l10n.selectLoadingDateTime,
+                required: true,
+                onTap: () async {
+                  final now = DateTime.now();
+                  final picked = await _pickDateTime(
+                    initial: _loadingDate ?? now.add(const Duration(days: 1)),
+                  );
+                  if (picked == null) return;
+                  setState(() {
+                    _loadingDate = picked;
+                    _fieldErrors.remove('loadingDate');
+                  });
+                },
               ),
               _buildInput(
                 controller: _offloading,
+                fieldKey: 'offloading',
                 label: context.l10n.offloadingLocation,
                 hint: 'e.g. Adama, Central Hub',
                 icon: Icons.download_rounded,
+                required: true,
+              ),
+              _buildDateInput(
+                label: context.l10n.deliveryDateTime,
+                icon: Icons.event_available_rounded,
+                fieldKey: 'deliveryDate',
+                value: _deliveryDate,
+                emptyHint: context.l10n.selectDeliveryDateTime,
+                required: true,
+                onTap: () async {
+                  final now = DateTime.now();
+                  final picked = await _pickDateTime(
+                    initial: _deliveryDate ??
+                        _loadingDate ??
+                        now.add(const Duration(days: 3)),
+                  );
+                  if (picked == null) return;
+                  setState(() {
+                    _deliveryDate = picked;
+                    _fieldErrors.remove('deliveryDate');
+                  });
+                },
               ),
               _buildInput(
                 controller: _route,
+                fieldKey: 'route',
                 label: context.l10n.preferredRouteOptional,
                 hint: 'Specific highways or transit points',
                 icon: Icons.alt_route_rounded,
@@ -407,6 +601,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
             children: [
               _buildInput(
                 controller: _goods,
+                fieldKey: 'goods',
                 label: context.l10n.typeOfGoods,
                 hint: 'e.g. Electronics, Textiles, Perishables',
                 icon: Icons.category_outlined,
@@ -416,6 +611,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                   Expanded(
                     child: _buildInput(
                       controller: _quantity,
+                      fieldKey: 'quantity',
                       label: context.l10n.quantity,
                       icon: Icons.numbers_rounded,
                       keyboardType: TextInputType.number,
@@ -425,6 +621,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                   Expanded(
                     child: _buildInput(
                       controller: _weight,
+                      fieldKey: 'weight',
                       label: context.l10n.weight,
                       hint: 'e.g. 5000 kg',
                       icon: Icons.scale_rounded,
@@ -434,6 +631,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
               ),
               _buildInput(
                 controller: _volume,
+                fieldKey: 'volume',
                 label: context.l10n.volume,
                 hint: 'e.g. 20 cubic meters',
                 icon: Icons.view_in_ar_rounded,
@@ -451,6 +649,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                     flex: 5,
                     child: _buildInput(
                       controller: _vehicle,
+                      fieldKey: 'vehicle',
                       label: context.l10n.vehicleType,
                       hint: 'e.g. Flatbed, Reefer',
                       icon: Icons.fire_truck_outlined,
@@ -461,6 +660,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                     flex: 4,
                     child: _buildInput(
                       controller: _vehicleCount,
+                      fieldKey: 'vehicleCount',
                       label: context.l10n.count,
                       icon: Icons.tag_rounded,
                       keyboardType: TextInputType.number,
@@ -470,10 +670,12 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
               ),
               _buildInput(
                 controller: _price,
+                fieldKey: 'price',
                 label: context.l10n.offerPrice,
                 hint: 'e.g. 15000',
                 icon: Icons.payments_outlined,
                 keyboardType: TextInputType.number,
+                required: true,
               ),
             ],
           ),
@@ -484,6 +686,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
             children: [
               _buildInput(
                 controller: _timeline,
+                fieldKey: 'timeline',
                 label: context.l10n.specialInstructions,
                 hint: 'Any fragile handling, timeline constraints, or documentation needed...',
                 icon: Icons.edit_note_rounded,

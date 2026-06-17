@@ -6,6 +6,7 @@ import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/payments_provider.dart';
 import 'package:global_logistics_app/data/utils/finance_api_utils.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
 import 'package:global_logistics_app/shared/widgets/shipment_receipt_upload_row.dart';
@@ -157,7 +158,11 @@ class _ConsignorShipmentPaymentSectionState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
+      builder: (ctx) {
+        String? amountError;
+        String? slipError;
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) => Container(
         margin: EdgeInsets.only(top: MediaQuery.paddingOf(ctx).top + 40),
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -226,11 +231,34 @@ class _ConsignorShipmentPaymentSectionState
               const SizedBox(height: 24),
               _SheetField(
                 controller: amt,
-                label: 'Paid amount',
+                label: formFieldLabel('Paid amount', required: true),
                 type: TextInputType.number,
+                errorText: amountError,
+                onChanged: () {
+                  if (amountError != null) {
+                    setSheetState(() => amountError = null);
+                  }
+                },
               ),
-              _SheetField(controller: refNo, label: 'Reference number'),
+              _SheetField(
+                controller: refNo,
+                label: 'Reference number',
+              ),
               ShipmentReceiptUploadRow(slipController: slip),
+              if (slipError != null) ...[
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    slipError!,
+                    style: const TextStyle(
+                      color: AppColors.error,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
               PresignedUploadAttachedHint(
                 controller: slip,
                 message: l10n.paymentReceiptAttached,
@@ -249,23 +277,21 @@ class _ConsignorShipmentPaymentSectionState
                   ),
                   onPressed: () async {
                     final paid = double.tryParse(amt.text.trim());
+                    var hasError = false;
                     if (paid == null || paid <= 0) {
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(context.l10n.enterValidPaidAmount),
-                        ),
-                      );
-                      return;
+                      setSheetState(() {
+                        amountError = l10n.fieldMustBeValidPositiveNumber(
+                          'Paid amount',
+                        );
+                      });
+                      hasError = true;
                     }
                     final slipUrl = slip.text.trim();
                     if (slipUrl.isEmpty) {
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(context.l10n.uploadPaymentReceipt),
-                        ),
-                      );
-                      return;
+                      setSheetState(() => slipError = l10n.uploadPaymentReceipt);
+                      hasError = true;
                     }
+                    if (hasError) return;
                     final refText = refNo.text.trim();
                     try {
                       await ref
@@ -297,6 +323,8 @@ class _ConsignorShipmentPaymentSectionState
           ),
         ),
       ),
+        );
+      },
     );
 
     // Defer disposal: the sheet exit animation may still reference controllers.
@@ -646,11 +674,15 @@ class _SheetField extends StatelessWidget {
     required this.controller,
     required this.label,
     this.type,
+    this.errorText,
+    this.onChanged,
   });
 
   final TextEditingController controller;
   final String label;
   final TextInputType? type;
+  final String? errorText;
+  final VoidCallback? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -659,17 +691,33 @@ class _SheetField extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceHighlight,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        border: Border.all(
+          color: formContainerBorderColor(
+            errorText: errorText,
+            normal: AppColors.borderLight,
+          ),
+          width: formContainerBorderWidth(
+            errorText: errorText,
+            normal: 1.5,
+          ),
+        ),
       ),
       child: TextField(
         controller: controller,
         keyboardType: type,
+        onChanged: (_) => onChanged?.call(),
         style: const TextStyle(
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
         decoration: InputDecoration(
           labelText: label,
+          errorText: errorText,
+          errorStyle: const TextStyle(
+            color: AppColors.error,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
           labelStyle: const TextStyle(
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w500,

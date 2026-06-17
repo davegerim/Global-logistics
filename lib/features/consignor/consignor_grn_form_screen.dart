@@ -10,6 +10,7 @@ import 'package:global_logistics_app/core/utils/gdn_grn_utils.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/features/consignor/consignor_gdn_form_screen.dart';
 import 'package:global_logistics_app/features/documents/gdn_grn_document_sheet.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 import 'package:intl/intl.dart';
 
@@ -49,6 +50,13 @@ class _ConsignorGrnFormScreenState
   String? _stateMessage;
   String? _activePublicId;
   List<Map<String, dynamic>> _history = const [];
+  final Map<String, String?> _fieldErrors = {};
+
+  void _clearFieldError(String key) {
+    if (_fieldErrors.containsKey(key)) {
+      setState(() => _fieldErrors.remove(key));
+    }
+  }
 
   static const _dateKeys = ['receivedAt', 'issuedAt', 'createdAt'];
 
@@ -223,10 +231,28 @@ class _ConsignorGrnFormScreenState
     );
   }
 
-  bool _grnFormValid() {
-    return _receiverNameCtrl.text.trim().isNotEmpty &&
-        _receivedQuantityCtrl.text.trim().isNotEmpty &&
-        _conditionNoteCtrl.text.trim().isNotEmpty;
+  bool _validateGrnForm() {
+    final l10n = context.l10n;
+    final errors = <String, String?>{};
+
+    if (isFormFieldEmpty(_receiverNameCtrl.text)) {
+      errors['receiverName'] = l10n.fieldIsRequired(l10n.receiverNameStar.replaceAll(' *', ''));
+    }
+    if (isFormFieldEmpty(_receivedQuantityCtrl.text)) {
+      errors['receivedQuantity'] =
+          l10n.fieldIsRequired(l10n.receivedQuantityStar.replaceAll(' *', ''));
+    }
+    if (isFormFieldEmpty(_conditionNoteCtrl.text)) {
+      errors['conditionNote'] =
+          l10n.fieldIsRequired(l10n.conditionNoteStar.replaceAll(' *', ''));
+    }
+
+    setState(() {
+      _fieldErrors
+        ..clear()
+        ..addAll(errors);
+    });
+    return errors.isEmpty;
   }
 
   Map<String, dynamic> _grnCreateBodyFromForm() {
@@ -248,13 +274,9 @@ class _ConsignorGrnFormScreenState
   Future<void> _voidActiveGrn() async {
     final pid = _activePublicId;
     if (_voiding || pid == null || pid.isEmpty) return;
-    if (!_grnFormValid()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.receiverNameRequired)),
-      );
+    if (!_validateGrnForm()) {
       return;
     }
-
     final reason = await showVoidGdnGrnReasonDialog(
       context,
       title: context.l10n.voidGrnTitle,
@@ -300,16 +322,7 @@ class _ConsignorGrnFormScreenState
 
   Future<void> _createGrn() async {
     if (_creating || !_canCreateGrn) return;
-    if (!_grnFormValid()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.l10n.receiverNameRequired,
-          ),
-        ),
-      );
-      return;
-    }
+    if (!_validateGrnForm()) return;
 
     setState(() => _creating = true);
     try {
@@ -434,8 +447,10 @@ class _ConsignorGrnFormScreenState
                 TextField(
                   controller: _receiverNameCtrl,
                   enabled: _canCreateGrn,
+                  onChanged: (_) => _clearFieldError('receiverName'),
                   decoration: InputDecoration(
                     labelText: context.l10n.receiverNameStar,
+                    errorText: _fieldErrors['receiverName'],
                     prefixIcon: const Icon(Icons.person_outline),
                   ),
                 ),
@@ -443,8 +458,10 @@ class _ConsignorGrnFormScreenState
                 TextField(
                   controller: _receivedQuantityCtrl,
                   enabled: _canCreateGrn,
+                  onChanged: (_) => _clearFieldError('receivedQuantity'),
                   decoration: InputDecoration(
                     labelText: context.l10n.receivedQuantityStar,
+                    errorText: _fieldErrors['receivedQuantity'],
                     prefixIcon: const Icon(Icons.numbers_rounded),
                   ),
                 ),
@@ -501,8 +518,10 @@ class _ConsignorGrnFormScreenState
                   controller: _conditionNoteCtrl,
                   enabled: _canCreateGrn,
                   maxLines: 2,
+                  onChanged: (_) => _clearFieldError('conditionNote'),
                   decoration: InputDecoration(
                     labelText: context.l10n.conditionNoteStar,
+                    errorText: _fieldErrors['conditionNote'],
                     prefixIcon: const Icon(Icons.note_alt_outlined),
                   ),
                 ),

@@ -7,6 +7,7 @@ import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/driver_offers_provider.dart';
 import 'package:global_logistics_app/core/services/device_location_service.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
 import 'package:global_logistics_app/core/utils/negotiation_status_utils.dart';
 import 'package:global_logistics_app/data/models/driver_offer_model.dart';
 import 'package:intl/intl.dart';
@@ -76,7 +77,10 @@ class _DriverOfferNegotiationScreenState
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (ctx) => Padding(
+      builder: (ctx) {
+        String? priceError;
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) => Padding(
         padding: EdgeInsets.only(
           left: 20,
           right: 20,
@@ -97,7 +101,13 @@ class _DriverOfferNegotiationScreenState
             TextField(
               controller: price,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: context.l10n.counterPriceRequired),
+              onChanged: (_) {
+                if (priceError != null) setSheetState(() => priceError = null);
+              },
+              decoration: InputDecoration(
+                labelText: context.l10n.counterPriceRequired,
+                errorText: priceError,
+              ),
             ),
             const SizedBox(height: 10),
             TextField(
@@ -110,8 +120,24 @@ class _DriverOfferNegotiationScreenState
               width: double.infinity,
               child: FilledButton.icon(
                 onPressed: () async {
-                  final parsed = double.tryParse(price.text.trim());
-                  if (parsed == null || parsed <= 0) return;
+                  final priceText = price.text.trim();
+                  final parsed = double.tryParse(priceText);
+                  if (isFormFieldEmpty(priceText)) {
+                    setSheetState(() {
+                      priceError = context.l10n.fieldIsRequired(
+                        context.l10n.counterPriceRequired.replaceAll(' *', ''),
+                      );
+                    });
+                    return;
+                  }
+                  if (parsed == null || parsed <= 0) {
+                    setSheetState(() {
+                      priceError = context.l10n.fieldMustBeValidPositiveNumber(
+                        context.l10n.counterPriceRequired.replaceAll(' *', ''),
+                      );
+                    });
+                    return;
+                  }
                   await _runAction(() async {
                     await ref
                         .read(backendApiProvider)
@@ -131,6 +157,8 @@ class _DriverOfferNegotiationScreenState
           ],
         ),
       ),
+        );
+      },
     );
     if (submitted == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

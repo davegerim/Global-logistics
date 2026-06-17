@@ -9,6 +9,7 @@ import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/core/utils/gdn_grn_utils.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/features/documents/gdn_grn_document_sheet.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 import 'package:intl/intl.dart';
 
@@ -46,6 +47,13 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
   String? _stateMessage;
   String? _activePublicId;
   List<Map<String, dynamic>> _history = const [];
+  final Map<String, String?> _fieldErrors = {};
+
+  void _clearFieldError(String key) {
+    if (_fieldErrors.containsKey(key)) {
+      setState(() => _fieldErrors.remove(key));
+    }
+  }
 
   static const _dateKeys = ['issuedAt', 'createdAt'];
 
@@ -169,11 +177,31 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
     }
   }
 
-  bool _gdnFormValid() {
-    return _issuerCtrl.text.trim().isNotEmpty &&
-        _consigneeCtrl.text.trim().isNotEmpty &&
-        _contactCtrl.text.trim().isNotEmpty &&
-        _quantityCtrl.text.trim().isNotEmpty;
+  bool _validateGdnForm() {
+    final l10n = context.l10n;
+    final errors = <String, String?>{};
+
+    if (isFormFieldEmpty(_issuerCtrl.text)) {
+      errors['issuer'] = l10n.fieldIsRequired(l10n.issuerNameStar.replaceAll(' *', ''));
+    }
+    if (isFormFieldEmpty(_consigneeCtrl.text)) {
+      errors['consignee'] =
+          l10n.fieldIsRequired(l10n.consigneeNameStar.replaceAll(' *', ''));
+    }
+    if (isFormFieldEmpty(_contactCtrl.text)) {
+      errors['contact'] =
+          l10n.fieldIsRequired(l10n.consigneeContactStar.replaceAll(' *', ''));
+    }
+    if (isFormFieldEmpty(_quantityCtrl.text)) {
+      errors['quantity'] = l10n.fieldIsRequired(l10n.quantityStar.replaceAll(' *', ''));
+    }
+
+    setState(() {
+      _fieldErrors
+        ..clear()
+        ..addAll(errors);
+    });
+    return errors.isEmpty;
   }
 
   Map<String, dynamic> _gdnCreateBodyFromForm() {
@@ -194,13 +222,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
   Future<void> _voidActiveGdn() async {
     final pid = _activePublicId;
     if (_voiding || pid == null || pid.isEmpty) return;
-    if (!_gdnFormValid()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.gdnRequiredFields)),
-      );
-      return;
-    }
-
+    if (!_validateGdnForm()) return;
     final reason = await showVoidGdnGrnReasonDialog(
       context,
       title: context.l10n.voidGdnTitle,
@@ -246,13 +268,7 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
 
   Future<void> _createGdn() async {
     if (_creating || _locked) return;
-    if (!_gdnFormValid()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.gdnRequiredFields)),
-      );
-      return;
-    }
-    setState(() => _creating = true);
+    if (!_validateGdnForm()) return;    setState(() => _creating = true);
     try {
       await ref.read(backendApiProvider).gdnCreate(_gdnCreateBodyFromForm());
       if (!mounted) return;
@@ -367,8 +383,10 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                 TextField(
                   controller: _issuerCtrl,
                   enabled: !_locked,
+                  onChanged: (_) => _clearFieldError('issuer'),
                   decoration: InputDecoration(
                     labelText: context.l10n.issuerNameStar,
+                    errorText: _fieldErrors['issuer'],
                     prefixIcon: const Icon(Icons.person_outline),
                   ),
                 ),
@@ -376,8 +394,10 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                 TextField(
                   controller: _consigneeCtrl,
                   enabled: !_locked,
+                  onChanged: (_) => _clearFieldError('consignee'),
                   decoration: InputDecoration(
                     labelText: context.l10n.consigneeNameStar,
+                    errorText: _fieldErrors['consignee'],
                     prefixIcon: const Icon(Icons.badge_outlined),
                   ),
                 ),
@@ -385,8 +405,10 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                 TextField(
                   controller: _contactCtrl,
                   enabled: !_locked,
+                  onChanged: (_) => _clearFieldError('contact'),
                   decoration: InputDecoration(
                     labelText: context.l10n.consigneeContactStar,
+                    errorText: _fieldErrors['contact'],
                     prefixIcon: const Icon(Icons.phone_outlined),
                   ),
                 ),
@@ -397,8 +419,10 @@ class _ConsignorGdnFormScreenState extends ConsumerState<ConsignorGdnFormScreen>
                       child: TextField(
                         controller: _quantityCtrl,
                         enabled: !_locked,
+                        onChanged: (_) => _clearFieldError('quantity'),
                         decoration: InputDecoration(
                           labelText: context.l10n.quantityStar,
+                          errorText: _fieldErrors['quantity'],
                         ),
                       ),
                     ),

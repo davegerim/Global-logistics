@@ -190,10 +190,12 @@
   "newShipment": "New Shipment",
   "createNewShipmentOfferDesc": "Create a new shipment offer. Provide accurate logistics details to match with the best drivers.",
   "accountPendingAdminApprovalDesc": "Your account is pending admin approval. Booking is currently disabled.",
-  "fromLabel": "From",
-  "toLabel": "To",
+  "fromLabel": "Origin",
+  "toLabel": "Destination",
   "placedPrefix": "Placed ",
   "estPrefix": "Est. ",
+  "loadingPrefix": "Load ",
+  "offloadingPrefix": "Offload ",
   "approvedLabel": "APPROVED",
   "verifiedWaitingAdminApproval": "VERIFIED (waiting admin approval)",
   "pendingAdminApproval": "PENDING ADMIN APPROVAL",
@@ -423,6 +425,23 @@
   "signInToAccessRoutes": "Sign in to access your routes.",
   "enterValidTenDigitPhone": "Enter a valid 10-digit phone number.",
   "enterYourPassword": "Enter your password.",
+  "fieldIsRequired": "{fieldName} is required.",
+  "@fieldIsRequired": {
+    "placeholders": {
+      "fieldName": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldMustBeValidPositiveNumber": "{fieldName} must be a valid number greater than zero.",
+  "@fieldMustBeValidPositiveNumber": {
+    "placeholders": {
+      "fieldName": {
+        "type": "String"
+      }
+    }
+  },
+  "pleaseEnterYourFeedback": "Please enter your feedback.",
   "splashTagline": "Trusted freight. Real-time visibility.",
   "driverRegStep2": "Step 2 of 3: Enter the OTP sent to your phone to verify your identity.",
   "consignorRegStep2": "Step 2 of 3: Enter the OTP sent to your phone to verify your identity.",

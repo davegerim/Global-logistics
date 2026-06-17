@@ -601,16 +601,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your account is pending admin approval. Booking is currently disabled.';
 
   @override
-  String get fromLabel => 'From';
+  String get fromLabel => 'Origin';
 
   @override
-  String get toLabel => 'To';
+  String get toLabel => 'Destination';
 
   @override
   String get placedPrefix => 'Placed ';
 
   @override
   String get estPrefix => 'Est. ';
+
+  @override
+  String get loadingPrefix => 'Load ';
+
+  @override
+  String get offloadingPrefix => 'Offload ';
 
   @override
   String get approvedLabel => 'APPROVED';
@@ -1301,6 +1307,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enterYourPassword => 'Enter your password.';
+
+  @override
+  String fieldIsRequired(String fieldName) {
+    return '$fieldName is required.';
+  }
+
+  @override
+  String fieldMustBeValidPositiveNumber(String fieldName) {
+    return '$fieldName must be a valid number greater than zero.';
+  }
+
+  @override
+  String get pleaseEnterYourFeedback => 'Please enter your feedback.';
 
   @override
   String get splashTagline => 'Trusted freight. Real-time visibility.';

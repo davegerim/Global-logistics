@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 
@@ -64,7 +65,7 @@ class _AssignmentFeedbackSheetState extends State<AssignmentFeedbackSheet> {
   void _submit() {
     final text = _commentCtrl.text.trim();
     if (text.isEmpty) {
-      setState(() => _errorText = 'Please enter your feedback.');
+      setState(() => _errorText = context.l10n.pleaseEnterYourFeedback);
       return;
     }
     Navigator.of(context).pop((comment: text, rating: _rating));
@@ -213,7 +214,10 @@ class _AssignmentFeedbackSheetState extends State<AssignmentFeedbackSheet> {
                             }
                           },
                           decoration: InputDecoration(
-                            labelText: context.l10n.yourMessage,
+                            labelText: formFieldLabel(
+                              context.l10n.yourMessage,
+                              required: true,
+                            ),
                             hintText: widget.hint,
                             alignLabelWithHint: true,
                             errorText: _errorText,

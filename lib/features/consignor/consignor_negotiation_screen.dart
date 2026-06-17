@@ -10,6 +10,7 @@ import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 import 'package:global_logistics_app/core/utils/negotiation_status_utils.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 import 'package:intl/intl.dart';
 
@@ -170,6 +171,7 @@ class _ConsignorNegotiationScreenState
       builder: (ctx) {
         DateTime? loadingValue = DateTime.tryParse(loadingDate.text.trim());
         DateTime? deliveryValue = DateTime.tryParse(deliveryDate.text.trim());
+        String? priceError;
         return StatefulBuilder(
           builder: (ctx, setSheetState) => Padding(
             padding: EdgeInsets.only(
@@ -193,9 +195,15 @@ class _ConsignorNegotiationScreenState
                   TextField(
                     controller: price,
                     keyboardType: TextInputType.number,
+                    onChanged: (_) {
+                      if (priceError != null) {
+                        setSheetState(() => priceError = null);
+                      }
+                    },
                       decoration: InputDecoration(
                         labelText: context.l10n.counterPriceRequired,
                         hintText: context.l10n.egCounterPrice,
+                        errorText: priceError,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -275,8 +283,24 @@ class _ConsignorNegotiationScreenState
                   GlPrimaryButton(
                     label: context.l10n.sendCounterOffer,
                     onPressed: () {
-                      final parsedPrice = double.tryParse(price.text.trim());
-                      if (parsedPrice == null) return;
+                      final priceText = price.text.trim();
+                      final parsedPrice = double.tryParse(priceText);
+                      if (isFormFieldEmpty(priceText)) {
+                        setSheetState(() {
+                          priceError = context.l10n.fieldIsRequired(
+                            context.l10n.counterPriceRequired.replaceAll(' *', ''),
+                          );
+                        });
+                        return;
+                      }
+                      if (parsedPrice == null || parsedPrice <= 0) {
+                        setSheetState(() {
+                          priceError = context.l10n.fieldMustBeValidPositiveNumber(
+                            context.l10n.counterPriceRequired.replaceAll(' *', ''),
+                          );
+                        });
+                        return;
+                      }
                       final parsedVehicleCount = int.tryParse(
                         vehicleNumber.text.trim(),
                       );

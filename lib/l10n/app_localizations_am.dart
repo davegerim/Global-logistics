@@ -595,6 +595,12 @@ class AppLocalizationsAm extends AppLocalizations {
   String get estPrefix => 'ግምት ';
 
   @override
+  String get loadingPrefix => 'መጫን ';
+
+  @override
+  String get offloadingPrefix => 'ማውረድ ';
+
+  @override
   String get approvedLabel => 'ተቀባይነት አግኝቷል';
 
   @override
@@ -1265,6 +1271,19 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get enterYourPassword => 'የይለፍ ቃልዎን ያስገቡ።';
+
+  @override
+  String fieldIsRequired(String fieldName) {
+    return '$fieldName ያስፈልጋል።';
+  }
+
+  @override
+  String fieldMustBeValidPositiveNumber(String fieldName) {
+    return '$fieldName ከዜሮ በላይ ትክክለኛ ቁጥር መሆን አለበት።';
+  }
+
+  @override
+  String get pleaseEnterYourFeedback => 'እባክዎ አስተያየትዎን ያስገቡ።';
 
   @override
   String get splashTagline => 'የታመነ ጭነት። በቅጽበት ታይነት።';

@@ -1241,13 +1241,13 @@ abstract class AppLocalizations {
   /// No description provided for @fromLabel.
   ///
   /// In en, this message translates to:
-  /// **'From'**
+  /// **'Origin'**
   String get fromLabel;
 
   /// No description provided for @toLabel.
   ///
   /// In en, this message translates to:
-  /// **'To'**
+  /// **'Destination'**
   String get toLabel;
 
   /// No description provided for @placedPrefix.
@@ -1261,6 +1261,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Est. '**
   String get estPrefix;
+
+  /// No description provided for @loadingPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Load '**
+  String get loadingPrefix;
+
+  /// No description provided for @offloadingPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Offload '**
+  String get offloadingPrefix;
 
   /// No description provided for @approvedLabel.
   ///
@@ -2551,6 +2563,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter your password.'**
   String get enterYourPassword;
+
+  /// No description provided for @fieldIsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'{fieldName} is required.'**
+  String fieldIsRequired(String fieldName);
+
+  /// No description provided for @fieldMustBeValidPositiveNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'{fieldName} must be a valid number greater than zero.'**
+  String fieldMustBeValidPositiveNumber(String fieldName);
+
+  /// No description provided for @pleaseEnterYourFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your feedback.'**
+  String get pleaseEnterYourFeedback;
 
   /// No description provided for @splashTagline.
   ///

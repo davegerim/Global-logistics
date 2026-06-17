@@ -33,6 +33,8 @@ class ShipmentModel {
     required this.timelineNote,
     required this.placedAt,
     required this.estimatedDelivery,
+    this.loadingDate,
+    this.offloadingDate,
     this.driver,
     this.progress01,
     this.paymentMethod,
@@ -67,6 +69,8 @@ class ShipmentModel {
   final String timelineNote;
   final DateTime placedAt;
   final DateTime? estimatedDelivery;
+  final DateTime? loadingDate;
+  final DateTime? offloadingDate;
   final DriverSummary? driver;
   final double? progress01;
   final String? paymentMethod;
@@ -99,6 +103,8 @@ class ShipmentModel {
       timelineNote: timelineNote,
       placedAt: placedAt,
       estimatedDelivery: estimatedDelivery,
+      loadingDate: loadingDate,
+      offloadingDate: offloadingDate,
       driver: driver,
       progress01: progress01,
       paymentMethod: paymentMethod,

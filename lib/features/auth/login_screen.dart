@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/locale_provider.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
 import 'package:global_logistics_app/shared/widgets/app_language_toggle.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 
@@ -205,7 +206,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                         // Form
                         Text(
-                          context.l10n.phoneNumber,
+                          formFieldLabel(
+                            context.l10n.phoneNumber,
+                            required: true,
+                          ),
                           style: t.labelMedium?.copyWith(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w700,
@@ -272,7 +276,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 16),
 
                         Text(
-                          context.l10n.password,
+                          formFieldLabel(
+                            context.l10n.password,
+                            required: true,
+                          ),
                           style: t.labelMedium?.copyWith(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w700,

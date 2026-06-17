@@ -9,6 +9,28 @@ DateTime? _parseDt(dynamic v) {
   return null;
 }
 
+DateTime? _pickScheduleDate(
+  Map<String, dynamic> primary, {
+  Map<String, dynamic>? secondary,
+  required String key,
+}) {
+  final direct = _parseDt(primary[key]) ?? _parseDt(secondary?[key]);
+  if (direct != null) return direct;
+  return _pickScheduleDateFromOffers(primary, key) ??
+      (secondary == null ? null : _pickScheduleDateFromOffers(secondary, key));
+}
+
+DateTime? _pickScheduleDateFromOffers(Map<String, dynamic> map, String key) {
+  final offers = map['offers'];
+  if (offers is! List) return null;
+  for (final offer in offers.reversed) {
+    if (offer is! Map) continue;
+    final dt = _parseDt(offer.cast<String, dynamic>()[key]);
+    if (dt != null) return dt;
+  }
+  return null;
+}
+
 /// Newest bookings first (placed date, then booking #, then public id).
 int compareShipmentsNewestFirst(ShipmentModel a, ShipmentModel b) {
   final byPlaced = b.placedAt.compareTo(a.placedAt);
@@ -110,6 +132,8 @@ ShipmentModel shipmentFromDto(Map<String, dynamic> j) {
     timelineNote: j['details'] as String? ?? '',
     placedAt: _parseDt(j['createdAt']) ?? DateTime.now(),
     estimatedDelivery: _parseDt(j['deliveryDate'] ?? j['loadingDate']),
+    loadingDate: _parseDt(j['loadingDate']),
+    offloadingDate: _parseDt(j['deliveryDate']),
     progress01: _progressForShipmentStatus(status),
     paymentMethod: j['priceType'] as String?,
     priceOffer: _parseDouble(j['priceAmount']),
@@ -149,6 +173,12 @@ ShipmentModel shipmentFromWorkspaceWithId(
     estimatedDelivery: _parseDt(
       overview['deliveryDate'] ?? overview['loadingDate'],
     ),
+    loadingDate: _parseDt(
+      overview['loadingDate'] ?? header['loadingDate'],
+    ),
+    offloadingDate: _parseDt(
+      overview['deliveryDate'] ?? header['deliveryDate'],
+    ),
     progress01: _progressForShipmentStatus(status),
     paymentMethod: overview['priceType'] as String?,
     priceOffer: _parseDouble(header['priceAmount'] ?? overview['priceAmount']),
@@ -177,6 +207,8 @@ ShipmentModel shipmentFromDriverWorkspace(
       ) ??
       'Assignment';
   final price = _parseDouble(first?['priceAmount'] ?? sel?['agreedPrice']);
+  final mergedFirst =
+      first == null ? null : _mergeNestedShipmentFields(first);
   return ShipmentModel(
     id: shipmentId,
     publicId: shipmentId,
@@ -195,6 +227,12 @@ ShipmentModel shipmentFromDriverWorkspace(
     timelineNote: first?['details'] as String? ?? '',
     placedAt: _parseDt(first?['updatedAt']) ?? DateTime.now(),
     estimatedDelivery: null,
+    loadingDate: mergedFirst == null
+        ? null
+        : _pickScheduleDate(mergedFirst, key: 'loadingDate'),
+    offloadingDate: mergedFirst == null
+        ? null
+        : _pickScheduleDate(mergedFirst, key: 'deliveryDate'),
     progress01: 0.25,
     paymentMethod: first?['priceType'] as String?,
     priceOffer: price,
@@ -376,6 +414,16 @@ ShipmentModel shipmentFromAssignmentDriverView(
     timelineNote: j['details'] as String? ?? '',
     placedAt: _parseDt(j['assignedAt']) ?? DateTime.now(),
     estimatedDelivery: _parseDt(j['completedAt']),
+    loadingDate: _pickScheduleDate(
+      mergedAssignment,
+      secondary: mergedNegotiation,
+      key: 'loadingDate',
+    ),
+    offloadingDate: _pickScheduleDate(
+      mergedAssignment,
+      secondary: mergedNegotiation,
+      key: 'deliveryDate',
+    ),
     progress01: _progressForAssignmentStatus(st),
     paymentMethod: n?['priceType'] as String?,
     priceOffer: _parseDouble(j['agreedPrice']) ??

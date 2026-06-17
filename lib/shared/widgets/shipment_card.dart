@@ -37,133 +37,142 @@ class ShipmentCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: AppColors.border, width: 1.5),
           ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            shipment.displayId
-                                .replaceAll(
-                                  'Booking ',
-                                  context.l10n.bookingPrefix,
-                                )
-                                .replaceAll(
-                                  'Assignment ',
-                                  context.l10n.assignmentPrefix,
-                                ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: t.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.2,
+                    Expanded(
+                      child: Text(
+                        shipment.displayId
+                            .replaceAll('Booking ', context.l10n.bookingPrefix)
+                            .replaceAll(
+                              'Assignment ',
+                              context.l10n.assignmentPrefix,
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        StatusChip(
-                          status: shipment.status,
-                          labelOverride: shipment.apiStatusLabel,
-                        ),
-                      ],
-                    ),
-                    if (shipment.hasDisplayableGoodsType) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        context.translateDynamic(shipment.goodsDescription.trim()),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: t.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w600,
+                        style: t.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.2,
                         ),
-                      ),
-                    ],
-                    if (assignmentsLoading ||
-                        assignmentStatuses.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      _assignmentStatusSection(context),
-                    ],
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 110),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _row(
-                            context,
-                            Icons.upload_rounded,
-                            context.l10n.fromLabel,
-                            context.translateDynamic(shipment.loadingAddress),
-                          ),
-                          const SizedBox(height: 10),
-                          _row(
-                            context,
-                            Icons.download_rounded,
-                            context.l10n.toLabel,
-                            context.translateDynamic(
-                              shipment.offloadingAddress,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today_outlined,
-                          size: 16,
-                          color: AppColors.textTertiary,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '${context.l10n.placedPrefix}${dateFmt.format(shipment.placedAt)}',
-                          style: t.bodyMedium,
-                        ),
-                        if (shipment.estimatedDelivery != null) ...[
-                          const SizedBox(width: 12),
-                          Icon(
-                            Icons.flag_outlined,
-                            size: 16,
-                            color: AppColors.gold,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${context.l10n.estPrefix}${dateFmt.format(shipment.estimatedDelivery!)}',
-                            style: t.bodyMedium?.copyWith(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ],
+                    const SizedBox(width: 8),
+                    StatusChip(
+                      status: shipment.status,
+                      labelOverride: shipment.apiStatusLabel,
                     ),
                   ],
                 ),
-              ),
-              Positioned(
-                right: -15,
-                top: 60,
-                child: IgnorePointer(
-                  child: Image.asset(
-                    'assets/images/boxes-3d-icon-png-download-4504985.webp',
-                    width: 135,
-                    height: 135,
-                    fit: BoxFit.contain,
+                if (shipment.hasDisplayableGoodsType) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    context.translateDynamic(shipment.goodsDescription.trim()),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: t.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
+                ],
+                if (assignmentsLoading || assignmentStatuses.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _assignmentStatusSection(context),
+                ],
+                const SizedBox(height: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _row(
+                      context,
+                      Icons.upload_rounded,
+                      context.l10n.fromLabel,
+                      context.translateDynamic(shipment.loadingAddress),
+                    ),
+                    const SizedBox(height: 10),
+                    _row(
+                      context,
+                      Icons.download_rounded,
+                      context.l10n.toLabel,
+                      context.translateDynamic(shipment.offloadingAddress),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    _dateChip(
+                      context,
+                      icon: Icons.calendar_today_outlined,
+                      iconColor: AppColors.textTertiary,
+                      label:
+                          '${context.l10n.placedPrefix}${dateFmt.format(shipment.placedAt)}',
+                    ),
+                    if (shipment.loadingDate != null)
+                      _dateChip(
+                        context,
+                        icon: Icons.upload_outlined,
+                        iconColor: AppColors.textTertiary,
+                        label:
+                            '${context.l10n.loadingPrefix}${dateFmt.format(shipment.loadingDate!)}',
+                      ),
+                    if (shipment.offloadingDate != null)
+                      _dateChip(
+                        context,
+                        icon: Icons.download_outlined,
+                        iconColor: AppColors.textTertiary,
+                        label:
+                            '${context.l10n.offloadingPrefix}${dateFmt.format(shipment.offloadingDate!)}',
+                      ),
+                    if (shipment.estimatedDelivery != null)
+                      _dateChip(
+                        context,
+                        icon: Icons.flag_outlined,
+                        iconColor: AppColors.gold,
+                        label:
+                            '${context.l10n.estPrefix}${dateFmt.format(shipment.estimatedDelivery!)}',
+                        emphasized: true,
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _dateChip(
+    BuildContext context, {
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    bool emphasized = false,
+  }) {
+    final t = Theme.of(context).textTheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: iconColor),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: emphasized
+              ? t.bodyMedium?.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                )
+              : t.bodyMedium,
+        ),
+      ],
     );
   }
 

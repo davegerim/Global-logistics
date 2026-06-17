@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 
 class RegisterConsignorVerifyScreen extends ConsumerStatefulWidget {
@@ -21,6 +22,7 @@ class _RegisterConsignorVerifyScreenState
     extends ConsumerState<RegisterConsignorVerifyScreen> {
   final _otp = TextEditingController();
   var _busy = false;
+  String? _otpError;
 
   @override
   void dispose() {
@@ -35,6 +37,10 @@ class _RegisterConsignorVerifyScreenState
           content: Text(context.l10n.phoneIsMissing),
         ),
       );
+      return;
+    }
+    if (isFormFieldEmpty(_otp.text)) {
+      setState(() => _otpError = context.l10n.fieldIsRequired(context.l10n.otpCode));
       return;
     }
     setState(() => _busy = true);
@@ -58,14 +64,26 @@ class _RegisterConsignorVerifyScreenState
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    String? errorText,
     TextInputType? keyboardType,
+    bool required = true,
+    VoidCallback? onChanged,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.surfaceHighlight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        border: Border.all(
+          color: formContainerBorderColor(
+            errorText: errorText,
+            normal: AppColors.borderLight,
+          ),
+          width: formContainerBorderWidth(
+            errorText: errorText,
+            normal: 1.5,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -77,6 +95,7 @@ class _RegisterConsignorVerifyScreenState
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
+        onChanged: (_) => onChanged?.call(),
         style: const TextStyle(
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
@@ -85,7 +104,13 @@ class _RegisterConsignorVerifyScreenState
         ),
         textAlign: TextAlign.center,
         decoration: InputDecoration(
-          labelText: label,
+          labelText: formFieldLabel(label, required: required),
+          errorText: errorText,
+          errorStyle: const TextStyle(
+            color: AppColors.error,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
           labelStyle: const TextStyle(
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w500,
@@ -97,7 +122,18 @@ class _RegisterConsignorVerifyScreenState
           enabledBorder: InputBorder.none,
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+            borderSide: BorderSide(
+              color: errorText != null ? AppColors.error : AppColors.primary,
+              width: 1.5,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -169,6 +205,10 @@ class _RegisterConsignorVerifyScreenState
                 label: context.l10n.otpCode,
                 icon: Icons.password_rounded,
                 keyboardType: TextInputType.number,
+                errorText: _otpError,
+                onChanged: () {
+                  if (_otpError != null) setState(() => _otpError = null);
+                },
               ),
               const SizedBox(height: 24),
 

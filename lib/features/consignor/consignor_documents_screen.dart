@@ -132,84 +132,63 @@ class _ConsignorDocumentsScreenState
           return ListView(
             padding: EdgeInsets.fromLTRB(20, 20, 20, _shellBottomClearance(context)),
             children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0E4A42), Color(0xFF135C52)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.25),
-                          blurRadius: 24,
-                          offset: const Offset(0, 12),
-                        ),
-                      ],
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0E4A42), Color(0xFF135C52)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.16),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Icon(
-                                Icons.description_rounded,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                context.l10n.gdnGrnHub,
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                              ),
-                            ),
-                          ],
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.description_rounded,
+                            color: Colors.white,
+                          ),
                         ),
-                        const SizedBox(height: 12),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 90),
+                        const SizedBox(width: 12),
+                        Expanded(
                           child: Text(
-                            context.l10n.viewAllShippingDocumentsDesc,
-                            style: Theme.of(context).textTheme.bodyMedium
+                            context.l10n.gdnGrnHub,
+                            style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  height: 1.4,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
                                 ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  Positioned(
-                    right: -10,
-                    bottom: -15,
-                    child: IgnorePointer(
-                      child: Image.asset(
-                        'assets/images/boxes-3d-icon-png-download-4504985.webp',
-                        width: 130,
-                        height: 130,
-                        fit: BoxFit.contain,
+                    const SizedBox(height: 12),
+                    Text(
+                      context.l10n.viewAllShippingDocumentsDesc,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        height: 1.4,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
               Container(

@@ -194,6 +194,8 @@
   "toLabel": "መድረሻ",
   "placedPrefix": "የታዘዘው ",
   "estPrefix": "ግምት ",
+  "loadingPrefix": "መጫን ",
+  "offloadingPrefix": "ማውረድ ",
   "approvedLabel": "ተቀባይነት አግኝቷል",
   "verifiedWaitingAdminApproval": "ተረጋግጧል (የአስተዳዳሪ ማረጋገጫ በመጠባበቅ ላይ)",
   "pendingAdminApproval": "የአስተዳዳሪ ማረጋገጫ በመጠባበቅ ላይ",
@@ -423,6 +425,23 @@
   "signInToAccessRoutes": "መንገዶችዎን ለመድረስ ይግቡ።",
   "enterValidTenDigitPhone": "ትክክለኛ 10 አሃዝ ስልክ ቁጥር ያስገቡ።",
   "enterYourPassword": "የይለፍ ቃልዎን ያስገቡ።",
+  "fieldIsRequired": "{fieldName} ያስፈልጋል።",
+  "@fieldIsRequired": {
+    "placeholders": {
+      "fieldName": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldMustBeValidPositiveNumber": "{fieldName} ከዜሮ በላይ ትክክለኛ ቁጥር መሆን አለበት።",
+  "@fieldMustBeValidPositiveNumber": {
+    "placeholders": {
+      "fieldName": {
+        "type": "String"
+      }
+    }
+  },
+  "pleaseEnterYourFeedback": "እባክዎ አስተያየትዎን ያስገቡ።",
   "splashTagline": "የታመነ ጭነት። በቅጽበት ታይነት።",
   "driverRegStep2": "ደረጃ 2 ከ 3: ማንነትዎን ለማረጋገጥ ወደ ስልክዎ የተላከውን የOTP ኮድ ያስገቡ።",
   "consignorRegStep2": "ደረጃ 2 ከ 3: ማንነትዎን ለማረጋገጥ ወደ ስልክዎ የተላከውን የOTP ኮድ ያስገቡ።",

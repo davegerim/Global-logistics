@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 
 /// Step 1 only: `POST /auth/register` (server sends OTP; no separate send call).
@@ -23,6 +24,45 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   bool _busy = false;
+  final Map<String, String?> _fieldErrors = {};
+
+  void _clearFieldError(String key) {
+    if (_fieldErrors.containsKey(key)) {
+      setState(() => _fieldErrors.remove(key));
+    }
+  }
+
+  bool _validateForm() {
+    final l10n = context.l10n;
+    final errors = <String, String?>{};
+
+    if (isFormFieldEmpty(_firstName.text)) {
+      errors['firstName'] = l10n.fieldIsRequired(l10n.firstName);
+    }
+    if (isFormFieldEmpty(_lastName.text)) {
+      errors['lastName'] = l10n.fieldIsRequired(l10n.lastName);
+    }
+    if (isFormFieldEmpty(_phone.text)) {
+      errors['phone'] = l10n.fieldIsRequired(l10n.phoneNumber);
+    } else if (!isValidTenDigitPhone(_phone.text)) {
+      errors['phone'] = l10n.enterValidTenDigitPhone;
+    }
+    if (isFormFieldEmpty(_password.text)) {
+      errors['password'] = l10n.fieldIsRequired(l10n.password);
+    }
+    if (isFormFieldEmpty(_confirm.text)) {
+      errors['confirm'] = l10n.fieldIsRequired(l10n.confirmPassword);
+    } else if (_password.text != _confirm.text) {
+      errors['confirm'] = l10n.passwordsDoNotMatch;
+    }
+
+    setState(() {
+      _fieldErrors
+        ..clear()
+        ..addAll(errors);
+    });
+    return errors.isEmpty;
+  }
 
   @override
   void dispose() {
@@ -35,12 +75,7 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
   }
 
   Future<void> _registerAccount() async {
-    if (_password.text != _confirm.text) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(context.l10n.passwordsDoNotMatch)));
-      return;
-    }
+    if (!_validateForm()) return;
     setState(() => _busy = true);
     try {
       await ref
@@ -74,15 +109,27 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    required String fieldKey,
     bool isPassword = false,
     TextInputType? keyboardType,
+    bool required = true,
   }) {
+    final errorText = _fieldErrors[fieldKey];
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.surfaceHighlight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        border: Border.all(
+          color: formContainerBorderColor(
+            errorText: errorText,
+            normal: AppColors.borderLight,
+          ),
+          width: formContainerBorderWidth(
+            errorText: errorText,
+            normal: 1.5,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -95,13 +142,20 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
         controller: controller,
         obscureText: isPassword,
         keyboardType: keyboardType,
+        onChanged: (_) => _clearFieldError(fieldKey),
         style: const TextStyle(
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
           fontSize: 14,
         ),
         decoration: InputDecoration(
-          labelText: label,
+          labelText: formFieldLabel(label, required: required),
+          errorText: errorText,
+          errorStyle: const TextStyle(
+            color: AppColors.error,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
           labelStyle: const TextStyle(
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w500,
@@ -112,7 +166,18 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
           enabledBorder: InputBorder.none,
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+            borderSide: BorderSide(
+              color: errorText != null ? AppColors.error : AppColors.primary,
+              width: 1.5,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -181,28 +246,33 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
               // Form Section
               _buildInput(
                 controller: _firstName,
+                fieldKey: 'firstName',
                 label: context.l10n.firstName,
                 icon: Icons.person_outline_rounded,
               ),
               _buildInput(
                 controller: _lastName,
+                fieldKey: 'lastName',
                 label: context.l10n.lastName,
                 icon: Icons.person_outline_rounded,
               ),
               _buildInput(
                 controller: _phone,
+                fieldKey: 'phone',
                 label: context.l10n.phoneNumber,
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
               ),
               _buildInput(
                 controller: _password,
+                fieldKey: 'password',
                 label: context.l10n.password,
                 icon: Icons.lock_outline_rounded,
                 isPassword: true,
               ),
               _buildInput(
                 controller: _confirm,
+                fieldKey: 'confirm',
                 label: context.l10n.confirmPassword,
                 icon: Icons.lock_outline_rounded,
                 isPassword: true,

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -25,6 +26,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   bool _obscureConfirm = true;
   bool _sendingOtp = false;
   bool _resettingPassword = false;
+  String? _phoneError;
+  String? _otpError;
+  String? _newPasswordError;
+  String? _confirmPasswordError;
 
   @override
   void initState() {
@@ -44,12 +49,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Future<void> _sendOtp() async {
     final phone = _phone.text.trim();
     if (phone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.pleaseEnterPhoneNumberFirst)),
-      );
+      setState(() {
+        _phoneError = context.l10n.fieldIsRequired(context.l10n.phoneLabel);
+      });
       return;
     }
-
+    setState(() => _phoneError = null);
     setState(() => _sendingOtp = true);
     try {
       await ref.read(backendApiProvider).authForgetPassword(phone);
@@ -71,16 +76,33 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final newPassword = _newPassword.text;
     final confirmPassword = _confirmPassword.text;
 
-    if (phone.isEmpty || otp.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.pleaseFillInAllFields)),
-      );
-      return;
+    final phoneError = phone.isEmpty
+        ? context.l10n.fieldIsRequired(context.l10n.phoneLabel)
+        : null;
+    final otpError = otp.isEmpty
+        ? context.l10n.fieldIsRequired(context.l10n.otpCodeLabel)
+        : null;
+    final newPasswordError = newPassword.isEmpty
+        ? context.l10n.fieldIsRequired(context.l10n.newPasswordLabel)
+        : null;
+    String? confirmPasswordError;
+    if (confirmPassword.isEmpty) {
+      confirmPasswordError =
+          context.l10n.fieldIsRequired(context.l10n.confirmNewPasswordLabel);
+    } else if (newPassword != confirmPassword) {
+      confirmPasswordError = context.l10n.passwordsDoNotMatch;
     }
-    if (newPassword != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.passwordsDoNotMatch)),
-      );
+
+    if (phoneError != null ||
+        otpError != null ||
+        newPasswordError != null ||
+        confirmPasswordError != null) {
+      setState(() {
+        _phoneError = phoneError;
+        _otpError = otpError;
+        _newPasswordError = newPasswordError;
+        _confirmPasswordError = confirmPasswordError;
+      });
       return;
     }
 
@@ -190,8 +212,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         TextField(
                           controller: _phone,
                           keyboardType: TextInputType.phone,
+                          onChanged: (_) {
+                            if (_phoneError != null) {
+                              setState(() => _phoneError = null);
+                            }
+                          },
                           decoration: InputDecoration(
-                            labelText: context.l10n.phoneLabel,
+                            labelText: formFieldLabel(
+                              context.l10n.phoneLabel,
+                              required: true,
+                            ),
+                            errorText: _phoneError,
                             prefixIcon: const Icon(Icons.phone_outlined),
                           ),
                         ),
@@ -214,8 +245,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         TextField(
                           controller: _otp,
                           keyboardType: TextInputType.number,
+                          onChanged: (_) {
+                            if (_otpError != null) {
+                              setState(() => _otpError = null);
+                            }
+                          },
                           decoration: InputDecoration(
-                            labelText: context.l10n.otpCodeLabel,
+                            labelText: formFieldLabel(
+                              context.l10n.otpCodeLabel,
+                              required: true,
+                            ),
+                            errorText: _otpError,
                             prefixIcon: const Icon(Icons.lock_clock_outlined),
                           ),
                         ),
@@ -223,8 +263,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         TextField(
                           controller: _newPassword,
                           obscureText: _obscureNew,
+                          onChanged: (_) {
+                            if (_newPasswordError != null) {
+                              setState(() => _newPasswordError = null);
+                            }
+                          },
                           decoration: InputDecoration(
-                            labelText: context.l10n.newPasswordLabel,
+                            labelText: formFieldLabel(
+                              context.l10n.newPasswordLabel,
+                              required: true,
+                            ),
+                            errorText: _newPasswordError,
                             prefixIcon: const Icon(Icons.lock_outline_rounded),
                             suffixIcon: IconButton(
                               onPressed: () => setState(() => _obscureNew = !_obscureNew),
@@ -240,8 +289,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         TextField(
                           controller: _confirmPassword,
                           obscureText: _obscureConfirm,
+                          onChanged: (_) {
+                            if (_confirmPasswordError != null) {
+                              setState(() => _confirmPasswordError = null);
+                            }
+                          },
                           decoration: InputDecoration(
-                            labelText: context.l10n.confirmNewPasswordLabel,
+                            labelText: formFieldLabel(
+                              context.l10n.confirmNewPasswordLabel,
+                              required: true,
+                            ),
+                            errorText: _confirmPasswordError,
                             prefixIcon: const Icon(Icons.lock_outline_rounded),
                             suffixIcon: IconButton(
                               onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
