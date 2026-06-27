@@ -27,7 +27,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get newBooking => 'አዲስ ትዕዛዝ';
 
   @override
-  String get newAction => 'አዲስ ፍጠር';
+  String get newAction => 'ትዕዛዝ ፍጠር';
 
   @override
   String get activeAndRecent => 'ገባሪ እና የቅርብ ጊዜ';
@@ -280,6 +280,9 @@ class AppLocalizationsAm extends AppLocalizations {
   String get phoneNumber => 'ስልክ ቁጥር';
 
   @override
+  String get ownerPhoneNumber => 'የባለቤት ስልክ ቁጥር';
+
+  @override
   String get password => 'የይለፍ ቃል';
 
   @override
@@ -395,6 +398,9 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get trackEveryJourney => 'እያንዳንዱን ጉዞ\nይከታተሉ።';
+
+  @override
+  String get businessName => 'የድርጅት ስም';
 
   @override
   String get businessNameOptional => 'የድርጅት ስም (አማራጭ)';
@@ -1070,7 +1076,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get updateCompanyAndTradeLicence => 'የኩባንያዎን ስም እና የንግድ ፈቃድ ያዘምኑ';
 
   @override
-  String get uploadTradeLicence => 'የንግድ ፈቃድ ይስቀሉ (ምስል ወይም ፒዲኤፍ)';
+  String get uploadTradeLicence => 'የንግድ ፈቃድ ወይም መታወቂያ ይስቀሉ (ምስል ወይም ፒዲኤፍ)';
 
   @override
   String get tradeLicenceUploaded => 'የንግድ ፈቃድ ተጭኗል።';
@@ -1307,6 +1313,18 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get libriDocumentUploaded => 'የሊብሬ ሰነድ ተጭኗል።';
+
+  @override
+  String get chassisNumber => 'የሻስስ ቁጥር';
+
+  @override
+  String get uploadBoloDocument => 'የቦሎ ሰነድ ይስቀሉ (ምስል ወይም ፒዲኤፍ)';
+
+  @override
+  String get boloDocumentUploaded => 'የቦሎ ሰነድ ተጭኗል።';
+
+  @override
+  String get boloDocumentAttached => 'የቦሎ ሰነድ ተያይዟል';
 
   @override
   String get uploadInsuranceDocument => 'የኢንሹራንስ ሰነድ ይስቀሉ (ምስል ወይም ፒዲኤፍ)';

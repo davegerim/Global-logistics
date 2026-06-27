@@ -6,6 +6,7 @@ import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/services/presigned_storage_service.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
 
@@ -22,6 +23,29 @@ class _RegisterConsignorProfileScreenState
   final _businessName = TextEditingController();
   final _tradeLicence = TextEditingController();
   var _busy = false;
+  final Map<String, String?> _fieldErrors = {};
+
+  void _clearFieldError(String key) {
+    if (_fieldErrors.containsKey(key)) {
+      setState(() => _fieldErrors.remove(key));
+    }
+  }
+
+  bool _validateForm() {
+    final l10n = context.l10n;
+    final errors = <String, String?>{};
+
+    if (isFormFieldEmpty(_businessName.text)) {
+      errors['businessName'] = l10n.fieldIsRequired(l10n.businessName);
+    }
+
+    setState(() {
+      _fieldErrors
+        ..clear()
+        ..addAll(errors);
+    });
+    return errors.isEmpty;
+  }
 
   @override
   void dispose() {
@@ -31,14 +55,13 @@ class _RegisterConsignorProfileScreenState
   }
 
   Future<void> _createProfile() async {
+    if (!_validateForm()) return;
     setState(() => _busy = true);
     try {
       await ref
           .read(backendApiProvider)
           .consignorsCreate(
-            businessName: _businessName.text.trim().isEmpty
-                ? null
-                : _businessName.text.trim(),
+            businessName: _businessName.text.trim(),
             tradeLicence: _tradeLicence.text.trim().isEmpty
                 ? null
                 : _tradeLicence.text.trim(),
@@ -59,14 +82,26 @@ class _RegisterConsignorProfileScreenState
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    required String fieldKey,
     TextInputType? keyboardType,
+    bool required = true,
   }) {
+    final errorText = _fieldErrors[fieldKey];
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.surfaceHighlight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        border: Border.all(
+          color: formContainerBorderColor(
+            errorText: errorText,
+            normal: AppColors.borderLight,
+          ),
+          width: formContainerBorderWidth(
+            errorText: errorText,
+            normal: 1.5,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -78,13 +113,20 @@ class _RegisterConsignorProfileScreenState
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
+        onChanged: (_) => _clearFieldError(fieldKey),
         style: const TextStyle(
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
           fontSize: 14,
         ),
         decoration: InputDecoration(
-          labelText: label,
+          labelText: formFieldLabel(label, required: required),
+          errorText: errorText,
+          errorStyle: const TextStyle(
+            color: AppColors.error,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
           labelStyle: const TextStyle(
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w500,
@@ -95,7 +137,18 @@ class _RegisterConsignorProfileScreenState
           enabledBorder: InputBorder.none,
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+            borderSide: BorderSide(
+              color: errorText != null ? AppColors.error : AppColors.primary,
+              width: 1.5,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -164,8 +217,9 @@ class _RegisterConsignorProfileScreenState
               // Form Section
               _buildInput(
                 controller: _businessName,
-                label: context.l10n.businessNameOptional,
+                label: context.l10n.businessName,
                 icon: Icons.storefront_rounded,
+                fieldKey: 'businessName',
               ),
               PresignedUrlUploadRow(
                 urlController: _tradeLicence,

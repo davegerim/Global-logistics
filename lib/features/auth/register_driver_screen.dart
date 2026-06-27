@@ -43,7 +43,7 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
       errors['lastName'] = l10n.fieldIsRequired(l10n.lastName);
     }
     if (isFormFieldEmpty(_phone.text)) {
-      errors['phone'] = l10n.fieldIsRequired(l10n.phoneNumber);
+      errors['phone'] = l10n.fieldIsRequired(l10n.ownerPhoneNumber);
     } else if (!isValidTenDigitPhone(_phone.text)) {
       errors['phone'] = l10n.enterValidTenDigitPhone;
     }
@@ -259,7 +259,7 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
               _buildInput(
                 controller: _phone,
                 fieldKey: 'phone',
-                label: context.l10n.phoneNumber,
+                label: context.l10n.ownerPhoneNumber,
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
               ),

@@ -137,7 +137,7 @@ abstract class AppLocalizations {
   /// No description provided for @newAction.
   ///
   /// In en, this message translates to:
-  /// **'Create New'**
+  /// **'Create Booking'**
   String get newAction;
 
   /// No description provided for @activeAndRecent.
@@ -227,13 +227,13 @@ abstract class AppLocalizations {
   /// No description provided for @libriNumber.
   ///
   /// In en, this message translates to:
-  /// **'Libri number'**
+  /// **'Libre number'**
   String get libriNumber;
 
   /// No description provided for @libriDocumentAttached.
   ///
   /// In en, this message translates to:
-  /// **'Libri document attached'**
+  /// **'Libre document attached'**
   String get libriDocumentAttached;
 
   /// No description provided for @plateNumber.
@@ -467,7 +467,7 @@ abstract class AppLocalizations {
   /// No description provided for @libriDocument.
   ///
   /// In en, this message translates to:
-  /// **'Libri document'**
+  /// **'Libre document'**
   String get libriDocument;
 
   /// No description provided for @insuranceDocument.
@@ -637,6 +637,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Phone Number'**
   String get phoneNumber;
+
+  /// No description provided for @ownerPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner Phone Number'**
+  String get ownerPhoneNumber;
 
   /// No description provided for @password.
   ///
@@ -871,6 +877,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Track Every\nJourney.'**
   String get trackEveryJourney;
+
+  /// No description provided for @businessName.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Name'**
+  String get businessName;
 
   /// No description provided for @businessNameOptional.
   ///
@@ -2183,7 +2195,7 @@ abstract class AppLocalizations {
   /// No description provided for @uploadTradeLicence.
   ///
   /// In en, this message translates to:
-  /// **'Upload trade licence (image or PDF)'**
+  /// **'Upload trade licence or ID (image or PDF)'**
   String get uploadTradeLicence;
 
   /// No description provided for @tradeLicenceUploaded.
@@ -2615,14 +2627,38 @@ abstract class AppLocalizations {
   /// No description provided for @uploadLibriDocument.
   ///
   /// In en, this message translates to:
-  /// **'Upload libri document (image or PDF)'**
+  /// **'Upload libre document (image or PDF)'**
   String get uploadLibriDocument;
 
   /// No description provided for @libriDocumentUploaded.
   ///
   /// In en, this message translates to:
-  /// **'Libri document uploaded.'**
+  /// **'Libre document uploaded.'**
   String get libriDocumentUploaded;
+
+  /// No description provided for @chassisNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Chassis number'**
+  String get chassisNumber;
+
+  /// No description provided for @uploadBoloDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload bolo document (image or PDF)'**
+  String get uploadBoloDocument;
+
+  /// No description provided for @boloDocumentUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Bolo document uploaded.'**
+  String get boloDocumentUploaded;
+
+  /// No description provided for @boloDocumentAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Bolo document attached'**
+  String get boloDocumentAttached;
 
   /// No description provided for @uploadInsuranceDocument.
   ///

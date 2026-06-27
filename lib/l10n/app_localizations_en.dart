@@ -27,7 +27,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newBooking => 'New booking';
 
   @override
-  String get newAction => 'Create New';
+  String get newAction => 'Create Booking';
 
   @override
   String get activeAndRecent => 'Active & recent';
@@ -76,10 +76,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get driverRating => 'Driver Rating';
 
   @override
-  String get libriNumber => 'Libri number';
+  String get libriNumber => 'Libre number';
 
   @override
-  String get libriDocumentAttached => 'Libri document attached';
+  String get libriDocumentAttached => 'Libre document attached';
 
   @override
   String get plateNumber => 'Plate Number';
@@ -203,7 +203,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openLink => 'Open link';
 
   @override
-  String get libriDocument => 'Libri document';
+  String get libriDocument => 'Libre document';
 
   @override
   String get insuranceDocument => 'Insurance document';
@@ -288,6 +288,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get phoneNumber => 'Phone Number';
+
+  @override
+  String get ownerPhoneNumber => 'Owner Phone Number';
 
   @override
   String get password => 'Password';
@@ -407,6 +410,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trackEveryJourney => 'Track Every\nJourney.';
+
+  @override
+  String get businessName => 'Business Name';
 
   @override
   String get businessNameOptional => 'Business Name (Optional)';
@@ -1102,7 +1108,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Update your company name and trade licence';
 
   @override
-  String get uploadTradeLicence => 'Upload trade licence (image or PDF)';
+  String get uploadTradeLicence => 'Upload trade licence or ID (image or PDF)';
 
   @override
   String get tradeLicenceUploaded => 'Trade licence uploaded.';
@@ -1340,10 +1346,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'Step 4 of 4: Add your vehicle details to start accepting loads.';
 
   @override
-  String get uploadLibriDocument => 'Upload libri document (image or PDF)';
+  String get uploadLibriDocument => 'Upload libre document (image or PDF)';
 
   @override
-  String get libriDocumentUploaded => 'Libri document uploaded.';
+  String get libriDocumentUploaded => 'Libre document uploaded.';
+
+  @override
+  String get chassisNumber => 'Chassis number';
+
+  @override
+  String get uploadBoloDocument => 'Upload bolo document (image or PDF)';
+
+  @override
+  String get boloDocumentUploaded => 'Bolo document uploaded.';
+
+  @override
+  String get boloDocumentAttached => 'Bolo document attached';
 
   @override
   String get uploadInsuranceDocument =>

@@ -19,6 +19,8 @@ class RegisterDriverVehicleScreen extends ConsumerStatefulWidget {
 
 class _RegisterDriverVehicleScreenState
     extends ConsumerState<RegisterDriverVehicleScreen> {
+  static const _placeholderInsuranceNumber = '0000000000';
+
   final _libriNumber = TextEditingController();
   final _libriDocument = TextEditingController();
   final _plateNumber = TextEditingController();
@@ -52,8 +54,9 @@ class _RegisterDriverVehicleScreenState
           'libriDocument': _libriDocument.text.trim(),
         if (_plateNumber.text.trim().isNotEmpty)
           'plateNumber': _plateNumber.text.trim(),
-        if (_insuranceNumber.text.trim().isNotEmpty)
-          'insuranceNumber': _insuranceNumber.text.trim(),
+        'insuranceNumber': _insuranceNumber.text.trim().isEmpty
+            ? _placeholderInsuranceNumber
+            : _insuranceNumber.text.trim(),
         if (_insuranceDocument.text.trim().isNotEmpty)
           'insuranceDocument': _insuranceDocument.text.trim(),
         if (_type.text.trim().isNotEmpty) 'type': _type.text.trim(),
@@ -132,7 +135,13 @@ class _RegisterDriverVehicleScreenState
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/register-driver-profile');
+            }
+          },
         ),
       ),
       body: SafeArea(
@@ -202,19 +211,19 @@ class _RegisterDriverVehicleScreenState
               ),
               _buildInput(
                 controller: _insuranceNumber,
-                label: context.l10n.insuranceNumber,
+                label: context.l10n.chassisNumber,
                 icon: Icons.security_rounded,
               ),
               PresignedUrlUploadRow(
                 urlController: _insuranceDocument,
                 folder: S3Folder.profile,
                 borderRadius: 12,
-                buttonLabel: context.l10n.uploadInsuranceDocument,
-                successMessage: context.l10n.insuranceDocumentUploaded,
+                buttonLabel: context.l10n.uploadBoloDocument,
+                successMessage: context.l10n.boloDocumentUploaded,
               ),
               PresignedUploadAttachedHint(
                 controller: _insuranceDocument,
-                message: context.l10n.insuranceDocumentAttached,
+                message: context.l10n.boloDocumentAttached,
               ),
               _buildInput(
                 controller: _type,

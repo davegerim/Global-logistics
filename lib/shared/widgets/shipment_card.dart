@@ -131,15 +131,7 @@ class ShipmentCard extends StatelessWidget {
                         label:
                             '${context.l10n.offloadingPrefix}${dateFmt.format(shipment.offloadingDate!)}',
                       ),
-                    if (shipment.estimatedDelivery != null)
-                      _dateChip(
-                        context,
-                        icon: Icons.flag_outlined,
-                        iconColor: AppColors.gold,
-                        label:
-                            '${context.l10n.estPrefix}${dateFmt.format(shipment.estimatedDelivery!)}',
-                        emphasized: true,
-                      ),
+
                   ],
                 ),
               ],

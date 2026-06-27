@@ -48,7 +48,7 @@ class _RegisterDriverProfileScreenState
                 ? null
                 : _preferredLanes.text.trim(),
           );
-      if (mounted) context.go('/register-driver-vehicle');
+      if (mounted) context.push('/register-driver-vehicle');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(

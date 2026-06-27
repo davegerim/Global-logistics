@@ -36,7 +36,6 @@ import 'package:global_logistics_app/features/driver/driver_shipment_detail_scre
 import 'package:global_logistics_app/features/driver/driver_shell.dart';
 import 'package:global_logistics_app/features/driver/driver_vehicle_details_screen.dart';
 import 'package:global_logistics_app/features/notifications/notifications_screen.dart';
-import 'package:global_logistics_app/features/onboarding/onboarding_screen.dart';
 import 'package:global_logistics_app/features/role/role_selection_screen.dart';
 import 'package:global_logistics_app/features/splash/splash_screen.dart';
 
@@ -67,9 +66,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final auth = ref.read(authProvider);
       final path = state.uri.path;
 
+      if (path == '/onboarding') {
+        return '/login';
+      }
+
       final isPublic =
           path == '/splash' ||
-          path == '/onboarding' ||
           path == '/role' ||
           path == '/login' ||
           path == '/forgot-password' ||
@@ -83,7 +85,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return '/login';
       }
       if (auth.isAuthenticated &&
-          (path == '/login' || path == '/role' || path == '/onboarding')) {
+          (path == '/login' || path == '/role')) {
         return auth.role == AppRole.driver ? '/driver/home' : '/consignor/home';
       }
       if (auth.isAuthenticated && path == '/splash') {
@@ -105,10 +107,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
-      ),
-      GoRoute(
-        path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: '/role',

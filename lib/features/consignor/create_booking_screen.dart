@@ -61,6 +61,12 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
     if (_deliveryDate == null) {
       errors['deliveryDate'] = l10n.fieldIsRequired(l10n.deliveryDateTime);
     }
+    if (isFormFieldEmpty(_goods.text)) {
+      errors['goods'] = l10n.fieldIsRequired(l10n.typeOfGoods);
+    }
+    if (isFormFieldEmpty(_vehicle.text)) {
+      errors['vehicle'] = l10n.fieldIsRequired(l10n.vehicleType);
+    }
     if (isFormFieldEmpty(_price.text)) {
       errors['price'] = l10n.fieldIsRequired(l10n.offerPrice);
     } else if (!isPositiveNumber(_price.text)) {
@@ -107,18 +113,14 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
     setState(() => _busy = true);
     try {
       await ref.read(backendApiProvider).shipmentsCreate({
-        'goodType': _goods.text.trim().isEmpty
-            ? 'General cargo'
-            : _goods.text.trim(),
+        'goodType': _goods.text.trim(),
         'quantity': int.tryParse(_quantity.text.trim()) ?? 1,
         'weight': _weight.text.trim().isEmpty ? '0' : _weight.text.trim(),
         'volume': _volume.text.trim().isEmpty ? '0' : _volume.text.trim(),
         'loadingLocation': _loading.text.trim(),
         'offloadingLocation': _offloading.text.trim(),
         'route': _route.text.trim(),
-        'requiredVehicleType': _vehicle.text.trim().isEmpty
-            ? 'Any'
-            : _vehicle.text.trim(),
+        'requiredVehicleType': _vehicle.text.trim(),
         'requiredVehicleNumber': int.tryParse(_vehicleCount.text.trim()) ?? 1,
         'loadingDate': _loadingDate!.toUtc().toIso8601String(),
         'deliveryDate': _deliveryDate!.toUtc().toIso8601String(),
@@ -605,6 +607,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                 label: context.l10n.typeOfGoods,
                 hint: 'e.g. Electronics, Textiles, Perishables',
                 icon: Icons.category_outlined,
+                required: true,
               ),
               Row(
                 children: [
@@ -653,6 +656,7 @@ class _CreateBookingScreenState extends ConsumerState<CreateBookingScreen> {
                       label: context.l10n.vehicleType,
                       hint: 'e.g. Flatbed, Reefer',
                       icon: Icons.fire_truck_outlined,
+                      required: true,
                     ),
                   ),
                   const SizedBox(width: 12),

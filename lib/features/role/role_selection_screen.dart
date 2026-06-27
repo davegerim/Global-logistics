@@ -26,7 +26,7 @@ class RoleSelectionScreen extends ConsumerWidget {
               Row(
                 children: [
                   IconButton.filledTonal(
-                    onPressed: () => context.go('/onboarding'),
+                    onPressed: () => context.go('/login'),
                     style: IconButton.styleFrom(
                       backgroundColor: const Color(0xFFE9F1F1),
                       foregroundColor: AppColors.textPrimary,

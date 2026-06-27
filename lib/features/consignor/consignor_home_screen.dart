@@ -113,7 +113,7 @@ class _ConsignorHomeScreenState extends ConsumerState<ConsignorHomeScreen> {
               sliver: SliverToBoxAdapter(
                 child: SectionHeader(
                   title: context.l10n.activeAndRecent,
-                  secondaryActionLabel: context.l10n.newAction,
+                  secondaryActionLabel: context.l10n.createBookingTitle,
                   onSecondaryAction: () {
                     if (canBook) {
                       context.push('/consignor/create');
