@@ -1,5 +1,4 @@
 import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,9 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
+import 'package:global_logistics_app/core/providers/driver_tracking_provider.dart';
 import 'package:global_logistics_app/core/providers/repository_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
-import 'package:global_logistics_app/core/services/device_location_service.dart';
 import 'package:global_logistics_app/core/tracking/tracking_policy.dart';
 import 'package:global_logistics_app/core/utils/gdn_grn_utils.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
@@ -31,51 +30,16 @@ class DriverShipmentDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _DriverShipmentDetailScreenState
-    extends ConsumerState<DriverShipmentDetailScreen>
-    with WidgetsBindingObserver {
-  static const Duration _trackingInterval = Duration(minutes: 15);
-
+    extends ConsumerState<DriverShipmentDetailScreen> {
   bool _checkingGdn = false;
   bool _hasGdn = false;
   String? _gdnInfo;
   List<DocumentRef>? _assignmentDocuments;
   String? _documentsLoadedForAid;
   bool _loadingDocuments = false;
-  Timer? _trackingTimer;
-  String? _trackedAssignmentId;
-  bool _trackingInFlight = false;
   bool _feedbackToConsignorSubmitted = false;
   String? _feedbackLoadedForAid;
   bool _loadingFeedbackState = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    _trackingTimer?.cancel();
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      _trackingTimer?.cancel();
-      _trackingTimer = null;
-      return;
-    }
-    if (state == AppLifecycleState.resumed) {
-      ref.invalidate(shipmentDetailProvider(widget.shipmentId));
-      if (_trackedAssignmentId != null && !_checkingGdn) {
-        _refreshGdnState(_trackedAssignmentId!);
-      }
-    }
-  }
 
   Future<String?> _prompt(BuildContext context, String title, String hint) {
     final c = TextEditingController();
@@ -131,11 +95,9 @@ class _DriverShipmentDetailScreenState
     try {
       await call();
       if (canSendDriverTrackingUpdate(trackingStatus, hasGdn: _hasGdn)) {
-        await _recordTracking(
-          assignmentId,
-          reason: 'status:$label',
-          throwOnFailure: false,
-        );
+        await ref
+            .read(driverTrackingControllerProvider.notifier)
+            .sendTrackingPing(assignmentId, reason: 'status:$label');
       }
       ref.invalidate(shipmentDetailProvider(widget.shipmentId));
       ref.invalidate(driverAssignedShipmentsProvider);
@@ -156,66 +118,6 @@ class _DriverShipmentDetailScreenState
           context,
         ).showSnackBar(SnackBar(content: Text(userFacingMessage(e))));
       }
-    }
-  }
-
-  void _startTrackingLoop(String assignmentId, String? status) {
-    if (!canRunDriverTrackingLoop(status, hasGdn: _hasGdn)) {
-      _stopTrackingLoop();
-      return;
-    }
-    if (_trackedAssignmentId != assignmentId || _trackingTimer == null) {
-      _trackingTimer?.cancel();
-      _trackedAssignmentId = assignmentId;
-      _trackingTimer = Timer.periodic(_trackingInterval, (_) {
-        _recordTracking(
-          assignmentId,
-          reason: 'periodic-15m',
-          throwOnFailure: false,
-        );
-      });
-      _recordTracking(
-        assignmentId,
-        reason: 'tracking-loop-start',
-        throwOnFailure: false,
-      );
-    }
-  }
-
-  void _stopTrackingLoop() {
-    _trackingTimer?.cancel();
-    _trackingTimer = null;
-    _trackedAssignmentId = null;
-  }
-
-  Future<void> _recordTracking(
-    String assignmentId, {
-    required String reason,
-    required bool throwOnFailure,
-  }) async {
-    if (_trackingInFlight) return;
-    _trackingInFlight = true;
-    try {
-      final location = await DeviceLocationService.current();
-      final recordedAt = DateTime.fromMillisecondsSinceEpoch(
-        DateTime.now().toUtc().millisecondsSinceEpoch,
-        isUtc: true,
-      ).toIso8601String();
-      await ref.read(backendApiProvider).trackingRecord({
-        'assignmentId': assignmentId,
-        'latitude': location.latitude,
-        'longitude': location.longitude,
-        'accuracy': location.accuracy,
-        'speed': location.speed,
-        'recordedAt': recordedAt,
-      });
-      // Tag app-level tracking events; full payload/response is already logged by GL_API interceptor.
-      debugPrint('[TRACKING] sent ($reason) for assignment=$assignmentId');
-    } catch (e) {
-      debugPrint('[TRACKING] failed ($reason): $e');
-      if (throwOnFailure) rethrow;
-    } finally {
-      _trackingInFlight = false;
     }
   }
 
@@ -316,25 +218,8 @@ class _DriverShipmentDetailScreenState
           }
           final aid = s.assignmentId;
           final status = (s.apiStatusLabel ?? '').trim().toUpperCase();
-          final shouldTrackInBackground = canRunDriverTrackingLoop(
-            status,
-            hasGdn: _hasGdn,
-          );
-          if (aid == null) {
-            _stopTrackingLoop();
-          } else if (!_checkingGdn && _gdnInfo == null) {
+          if (aid != null && !_checkingGdn && _gdnInfo == null) {
             _refreshGdnState(aid);
-            if (shouldTrackInBackground) {
-              _startTrackingLoop(aid, status);
-            } else {
-              _stopTrackingLoop();
-            }
-          } else {
-            if (shouldTrackInBackground) {
-              _startTrackingLoop(aid, status);
-            } else {
-              _stopTrackingLoop();
-            }
           }
           if (aid != null &&
               _documentsLoadedForAid != aid &&

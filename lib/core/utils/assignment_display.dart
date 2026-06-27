@@ -1,7 +1,8 @@
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 
 /// Display helpers for assignment labels in the UI (API calls still use UUIDs).
-class AssignmentDisplay {  AssignmentDisplay._();
+class AssignmentDisplay {
+  AssignmentDisplay._();
 
   static final RegExp _uuid = RegExp(
     r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
@@ -71,7 +72,9 @@ class AssignmentDisplay {  AssignmentDisplay._();
 
       globalIndex++;
       final sid = s.id.trim();
-      final assignmentsOnShipment = sid.isEmpty ? 1 : (countsByShipment[sid] ?? 1);
+      final assignmentsOnShipment = sid.isEmpty
+          ? 1
+          : (countsByShipment[sid] ?? 1);
       final perShipmentIndex = sid.isEmpty
           ? globalIndex
           : () {
@@ -79,8 +82,7 @@ class AssignmentDisplay {  AssignmentDisplay._();
               perShipment[sid] = next;
               return next;
             }();
-      final seq =
-          assignmentsOnShipment > 1 ? perShipmentIndex : globalIndex;
+      final seq = assignmentsOnShipment > 1 ? perShipmentIndex : globalIndex;
       out.add(s.copyWith(assignmentSequenceNumber: seq));
     }
 

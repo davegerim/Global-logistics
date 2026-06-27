@@ -4,12 +4,45 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
+import 'package:global_logistics_app/core/providers/driver_tracking_provider.dart';
 import 'package:global_logistics_app/core/providers/shipments_provider.dart';
 
-class DriverShell extends ConsumerWidget {
+class DriverShell extends ConsumerStatefulWidget {
   const DriverShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
+
+  @override
+  ConsumerState<DriverShell> createState() => _DriverShellState();
+}
+
+class _DriverShellState extends ConsumerState<DriverShell>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final tracking = ref.read(driverTrackingControllerProvider.notifier);
+    switch (state) {
+      case AppLifecycleState.resumed:
+        tracking.setAppInForeground(true);
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        tracking.setAppInForeground(false);
+    }
+  }
 
   void _goBranch(BuildContext context, WidgetRef ref, int index) {
     final canViewOffers = ref.read(authProvider).canViewDriverOffers;
@@ -26,16 +59,17 @@ class DriverShell extends ConsumerWidget {
     if (index == 0) {
       refreshDriverHomeData(ref);
     }
-    navigationShell.goBranch(
+    widget.navigationShell.goBranch(
       index,
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: index == widget.navigationShell.currentIndex,
     );
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    ref.watch(driverTrackingControllerProvider);
     return Scaffold(
-      body: navigationShell,
+      body: widget.navigationShell,
       bottomNavigationBar: Container(
         margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         decoration: BoxDecoration(
@@ -57,19 +91,19 @@ class DriverShell extends ConsumerWidget {
               _NavItem(
                 icon: Icons.home_rounded,
                 label: context.l10n.bottomNavHome,
-                selected: navigationShell.currentIndex == 0,
+                selected: widget.navigationShell.currentIndex == 0,
                 onTap: () => _goBranch(context, ref, 0),
               ),
               _NavItem(
                 icon: Icons.local_offer_outlined,
                 label: context.l10n.bottomNavOffers,
-                selected: navigationShell.currentIndex == 1,
+                selected: widget.navigationShell.currentIndex == 1,
                 onTap: () => _goBranch(context, ref, 1),
               ),
               _NavItem(
                 icon: Icons.person_outline_rounded,
                 label: context.l10n.bottomNavProfile,
-                selected: navigationShell.currentIndex == 2,
+                selected: widget.navigationShell.currentIndex == 2,
                 onTap: () => _goBranch(context, ref, 2),
               ),
             ],

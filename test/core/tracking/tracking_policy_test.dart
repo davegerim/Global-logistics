@@ -8,10 +8,11 @@ void main() {
       expect(canRunDriverTrackingLoop('ARRIVED', hasGdn: false), isFalse);
     });
 
-    test('allows only live statuses when GDN exists', () {
+    test('allows all post-GDN movement statuses when GDN exists', () {
+      expect(canRunDriverTrackingLoop('LOADED', hasGdn: true), isTrue);
       expect(canRunDriverTrackingLoop('IN_TRANSIT', hasGdn: true), isTrue);
       expect(canRunDriverTrackingLoop('ARRIVED', hasGdn: true), isTrue);
-      expect(canRunDriverTrackingLoop('LOADED', hasGdn: true), isFalse);
+      expect(canRunDriverTrackingLoop('OFFLOADED', hasGdn: true), isTrue);
       expect(canRunDriverTrackingLoop('COMPLETED', hasGdn: true), isFalse);
       expect(canRunDriverTrackingLoop('CANCELLED', hasGdn: true), isFalse);
     });

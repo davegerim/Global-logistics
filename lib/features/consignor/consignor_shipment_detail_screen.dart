@@ -13,6 +13,7 @@ import 'package:global_logistics_app/core/utils/gdn_grn_utils.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/storage/assignment_feedback_preferences.dart';
 import 'package:global_logistics_app/features/consignor/widgets/consignor_shipment_payment_section.dart';
+import 'package:global_logistics_app/features/documents/gdn_grn_document_view_model.dart';
 import 'package:global_logistics_app/shared/widgets/assignment_feedback_sheet.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 import 'package:global_logistics_app/shared/widgets/status_chip.dart';
@@ -51,7 +52,21 @@ class _ConsignorShipmentDetailScreenState
     'COMPLETED',
   };
 
+  static const Set<String> _gdnGeneratedOrLaterStatuses = {
+    'GDN_GENERATED',
+    'LOADED',
+    'IN_TRANSIT',
+    'ARRIVED',
+    'OFFLOADED',
+    'GRN_GENERATED',
+    'CONSIGNOR_RECEIVED',
+    'COMPLETED',
+  };
+
   String? _assignmentId;
+  String? _assignmentDriverName;
+  String? _assignmentDriverPhone;
+  String? _assignmentDriverPlate;
   List<_AssignmentOption> _assignments = const [];
   bool _resolvingAssignment = false;
   bool _gdnCreated = false;
@@ -124,6 +139,9 @@ class _ConsignorShipmentDetailScreenState
       _grnCreated = false;
       _gdnMessage = null;
       _grnMessage = null;
+      _assignmentDriverName = null;
+      _assignmentDriverPhone = null;
+      _assignmentDriverPlate = null;
       _feedbackLoadedForAid = null;
       _feedbackToDriverSubmitted = false;
     });
@@ -196,10 +214,7 @@ class _ConsignorShipmentDetailScreenState
       _detailSideEffectsScheduled = false;
       if (!mounted) return;
       _resolveDriverSelectionIfNeeded(s);
-      _scheduleAssignmentResolutionIfNeeded(
-        s,
-        eligible: assignmentEligible,
-      );
+      _scheduleAssignmentResolutionIfNeeded(s, eligible: assignmentEligible);
     });
   }
 
@@ -240,7 +255,9 @@ class _ConsignorShipmentDetailScreenState
           : s.id.trim();
       List<dynamic> assignments = const [];
       if (shipmentPublicId.isNotEmpty) {
-        assignments = await api.assignmentsConsignorOfShipment(shipmentPublicId);
+        assignments = await api.assignmentsConsignorOfShipment(
+          shipmentPublicId,
+        );
       }
       final options = _assignmentOptionsFromApi(assignments);
       String? found;
@@ -293,8 +310,38 @@ class _ConsignorShipmentDetailScreenState
           .gdnOfAssignment(assignmentId);
       if (!mounted) return;
       final hasActive = hasActiveGdnGrn(gdns);
+      var driverName = _driverFieldFromGdnList(gdns, const [
+        'driverName',
+        'driver_name',
+        'assignedDriverName',
+      ]);
+      var driverPhone = _driverFieldFromGdnList(gdns, const [
+        'driverContact',
+        'driver_contact',
+        'driverPhone',
+        'driver_phone',
+        'phone',
+      ]);
+      var driverPlate = _driverFieldFromGdnList(gdns, const [
+        'vehiclePlateNo',
+        'vehicle_plate_no',
+        'plateNumber',
+        'plate_number',
+        'vehiclePlate',
+        'vehicle_plate',
+        'plate',
+      ]);
+      if (driverName == null && driverPhone == null && driverPlate == null) {
+        final fallback = await _driverInfoFromActiveAssignment(assignmentId);
+        driverName = fallback?.$1;
+        driverPhone = fallback?.$2;
+        driverPlate = fallback?.$3;
+      }
       setState(() {
         _gdnCreated = hasActive;
+        _assignmentDriverName = driverName;
+        _assignmentDriverPhone = driverPhone;
+        _assignmentDriverPlate = driverPlate;
         if (hasActive) {
           _gdnMessage = context.l10n.gdnActiveLockedVoidToReplace;
         } else if (gdns.isNotEmpty) {
@@ -304,6 +351,62 @@ class _ConsignorShipmentDetailScreenState
         }
       });
     } catch (_) {}
+  }
+
+  String? _driverFieldFromGdnList(List<dynamic> gdns, List<String> keys) {
+    if (gdns.isEmpty) return null;
+    final latest = pickLatestGdnGrnMap(gdns, const [
+      'issuedAt',
+      'createdAt',
+      'updatedAt',
+    ]);
+    final value = gdnGrnPickString(latest, keys);
+    return value.isEmpty ? null : value;
+  }
+
+  Future<(String?, String?, String?)?> _driverInfoFromActiveAssignment(
+    String assignmentId,
+  ) async {
+    try {
+      final payload = await ref.read(consignorActiveProvider.future);
+      if (payload is! List) return null;
+      for (final item in payload) {
+        if (item is! Map) continue;
+        final shipment = item.cast<String, dynamic>();
+        final selectedDrivers = shipment['selectedDrivers'];
+        if (selectedDrivers is! List) continue;
+        for (final raw in selectedDrivers) {
+          if (raw is! Map) continue;
+          final row = raw.cast<String, dynamic>();
+          final candidate =
+              row['assignmentId']?.toString().trim().isNotEmpty == true
+              ? row['assignmentId']!.toString().trim()
+              : row['publicId']?.toString().trim().isNotEmpty == true
+              ? row['publicId']!.toString().trim()
+              : row['id']?.toString().trim();
+          if (candidate != assignmentId) continue;
+          final name = row['driverName']?.toString().trim();
+          final phone =
+              row['driverContact']?.toString().trim() ??
+              row['phone']?.toString().trim();
+          final plate =
+              row['vehiclePlateNo']?.toString().trim() ??
+              row['plate']?.toString().trim();
+          return (
+            name != null && name.isNotEmpty ? name : null,
+            phone != null && phone.isNotEmpty ? phone : null,
+            plate != null && plate.isNotEmpty ? plate : null,
+          );
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  bool _hasAssignmentDriverInfo() {
+    return _assignmentDriverName?.trim().isNotEmpty == true ||
+        _assignmentDriverPhone?.trim().isNotEmpty == true ||
+        _assignmentDriverPlate?.trim().isNotEmpty == true;
   }
 
   Future<void> _refreshGrnState(String assignmentId) async {
@@ -407,6 +510,12 @@ class _ConsignorShipmentDetailScreenState
     return _assignedOrLaterStatuses.contains(status);
   }
 
+  bool _isGdnGeneratedOrLater(String assignmentStatus) {
+    return _gdnGeneratedOrLaterStatuses.contains(
+      assignmentStatus.trim().toUpperCase(),
+    );
+  }
+
   String? _effectiveDetailStatusLabel(ShipmentModel shipment) {
     final assignmentStatus = (_assignmentApiStatus ?? '').trim().toUpperCase();
     if (_assignmentId != null && assignmentStatus.isNotEmpty) {
@@ -470,6 +579,9 @@ class _ConsignorShipmentDetailScreenState
       _assignmentId = null;
       _assignments = const [];
       _assignmentApiStatus = null;
+      _assignmentDriverName = null;
+      _assignmentDriverPhone = null;
+      _assignmentDriverPlate = null;
       _feedbackLoadedForAid = null;
       _feedbackToDriverSubmitted = false;
       _shipmentIdFromAssignment = null;
@@ -609,6 +721,10 @@ class _ConsignorShipmentDetailScreenState
           final showPaymentOnDetail =
               (!_resolvingAssignment || _assignments.isNotEmpty) &&
               _assignments.length <= 1;
+          final showAssignmentDriver =
+              _assignmentId != null && _hasAssignmentDriverInfo();
+          final showNegotiationRoomAfterGdnControl =
+              _isGdnGeneratedOrLater(assignmentStatus);
           return ListView(
             key: PageStorageKey<String>('consignor_shipment_detail_${s.id}'),
             padding: const EdgeInsets.all(20),
@@ -644,9 +760,7 @@ class _ConsignorShipmentDetailScreenState
                         if (s.hasDisplayableGoodsType) ...[
                           const SizedBox(height: 6),
                           Text(
-                            context.translateDynamic(
-                              s.goodsDescription.trim(),
-                            ),
+                            context.translateDynamic(s.goodsDescription.trim()),
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -664,21 +778,31 @@ class _ConsignorShipmentDetailScreenState
                   ),
                 ],
               ),
+              if (showAssignmentDriver) ...[
+                const SizedBox(height: 16),
+                _AssignedDriverSummary(
+                  name: _assignmentDriverName,
+                  phone: _assignmentDriverPhone,
+                  plate: _assignmentDriverPlate,
+                ),
+              ],
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: GlPrimaryButton(
-                      label: context.l10n.negotiationRoom,
-                      icon: Icons.forum_rounded,
-                      onPressed: () => context.push(
-                        '/consignor/shipment/${s.id}/negotiation',
+              if (!showNegotiationRoomAfterGdnControl) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: GlPrimaryButton(
+                        label: context.l10n.negotiationRoom,
+                        icon: Icons.forum_rounded,
+                        onPressed: () => context.push(
+                          '/consignor/shipment/${s.id}/negotiation',
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+                  ],
+                ),
+                const SizedBox(height: 16),
+              ],
               Row(
                 children: [
                   Expanded(
@@ -691,6 +815,20 @@ class _ConsignorShipmentDetailScreenState
                           : () => context.push(
                               '/consignor/track/${s.id}?assignment=$_assignmentId',
                             ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: GlPrimaryButton(
+                      label: context.l10n.openShipmentHistory,
+                      icon: Icons.history_rounded,
+                      onPressed: () => context.push(
+                        '/consignor/shipment/${s.id}/history',
+                      ),
                     ),
                   ),
                 ],
@@ -754,6 +892,22 @@ class _ConsignorShipmentDetailScreenState
                   ],
                 ],
               ),
+              if (showNegotiationRoomAfterGdnControl) ...[
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GlPrimaryButton(
+                        label: context.l10n.negotiationRoom,
+                        icon: Icons.forum_rounded,
+                        onPressed: () => context.push(
+                          '/consignor/shipment/${s.id}/negotiation',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 16),
               _InfoCard(
                 title: context.l10n.grnControl,
@@ -920,25 +1074,16 @@ class _ConsignorShipmentDetailScreenState
                 title: context.l10n.shipmentDetails,
                 icon: Icons.inventory_2_outlined,
                 children: [
-                  _kv(
-                    context.l10n.weightLabelCap,
-                    _formatMetric(s.weightKg),
-                  ),
+                  _kv(context.l10n.weightLabelCap, _formatMetric(s.weightKg)),
                   _docDivider(),
-                  _kv(
-                    context.l10n.volumeLabelCap,
-                    _formatMetric(s.volumeM3),
-                  ),
+                  _kv(context.l10n.volumeLabelCap, _formatMetric(s.volumeM3)),
                   _docDivider(),
                   _kv(
                     context.l10n.vehicleLabelCap,
                     context.translateDynamic(s.vehicleType),
                   ),
                   _docDivider(),
-                  _kv(
-                    context.l10n.createdLabelCap,
-                    fmt.format(s.placedAt),
-                  ),
+                  _kv(context.l10n.createdLabelCap, fmt.format(s.placedAt)),
                   if (s.paymentMethod != null) ...[
                     _docDivider(),
                     _kv(
@@ -1068,20 +1213,14 @@ class _ConsignorShipmentDetailScreenState
     );
   }
 
-  String _assignmentDisplayLabel(
-    String assignmentId, {
-    int? sequenceNumber,
-  }) {
+  String _assignmentDisplayLabel(String assignmentId, {int? sequenceNumber}) {
     final seq =
         sequenceNumber ??
         AssignmentDisplay.oneBasedIndexInOrder(
           _assignments.map((a) => a.assignmentId).toList(),
           assignmentId,
         );
-    return AssignmentDisplay.sequenceLabel(
-      context.l10n.assignmentPrefix,
-      seq,
-    );
+    return AssignmentDisplay.sequenceLabel(context.l10n.assignmentPrefix, seq);
   }
 }
 
@@ -1471,6 +1610,149 @@ class _ConsignorConfirmRemarkDialogState
           child: Text(context.l10n.confirm),
         ),
       ],
+    );
+  }
+}
+
+class _AssignedDriverSummary extends StatelessWidget {
+  const _AssignedDriverSummary({this.name, this.phone, this.plate});
+
+  final String? name;
+  final String? phone;
+  final String? plate;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final displayName = name?.trim();
+    final displayPhone = phone?.trim();
+    final displayPlate = plate?.trim();
+    final initial = displayName != null && displayName.isNotEmpty
+        ? displayName.substring(0, 1).toUpperCase()
+        : '?';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: AppColors.primarySoft,
+            child: Text(
+              initial,
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w900,
+                fontSize: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.driver,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textSecondary,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+                if (displayName != null && displayName.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    context.translateDynamic(displayName),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
+                if ((displayPhone != null && displayPhone.isNotEmpty) ||
+                    (displayPlate != null && displayPlate.isNotEmpty)) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: [
+                      if (displayPhone != null && displayPhone.isNotEmpty)
+                        _AssignedDriverDetailChip(
+                          icon: Icons.phone_outlined,
+                          label: l10n.phoneLabel,
+                          value: displayPhone,
+                        ),
+                      if (displayPlate != null && displayPlate.isNotEmpty)
+                        _AssignedDriverDetailChip(
+                          icon: Icons.directions_car_outlined,
+                          label: l10n.platePrefix.replaceAll(':', '').trim(),
+                          value: displayPlate,
+                        ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AssignedDriverDetailChip extends StatelessWidget {
+  const _AssignedDriverDetailChip({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.textSecondary),
+          const SizedBox(width: 6),
+          Text(
+            '$label: $value',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

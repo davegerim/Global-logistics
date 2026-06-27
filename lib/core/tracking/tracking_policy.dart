@@ -1,8 +1,6 @@
 String normalizeTrackingStatus(String? status) =>
     (status ?? '').trim().toUpperCase();
 
-const Set<String> _driverTrackingLoopStatuses = {'IN_TRANSIT', 'ARRIVED'};
-
 const Set<String> _driverTrackingSendStatuses = {
   'LOADED',
   'IN_TRANSIT',
@@ -26,9 +24,7 @@ bool isDriverTrackingBlockedStatus(String? status) {
 }
 
 bool canRunDriverTrackingLoop(String? status, {required bool hasGdn}) {
-  if (!hasGdn) return false;
-  final normalized = normalizeTrackingStatus(status);
-  return _driverTrackingLoopStatuses.contains(normalized);
+  return canSendDriverTrackingUpdate(status, hasGdn: hasGdn);
 }
 
 bool canSendDriverTrackingUpdate(String? status, {required bool hasGdn}) {

@@ -556,20 +556,6 @@ class _ConsignorNegotiationScreenState
                         },
                       ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: FilledButton.icon(
-                  onPressed: () => context.push(
-                    '/consignor/shipment/${shipment.id}/history',
-                  ),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                  ),
-                  icon: const Icon(Icons.history_rounded),
-                  label: Text(context.l10n.openShipmentHistory),
-                ),
-              ),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
                 decoration: const BoxDecoration(

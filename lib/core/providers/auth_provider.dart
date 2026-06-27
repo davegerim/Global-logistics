@@ -8,7 +8,7 @@ import 'package:global_logistics_app/core/network/auth_response_tokens.dart';
 import 'package:global_logistics_app/core/network/token_refresh_executor.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
-import 'package:global_logistics_app/core/services/device_location_service.dart';
+import 'package:global_logistics_app/core/tracking/driver_location_tracking.dart';
 import 'package:global_logistics_app/core/tracking/tracking_policy.dart';
 import 'package:global_logistics_app/data/storage/app_launch_preferences.dart';
 import 'package:global_logistics_app/data/storage/token_cache.dart';
@@ -309,43 +309,26 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final api = ref.read(backendApiProvider);
       final assignments = await api.assignmentsDriver();
-      String? assignmentId;
       for (final raw in assignments) {
         if (raw is! Map) continue;
         final assignment = raw.cast<String, dynamic>();
-        final candidateId =
-            assignment['publicId']?.toString() ??
-            assignment['assignmentId']?.toString() ??
-            assignment['id']?.toString();
-        if (candidateId == null || candidateId.trim().isEmpty) continue;
-        final status =
-            assignment['status']?.toString() ??
-            assignment['currentStatus']?.toString();
-        if (!canRunDriverTrackingLoop(status, hasGdn: true)) continue;
+        final candidateId = assignmentIdFromMap(assignment);
+        if (candidateId == null) continue;
+        final status = assignmentStatusFromMap(assignment);
         final gdns = await api.gdnOfAssignment(candidateId);
-        if (!canRunDriverTrackingLoop(status, hasGdn: gdns.isNotEmpty)) {
+        if (!canSendDriverTrackingUpdate(
+          status,
+          hasGdn: assignmentHasActiveGdn(gdns),
+        )) {
           continue;
         }
-        assignmentId = candidateId;
-        break;
+        await sendDriverTrackingRecord(
+          api,
+          candidateId,
+          reason: 'login-initial',
+        );
+        return;
       }
-      if (assignmentId == null) return;
-      final location = await DeviceLocationService.current();
-      final recordedAt = DateTime.fromMillisecondsSinceEpoch(
-        DateTime.now().toUtc().millisecondsSinceEpoch,
-        isUtc: true,
-      ).toIso8601String();
-      await api.trackingRecord({
-        'assignmentId': assignmentId,
-        'latitude': location.latitude,
-        'longitude': location.longitude,
-        'accuracy': location.accuracy,
-        'speed': location.speed,
-        'recordedAt': recordedAt,
-      });
-      debugPrint(
-        '[TRACKING] sent (login-initial) for assignment=$assignmentId',
-      );
     } catch (e) {
       // Tracking ping must never block successful login.
       debugPrint('[TRACKING] skipped (login-initial): $e');
