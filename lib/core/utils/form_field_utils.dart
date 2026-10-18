@@ -20,6 +20,27 @@ bool isPositiveNumber(String? value) {
 bool isValidTenDigitPhone(String value) =>
     RegExp(r'^\d{10}$').hasMatch(value.trim());
 
+/// Matches `RegisterRequest.phoneNumber` pattern from OpenAPI.
+bool isValidRegistrationPhone(String value) =>
+    RegExp(r'^(09|07)\d{8}$').hasMatch(value.trim());
+
+/// Mirrors `RegisterRequest.password` / `ResetPasswordRequest.newPassword`.
+const int kPasswordMinLength = 6;
+const int kPasswordMaxLength = 8;
+
+bool isValidPasswordLength(String value) {
+  final length = value.length;
+  return length >= kPasswordMinLength && length <= kPasswordMaxLength;
+}
+
+String? passwordLengthValidationError(
+  String value, {
+  required String Function(int min, int max) invalidLengthMessage,
+}) {
+  if (isValidPasswordLength(value)) return null;
+  return invalidLengthMessage(kPasswordMinLength, kPasswordMaxLength);
+}
+
 Color formContainerBorderColor({
   required String? errorText,
   Color normal = AppColors.borderLight,

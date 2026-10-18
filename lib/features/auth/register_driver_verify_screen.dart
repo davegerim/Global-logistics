@@ -6,6 +6,7 @@ import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/utils/form_field_utils.dart';
+import 'package:global_logistics_app/core/utils/registration_flow_utils.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 
 class RegisterDriverVerifyScreen extends ConsumerStatefulWidget {
@@ -22,7 +23,52 @@ class _RegisterDriverVerifyScreenState
     extends ConsumerState<RegisterDriverVerifyScreen> {
   final _otp = TextEditingController();
   var _busy = false;
+  var _resending = false;
+  var _autoResendDone = false;
   String? _otpError;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeAutoResendOtp());
+  }
+
+  Future<void> _maybeAutoResendOtp() async {
+    if (_autoResendDone || !mounted) return;
+    final shouldResend =
+        GoRouterState.of(context).uri.queryParameters['resend'] == '1';
+    if (!shouldResend) return;
+    _autoResendDone = true;
+    await _resendOtp(showFeedback: false);
+  }
+
+  Future<void> _resendOtp({bool showFeedback = true}) async {
+    if (widget.phone.trim().isEmpty) {
+      if (showFeedback && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.phoneIsMissing)),
+        );
+      }
+      return;
+    }
+    if (_resending) return;
+    setState(() => _resending = true);
+    try {
+      await ref.read(authProvider.notifier).sendOtp(widget.phone.trim());
+      if (!mounted || !showFeedback) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.otpResent)),
+      );
+    } catch (e) {
+      if (showFeedback && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingMessage(e))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _resending = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -48,7 +94,16 @@ class _RegisterDriverVerifyScreenState
       await ref
           .read(authProvider.notifier)
           .verifyOtp(phone: widget.phone, code: _otp.text.trim());
-      if (mounted) context.go('/register-driver-profile');
+      if (!mounted) return;
+      final auth = ref.read(authProvider);
+      if (!auth.isAuthenticated) {
+        final message = auth.errorMessage ?? context.l10n.phoneIsMissing;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+        return;
+      }
+      context.go(RegistrationFlowUtils.postAuthRoute(auth));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -153,7 +208,20 @@ class _RegisterDriverVerifyScreenState
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () async {
+            if (context.canPop()) {
+              context.pop();
+              return;
+            }
+            final auth = ref.read(authProvider);
+            final entry = RegistrationFlowUtils.registrationEntryRoute(auth);
+            // Pending OTP redirect locks the user on this screen until cleared.
+            if (auth.needsPhoneVerification) {
+              await ref.read(authProvider.notifier).logout();
+              if (!context.mounted) return;
+            }
+            context.go(entry);
+          },
         ),
       ),
       body: SafeArea(
@@ -220,6 +288,35 @@ class _RegisterDriverVerifyScreenState
                   label: context.l10n.verifyPhone,
                   isLoading: _busy,
                   onPressed: _verifyOtp,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: TextButton(
+                  onPressed: (_busy || _resending) ? null : () => _resendOtp(),
+                  child: _resending
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text.rich(
+                          TextSpan(
+                            text: '${context.l10n.didntReceiveOtp} ',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: context.l10n.resendOtp,
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                 ),
               ),
             ],

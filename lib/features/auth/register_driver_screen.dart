@@ -6,6 +6,8 @@ import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/utils/form_field_utils.dart';
+import 'package:global_logistics_app/data/schemas/driver_registration_schema.dart';
+import 'package:global_logistics_app/features/auth/widgets/driver_registration_field_list.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
 
 /// Step 1 only: `POST /auth/register` (server sends OTP; no separate send call).
@@ -18,13 +20,20 @@ class RegisterDriverScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
-  final _firstName = TextEditingController();
-  final _lastName = TextEditingController();
-  final _phone = TextEditingController();
-  final _password = TextEditingController();
-  final _confirm = TextEditingController();
+  late final Map<String, TextEditingController> _controllers;
   bool _busy = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   final Map<String, String?> _fieldErrors = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = {
+      for (final field in DriverRegistrationSchema.accountFields)
+        field.apiKey: TextEditingController(),
+    };
+  }
 
   void _clearFieldError(String key) {
     if (_fieldErrors.containsKey(key)) {
@@ -34,27 +43,32 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
 
   bool _validateForm() {
     final l10n = context.l10n;
-    final errors = <String, String?>{};
-
-    if (isFormFieldEmpty(_firstName.text)) {
-      errors['firstName'] = l10n.fieldIsRequired(l10n.firstName);
-    }
-    if (isFormFieldEmpty(_lastName.text)) {
-      errors['lastName'] = l10n.fieldIsRequired(l10n.lastName);
-    }
-    if (isFormFieldEmpty(_phone.text)) {
-      errors['phone'] = l10n.fieldIsRequired(l10n.ownerPhoneNumber);
-    } else if (!isValidTenDigitPhone(_phone.text)) {
-      errors['phone'] = l10n.enterValidTenDigitPhone;
-    }
-    if (isFormFieldEmpty(_password.text)) {
-      errors['password'] = l10n.fieldIsRequired(l10n.password);
-    }
-    if (isFormFieldEmpty(_confirm.text)) {
-      errors['confirm'] = l10n.fieldIsRequired(l10n.confirmPassword);
-    } else if (_password.text != _confirm.text) {
-      errors['confirm'] = l10n.passwordsDoNotMatch;
-    }
+    final errors = validateDriverRegistrationFields(
+      fields: DriverRegistrationSchema.accountFields,
+      controllers: _controllers,
+      labelFor: (field) => DriverRegistrationSchema.label(l10n, field),
+      fieldIsRequired: l10n.fieldIsRequired,
+      validateValue: (field, value) {
+        if (field.apiKey == 'phoneNumber' &&
+            value.trim().isNotEmpty &&
+            !isValidRegistrationPhone(value)) {
+          return l10n.enterValidRegistrationPhone;
+        }
+        if ((field.apiKey == 'password' || field.apiKey == 'confirmPassword') &&
+            value.isNotEmpty) {
+          final lengthError = passwordLengthValidationError(
+            value,
+            invalidLengthMessage: l10n.passwordMustBeBetweenCharacters,
+          );
+          if (lengthError != null) return lengthError;
+        }
+        if (field.apiKey == 'confirmPassword' &&
+            value != _controllers['password']!.text) {
+          return l10n.passwordsDoNotMatch;
+        }
+        return null;
+      },
+    );
 
     setState(() {
       _fieldErrors
@@ -66,11 +80,9 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
 
   @override
   void dispose() {
-    _firstName.dispose();
-    _lastName.dispose();
-    _phone.dispose();
-    _password.dispose();
-    _confirm.dispose();
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -78,20 +90,18 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
     if (!_validateForm()) return;
     setState(() => _busy = true);
     try {
-      await ref
-          .read(authProvider.notifier)
-          .register(
-            firstName: _firstName.text.trim(),
-            lastName: _lastName.text.trim(),
-            phoneNumber: _phone.text.trim(),
+      await ref.read(authProvider.notifier).register(
+            firstName: _controllers['firstName']!.text.trim(),
+            lastName: _controllers['lastName']!.text.trim(),
+            phoneNumber: _controllers['phoneNumber']!.text.trim(),
             role: 'DRIVER',
-            password: _password.text,
-            confirmPassword: _confirm.text,
+            password: _controllers['password']!.text,
+            confirmPassword: _controllers['confirmPassword']!.text,
           );
       if (mounted) {
         context.push(
           '/register-driver-verify',
-          extra: {'phone': _phone.text.trim()},
+          extra: {'phone': _controllers['phoneNumber']!.text.trim()},
         );
       }
     } catch (e) {
@@ -113,8 +123,15 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
     bool isPassword = false,
     TextInputType? keyboardType,
     bool required = true,
+    String? errorText,
+    VoidCallback? onChanged,
   }) {
-    final errorText = _fieldErrors[fieldKey];
+    final obscure = isPassword
+        ? (fieldKey == 'confirmPassword'
+            ? _obscureConfirmPassword
+            : _obscurePassword)
+        : false;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -140,9 +157,9 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
       ),
       child: TextField(
         controller: controller,
-        obscureText: isPassword,
+        obscureText: obscure,
         keyboardType: keyboardType,
-        onChanged: (_) => _clearFieldError(fieldKey),
+        onChanged: (_) => onChanged?.call(),
         style: const TextStyle(
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
@@ -162,6 +179,28 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
             fontSize: 13,
           ),
           prefixIcon: Icon(icon, color: AppColors.primary, size: 20),
+          suffixIcon: isPassword
+              ? IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () {
+                    setState(() {
+                      if (fieldKey == 'confirmPassword') {
+                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                      } else {
+                        _obscurePassword = !_obscurePassword;
+                      }
+                    });
+                  },
+                  icon: Icon(
+                    obscure
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                )
+              : null,
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: OutlineInputBorder(
@@ -197,7 +236,18 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () async {
+            if (context.canPop()) {
+              context.pop();
+              return;
+            }
+            // VERIFIED users are redirected away from /login unless logged out.
+            if (ref.read(authProvider).isAuthenticated) {
+              await ref.read(authProvider.notifier).logout();
+              if (!context.mounted) return;
+            }
+            context.go('/login');
+          },
         ),
       ),
       body: SafeArea(
@@ -207,7 +257,6 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Section
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -242,44 +291,15 @@ class _RegisterDriverScreenState extends ConsumerState<RegisterDriverScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Form Section
-              _buildInput(
-                controller: _firstName,
-                fieldKey: 'firstName',
-                label: context.l10n.firstName,
-                icon: Icons.person_outline_rounded,
-              ),
-              _buildInput(
-                controller: _lastName,
-                fieldKey: 'lastName',
-                label: context.l10n.lastName,
-                icon: Icons.person_outline_rounded,
-              ),
-              _buildInput(
-                controller: _phone,
-                fieldKey: 'phone',
-                label: context.l10n.ownerPhoneNumber,
-                icon: Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-              ),
-              _buildInput(
-                controller: _password,
-                fieldKey: 'password',
-                label: context.l10n.password,
-                icon: Icons.lock_outline_rounded,
-                isPassword: true,
-              ),
-              _buildInput(
-                controller: _confirm,
-                fieldKey: 'confirm',
-                label: context.l10n.confirmPassword,
-                icon: Icons.lock_outline_rounded,
-                isPassword: true,
+              ...buildDriverRegistrationFields(
+                context: context,
+                fields: DriverRegistrationSchema.accountFields,
+                controllers: _controllers,
+                fieldErrors: _fieldErrors,
+                onFieldChanged: _clearFieldError,
+                buildTextInput: _buildInput,
               ),
               const SizedBox(height: 24),
-
-              // Action Button
               SizedBox(
                 width: double.infinity,
                 height: 52,

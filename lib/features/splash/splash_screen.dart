@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
+import 'package:global_logistics_app/core/utils/registration_flow_utils.dart';
 import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:global_logistics_app/core/providers/locale_provider.dart';
 
@@ -37,8 +38,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
       await Future<void>.delayed(const Duration(milliseconds: 600));
       if (!mounted) return;
       final auth = ref.read(authProvider);
-      if (auth.isAuthenticated) {
-        context.go(auth.role == AppRole.driver ? '/driver/home' : '/consignor/home');
+      if (auth.needsPhoneVerification && auth.phone != null) {
+        context.go(RegistrationFlowUtils.otpVerifyRoute(auth));
+      } else if (auth.isAuthenticated) {
+        context.go(RegistrationFlowUtils.postAuthRoute(auth));
       } else {
         context.go('/login');
       }

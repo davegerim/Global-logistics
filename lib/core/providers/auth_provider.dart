@@ -11,10 +11,12 @@ import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/tracking/driver_location_tracking.dart';
 import 'package:global_logistics_app/core/tracking/tracking_policy.dart';
 import 'package:global_logistics_app/data/storage/app_launch_preferences.dart';
+import 'package:global_logistics_app/data/storage/registration_preferences.dart';
+import 'package:global_logistics_app/core/utils/registration_flow_utils.dart';
 import 'package:global_logistics_app/data/storage/token_cache.dart';
 import 'package:global_logistics_app/data/storage/token_storage.dart';
 
-enum AppRole { consignor, driver }
+enum AppRole { driver }
 
 class AuthState {
   const AuthState({
@@ -28,7 +30,7 @@ class AuthState {
     this.errorMessage,
     this.rolesFromApi = const [],
     this.accountStatus,
-    this.isConsignorApproved,
+    this.needsPhoneVerification = false,
   });
 
   final bool isAuthenticated;
@@ -41,29 +43,7 @@ class AuthState {
   final String? errorMessage;
   final List<String> rolesFromApi;
   final String? accountStatus;
-  final bool? isConsignorApproved;
-
-  bool get canCreateConsignorBooking {
-    if (role != AppRole.consignor) return true;
-    final approved = isConsignorApproved;
-    if (approved != null) return approved;
-    final status = accountStatus?.trim().toUpperCase();
-    if (status == null || status.isEmpty) return true;
-    const approvedStatuses = {'APPROVED', 'ACTIVE'};
-    const blockedStatuses = {
-      'VERIFIED',
-      'PENDING',
-      'PENDING_APPROVAL',
-      'UNDER_REVIEW',
-      'SUSPENDED',
-      'REJECTED',
-      'INACTIVE',
-      'NOT_APPROVED',
-    };
-    if (approvedStatuses.contains(status)) return true;
-    if (blockedStatuses.contains(status)) return false;
-    return true;
-  }
+  final bool needsPhoneVerification;
 
   bool get canViewDriverOffers {
     if (role != AppRole.driver) return true;
@@ -96,7 +76,7 @@ class AuthState {
     String? errorMessage,
     List<String>? rolesFromApi,
     String? accountStatus,
-    bool? isConsignorApproved,
+    bool? needsPhoneVerification,
     bool clearError = false,
   }) {
     return AuthState(
@@ -110,7 +90,8 @@ class AuthState {
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       rolesFromApi: rolesFromApi ?? this.rolesFromApi,
       accountStatus: accountStatus ?? this.accountStatus,
-      isConsignorApproved: isConsignorApproved ?? this.isConsignorApproved,
+      needsPhoneVerification:
+          needsPhoneVerification ?? this.needsPhoneVerification,
     );
   }
 }
@@ -125,6 +106,12 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       await TokenStorage.instance.loadIntoCache();
+      var pending = await RegistrationPreferences.instance.getPendingOtp();
+      if (pending != null &&
+          pending.role.trim().toUpperCase() != 'DRIVER') {
+        await RegistrationPreferences.instance.clearPendingOtp();
+        pending = null;
+      }
       final cache = TokenCache.instance;
       if (cache.accessToken == null || cache.accessToken!.isEmpty) {
         final rt = cache.refreshToken;
@@ -132,6 +119,10 @@ class AuthNotifier extends Notifier<AuthState> {
           final newAccess = await executeTokenRefresh(rt);
           if (newAccess == null || newAccess.isEmpty) {
             await TokenStorage.instance.clearPersisted();
+            if (pending != null) {
+              _setPendingPhoneVerification(pending);
+              return;
+            }
             state = state.copyWith(
               isLoading: false,
               bootstrapDone: true,
@@ -140,6 +131,10 @@ class AuthNotifier extends Notifier<AuthState> {
             return;
           }
         } else {
+          if (pending != null) {
+            _setPendingPhoneVerification(pending);
+            return;
+          }
           state = state.copyWith(
             isLoading: false,
             bootstrapDone: true,
@@ -164,15 +159,10 @@ class AuthNotifier extends Notifier<AuthState> {
           rethrow;
         }
       }
-      _applyProfile(profile);
-      await _sendInitialDriverTrackingPing();
-      await _registerFcmTokenIfPossible();
-      _ensureFcmTokenRefreshListener();
-      await AppLaunchPreferences.instance.setIntroWalkthroughDone();
-      state = state.copyWith(
-        isAuthenticated: true,
-        isLoading: false,
-        bootstrapDone: true,
+      await _establishSession(
+        profile: profile,
+        pending: pending,
+        markBootstrapDone: true,
       );
     } catch (e) {
       final code = e is DioException ? e.response?.statusCode : null;
@@ -180,6 +170,16 @@ class AuthNotifier extends Notifier<AuthState> {
         await TokenStorage.instance.clearPersisted();
       }
       await _stopFcmTokenRefreshListener();
+      var pending = await RegistrationPreferences.instance.getPendingOtp();
+      if (pending != null &&
+          pending.role.trim().toUpperCase() != 'DRIVER') {
+        await RegistrationPreferences.instance.clearPendingOtp();
+        pending = null;
+      }
+      if (pending != null) {
+        _setPendingPhoneVerification(pending);
+        return;
+      }
       state = state.copyWith(
         isLoading: false,
         bootstrapDone: true,
@@ -210,8 +210,7 @@ class AuthNotifier extends Notifier<AuthState> {
     final fn = p['firstName'] as String? ?? '';
     final ln = p['lastName'] as String? ?? '';
     final name = '$fn $ln'.trim();
-    final status = _extractStatus(p);
-    final approved = _extractApproved(p);
+    final status = RegistrationFlowUtils.extractStatus(p);
     state = state.copyWith(
       displayName: name.isEmpty ? (p['phone'] as String? ?? 'User') : name,
       phone: p['phone'] as String?,
@@ -219,49 +218,124 @@ class AuthNotifier extends Notifier<AuthState> {
       rolesFromApi: roles,
       role: _pickRole(roles),
       accountStatus: status,
-      isConsignorApproved: approved,
     );
   }
 
-  String? _extractStatus(Map<String, dynamic> p) {
+  bool? _extractPhoneVerified(Map<String, dynamic> p) {
     final candidates = [
-      p['status'],
-      p['accountStatus'],
-      p['verificationStatus'],
-      p['approvalStatus'],
+      p['phoneVerified'],
+      p['isPhoneVerified'],
+      p['phone_verified'],
+      p['is_phone_verified'],
     ];
-    for (final value in candidates) {
-      if (value == null) continue;
-      final text = value.toString().trim();
-      if (text.isNotEmpty) return text;
-    }
-    return null;
-  }
-
-  bool? _extractApproved(Map<String, dynamic> p) {
-    final candidates = [p['approved'], p['isApproved'], p['consignorApproved']];
     for (final value in candidates) {
       if (value is bool) return value;
       if (value is String) {
         final normalized = value.trim().toLowerCase();
-        if (normalized == 'true') return true;
-        if (normalized == 'false') return false;
+        if (normalized == 'true' || normalized == 'verified') return true;
+        if (normalized == 'false' || normalized == 'unverified') return false;
       }
     }
     return null;
   }
 
-  AppRole? _pickRole(List<String> roles) {
-    if (roles.any((r) => r == 'DRIVER')) return AppRole.driver;
-    if (roles.any((r) => r == 'CONSIGNOR')) return AppRole.consignor;
-    if (roles.any((r) => r == 'ADMIN' || r == 'SUPER_ADMIN')) {
-      return AppRole.consignor;
-    }
-    return AppRole.consignor;
+  void _setPendingPhoneVerification(PendingOtpRegistration pending) {
+    state = state.copyWith(
+      needsPhoneVerification: true,
+      phone: pending.phone,
+      role: AppRole.driver,
+      isAuthenticated: false,
+      isLoading: false,
+      bootstrapDone: true,
+    );
   }
 
-  /// [intendedRole] is used when the user tapped Driver vs Consignor on login screen
-  /// (profile still decides API access; this only affects default tab if both roles exist).
+  AppRole? _pickRole(List<String> roles) {
+    final normalized = roles.map((r) => r.trim().toUpperCase()).toList();
+    if (normalized.contains('DRIVER')) return AppRole.driver;
+    return null;
+  }
+
+  bool _hasAppEligibleRole(List<String> roles) {
+    final normalized = roles.map((r) => r.trim().toUpperCase()).toList();
+    return normalized.contains('DRIVER');
+  }
+
+  Future<void> _establishSession({
+    required Map<String, dynamic> profile,
+    Map<String, dynamic>? authResponse,
+    PendingOtpRegistration? pending,
+    AppRole? intendedRole,
+    String? loginPhone,
+    bool markBootstrapDone = false,
+  }) async {
+    _applyProfile(profile);
+    final phoneVerified = _extractPhoneVerified(profile);
+    final responseStatus = authResponse != null
+        ? RegistrationFlowUtils.extractStatus(authResponse)
+        : null;
+    if (responseStatus != null) {
+      final profileStatus = RegistrationFlowUtils.normalizeStatus(
+        RegistrationFlowUtils.extractStatus(profile),
+      );
+      final shouldPreferProfile = phoneVerified == true ||
+          (profileStatus != null &&
+              profileStatus != RegistrationFlowUtils.notVerified);
+      if (!shouldPreferProfile) {
+        state = state.copyWith(accountStatus: responseStatus);
+      }
+    }
+    if (!_hasAppEligibleRole(state.rolesFromApi)) {
+      await _rejectIneligibleAccount();
+      return;
+    }
+    if (intendedRole == AppRole.driver &&
+        state.rolesFromApi
+            .map((r) => r.trim().toUpperCase())
+            .contains('DRIVER')) {
+      state = state.copyWith(role: AppRole.driver);
+    }
+    if (RegistrationFlowUtils.needsOtpVerification(
+      status: state.accountStatus,
+      phoneVerified: phoneVerified,
+      hasPendingOtp: pending != null,
+    )) {
+      final otpPhone = pending?.phone ?? state.phone ?? loginPhone ?? '';
+      _setPendingPhoneVerification(
+        pending ??
+            PendingOtpRegistration(
+              phone: otpPhone,
+              role: 'DRIVER',
+            ),
+      );
+      return;
+    }
+    if (pending != null) {
+      await RegistrationPreferences.instance.clearPendingOtp();
+    }
+    await _sendInitialDriverTrackingPing();
+    await _registerFcmTokenIfPossible();
+    _ensureFcmTokenRefreshListener();
+    await AppLaunchPreferences.instance.setIntroWalkthroughDone();
+    state = state.copyWith(
+      isAuthenticated: true,
+      isLoading: false,
+      bootstrapDone: markBootstrapDone ? true : state.bootstrapDone,
+      needsPhoneVerification: false,
+    );
+  }
+
+  Future<void> _rejectIneligibleAccount() async {
+    await _stopFcmTokenRefreshListener();
+    await TokenStorage.instance.clearPersisted();
+    state = AuthState(
+      bootstrapDone: true,
+      isLoading: false,
+      errorMessage: ineligibleAppRoleMessage,
+    );
+  }
+
+  /// [intendedRole] is always driver for this app; kept for call-site compatibility.
   Future<void> login({
     required String phone,
     required String password,
@@ -287,18 +361,14 @@ class AuthNotifier extends Notifier<AuthState> {
         }
       }
       final profile = await api.identityGet();
-      _applyProfile(profile);
-      if (intendedRole != null &&
-          state.rolesFromApi.contains(
-            intendedRole == AppRole.driver ? 'DRIVER' : 'CONSIGNOR',
-          )) {
-        state = state.copyWith(role: intendedRole);
-      }
-      await _sendInitialDriverTrackingPing();
-      await _registerFcmTokenIfPossible();
-      _ensureFcmTokenRefreshListener();
-      await AppLaunchPreferences.instance.setIntroWalkthroughDone();
-      state = state.copyWith(isAuthenticated: true, isLoading: false);
+      final pending = await RegistrationPreferences.instance.getPendingOtp();
+      await _establishSession(
+        profile: profile,
+        authResponse: data,
+        pending: pending,
+        intendedRole: intendedRole,
+        loginPhone: phone,
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: _formatError(e));
     }
@@ -354,6 +424,10 @@ class AuthNotifier extends Notifier<AuthState> {
         password: password,
         confirmPassword: confirmPassword,
       );
+      await RegistrationPreferences.instance.setPendingOtp(
+        phone: phoneNumber,
+        role: role,
+      );
       state = state.copyWith(isLoading: false, clearError: true);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: _formatError(e));
@@ -382,16 +456,19 @@ class AuthNotifier extends Notifier<AuthState> {
         }
       }
       final profile = await api.identityGet();
-      _applyProfile(profile);
-      await _sendInitialDriverTrackingPing();
-      await _registerFcmTokenIfPossible();
-      _ensureFcmTokenRefreshListener();
-      await AppLaunchPreferences.instance.setIntroWalkthroughDone();
-      state = state.copyWith(isAuthenticated: true, isLoading: false);
+      await RegistrationPreferences.instance.clearPendingOtp();
+      await _establishSession(
+        profile: profile,
+        authResponse: data,
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: _formatError(e));
       rethrow;
     }
+  }
+
+  Future<void> sendOtp(String phone) async {
+    await ref.read(backendApiProvider).authOtpSend(phone);
   }
 
   Future<void> refreshProfile() async {
@@ -412,6 +489,7 @@ class AuthNotifier extends Notifier<AuthState> {
       }
     } catch (_) {}
     await _stopFcmTokenRefreshListener();
+    await RegistrationPreferences.instance.clearPendingOtp();
     await TokenStorage.instance.clearPersisted();
     state = AuthState(bootstrapDone: true);
   }

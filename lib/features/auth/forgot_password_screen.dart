@@ -84,13 +84,23 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         : null;
     final newPasswordError = newPassword.isEmpty
         ? context.l10n.fieldIsRequired(context.l10n.newPasswordLabel)
-        : null;
+        : passwordLengthValidationError(
+            newPassword,
+            invalidLengthMessage:
+                context.l10n.passwordMustBeBetweenCharacters,
+          );
     String? confirmPasswordError;
     if (confirmPassword.isEmpty) {
       confirmPasswordError =
           context.l10n.fieldIsRequired(context.l10n.confirmNewPasswordLabel);
-    } else if (newPassword != confirmPassword) {
-      confirmPasswordError = context.l10n.passwordsDoNotMatch;
+    } else {
+      confirmPasswordError = passwordLengthValidationError(
+        confirmPassword,
+        invalidLengthMessage: context.l10n.passwordMustBeBetweenCharacters,
+      );
+      if (confirmPasswordError == null && newPassword != confirmPassword) {
+        confirmPasswordError = context.l10n.passwordsDoNotMatch;
+      }
     }
 
     if (phoneError != null ||

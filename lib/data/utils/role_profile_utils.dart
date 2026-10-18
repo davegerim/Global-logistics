@@ -7,6 +7,9 @@ abstract final class RoleProfileUtils {
     'consignor',
     'consignorProfile',
     'consignorDetails',
+    'vehicle',
+    'vehicleProfile',
+    'vehicleDetails',
     'profile',
     'data',
   ];
@@ -29,6 +32,132 @@ abstract final class RoleProfileUtils {
     if (v == null) return null;
     final s = v.toString().trim();
     return s.isEmpty ? null : s;
+  }
+
+  /// Reads the first non-empty value among [keys], including nested profile maps.
+  static String? firstStringField(
+    Map<String, dynamic>? raw,
+    List<String> keys,
+  ) {
+    if (raw == null) return null;
+    for (final key in keys) {
+      final value = stringField(raw, key);
+      if (value != null) return value;
+    }
+    return null;
+  }
+
+  /// Vehicle profile document keys — API returns abbreviated names (`libreDoc`)
+  /// while registration sends `libreDocument`.
+  static const vehicleLibreDocumentKeys = [
+    'libreDoc',
+    'libreDocument',
+    'libre_document',
+    'libre_doc',
+    'libriDocument',
+    'libri_document',
+  ];
+
+  static const vehicleLibreDocumentSecKeys = [
+    'libreDocSec',
+    'libreDocumentSec',
+    'libre_document_sec',
+    'libre_doc_sec',
+    'libriDocumentSec',
+    'libri_document_sec',
+  ];
+
+  static const vehicleInsuranceDocumentKeys = [
+    'insuranceDoc',
+    'insuranceDocument',
+    'insurance_document',
+  ];
+
+  static bool looksLikeUrl(String? value) {
+    if (value == null) return false;
+    final t = value.trim().toLowerCase();
+    return t.startsWith('http://') || t.startsWith('https://');
+  }
+
+  static bool looksLikeImageUrl(String value) {
+    if (!looksLikeUrl(value)) return false;
+    final path = Uri.tryParse(value.trim())?.path.toLowerCase() ?? '';
+    return path.endsWith('.jpg') ||
+        path.endsWith('.jpeg') ||
+        path.endsWith('.png') ||
+        path.endsWith('.webp') ||
+        path.endsWith('.gif') ||
+        path.endsWith('.bmp') ||
+        path.endsWith('.heic') ||
+        path.endsWith('.heif');
+  }
+
+  static bool looksLikePdfUrl(String value) {
+    if (!looksLikeUrl(value)) return false;
+    final path = Uri.tryParse(value.trim())?.path.toLowerCase() ?? '';
+    return path.endsWith('.pdf');
+  }
+
+  /// Unwraps common API envelopes and merges nested profile/vehicle maps for lookup.
+  static Map<String, dynamic> flattenForFieldLookup(Map<String, dynamic> raw) {
+    var current = raw;
+    for (final wrap in ['data', 'content', 'result', 'payload']) {
+      final inner = current[wrap];
+      if (inner is Map<String, dynamic>) {
+        current = inner;
+        break;
+      }
+      if (inner is Map) {
+        current = Map<String, dynamic>.from(inner);
+        break;
+      }
+    }
+
+    final out = Map<String, dynamic>.from(current);
+
+    void absorb(Map<String, dynamic> source) {
+      for (final entry in source.entries) {
+        if (entry.key == 'data' ||
+            entry.key == 'content' ||
+            entry.key == 'result' ||
+            entry.key == 'payload' ||
+            entry.key == 'vehicles') {
+          continue;
+        }
+        final existing = out[entry.key];
+        final existingEmpty =
+            existing == null || existing.toString().trim().isEmpty;
+        final incoming = entry.value;
+        if (existingEmpty &&
+            incoming != null &&
+            incoming.toString().trim().isNotEmpty) {
+          out[entry.key] = incoming;
+        }
+      }
+      for (final nest in _nestedKeys) {
+        final nested = source[nest];
+        if (nested is Map<String, dynamic>) {
+          absorb(nested);
+        } else if (nested is Map) {
+          absorb(Map<String, dynamic>.from(nested));
+        }
+      }
+    }
+
+    for (final listKey in ['vehicles', 'items']) {
+      final list = current[listKey];
+      if (list is List && list.isNotEmpty) {
+        final first = list.first;
+        if (first is Map<String, dynamic>) {
+          absorb(first);
+        } else if (first is Map) {
+          absorb(Map<String, dynamic>.from(first));
+        }
+      }
+    }
+
+    absorb(current);
+    return out;
   }
 
   static double? _parseDouble(dynamic v) {

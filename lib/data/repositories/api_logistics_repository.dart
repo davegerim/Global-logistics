@@ -1,5 +1,3 @@
-import 'package:global_logistics_app/core/providers/auth_provider.dart';
-import 'package:global_logistics_app/core/utils/assignment_display.dart';
 import 'package:global_logistics_app/data/api/backend_api.dart';
 import 'package:global_logistics_app/data/mappers/api_mappers.dart';
 import 'package:global_logistics_app/data/models/driver_offer_model.dart';
@@ -9,49 +7,9 @@ import 'package:global_logistics_app/data/repositories/logistics_repository.dart
 class ApiLogisticsRepository implements LogisticsRepository {
   ApiLogisticsRepository({
     required BackendApi api,
-    required AppRole? role,
-  })  : _api = api,
-        _role = role;
+  }) : _api = api;
 
   final BackendApi _api;
-  final AppRole? _role;
-
-  @override
-  Future<List<ShipmentModel>> fetchConsignorShipments() async {
-    final raw = await _api.shipmentsConsignor();
-    final out = <ShipmentModel>[];
-    for (final e in raw) {
-      if (e is Map) {
-        out.add(shipmentFromDto(e.cast<String, dynamic>()));
-      }
-    }
-    out.sort(compareShipmentsNewestFirst);
-    return out;
-  }
-
-  @override
-  Future<ShipmentModel?> getShipment(String id) async {
-    if (_role == AppRole.driver) {
-      final assigned = AssignmentDisplay.withDriverListSequences(
-        await fetchDriverAssignedShipments(),
-      );
-      for (final shipment in assigned) {
-        if (shipment.id == id ||
-            shipment.publicId == id ||
-            shipment.assignmentId == id) {
-          return shipment;
-        }
-      }
-      return null;
-    }
-    final shipments = await fetchConsignorShipments();
-    for (final shipment in shipments) {
-      if (shipment.id == id || shipment.publicId == id) {
-        return shipment;
-      }
-    }
-    return null;
-  }
 
   @override
   Future<List<DriverOfferModel>> fetchDriverOffers() async {
@@ -158,21 +116,6 @@ class ApiLogisticsRepository implements LogisticsRepository {
           status: m['status'] as String?,
         ),
       );
-    }
-    return out;
-  }
-
-  @override
-  Future<List<PaymentRecord>> fetchPayments() async {
-    final shipments = await fetchConsignorShipments();
-    final out = <PaymentRecord>[];
-    final limit = shipments.length > 6 ? 6 : shipments.length;
-    for (var i = 0; i < limit; i++) {
-      final sid = shipments[i].id;
-      try {
-        final fin = await _api.shipmentFinanceByShipment(sid);
-        out.addAll(_paymentRecordsFromFinance(fin));
-      } catch (_) {}
     }
     return out;
   }

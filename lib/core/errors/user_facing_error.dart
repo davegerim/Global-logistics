@@ -3,6 +3,10 @@ import 'package:dio/dio.dart';
 /// Maximum length for a server-provided message shown in the UI.
 const int _kMaxUserMessageLength = 280;
 
+/// Shown when a signed-in account has no driver role (e.g. admin/consignor-only).
+const String ineligibleAppRoleMessage =
+    'This app is for drivers only. Please sign in with a driver account.';
+
 /// Converts API and other failures into short, non-technical copy for SnackBars
 /// and inline error states. Full details remain in logs / interceptors.
 String userFacingMessage(Object error) {

@@ -1,8 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:global_logistics_app/core/tracking/tracking_route_coords.dart';
 
-/// Non-admin endpoints from OpenAPI (mobile: consignor + driver).
+/// Non-admin endpoints from OpenAPI (mobile: driver).
 class BackendApi {
   BackendApi(this._dio);
   final Dio _dio;
@@ -113,39 +111,6 @@ class BackendApi {
     await _dio.put<void>('/identity/verify-phone/$publicId');
   }
 
-  // --- consignor profile ---
-  Future<Map<String, dynamic>> consignorsProfile() async {
-    final r = await _dio.get<Map<String, dynamic>>('/consignors/profile');
-    return r.data ?? {};
-  }
-
-  Future<void> consignorsUpdate({
-    String? businessName,
-    String? tradeLicence,
-  }) async {
-    final payload = <String, dynamic>{};
-    if (businessName != null) payload['businessName'] = businessName;
-    if (tradeLicence != null) payload['tradeLicence'] = tradeLicence;
-    await _dio.post<void>('/consignors/update', data: payload);
-  }
-
-  Future<void> consignorsCreate({
-    String? businessName,
-    String? tradeLicence,
-  }) async {
-    final payload = <String, dynamic>{};
-    if (businessName != null) payload['businessName'] = businessName;
-    if (tradeLicence != null) payload['tradeLicence'] = tradeLicence;
-    debugPrint('[CONSIGNORS_CREATE] request payload: $payload');
-    final response = await _dio.post<dynamic>(
-      '/consignors/create',
-      data: payload,
-    );
-    debugPrint(
-      '[CONSIGNORS_CREATE] response: status=${response.statusCode}, data=${response.data}',
-    );
-  }
-
   // --- driver profile ---
   Future<Map<String, dynamic>> driversProfile() async {
     final r = await _dio.get<Map<String, dynamic>>('/drivers/profile');
@@ -155,6 +120,7 @@ class BackendApi {
   Future<void> driversUpdate({
     String? profilePic,
     String? nationalId,
+    String? nationalIdImg,
     String? licenceNumber,
     String? licenceDocument,
     String? preferredLanes,
@@ -162,6 +128,7 @@ class BackendApi {
     final payload = <String, dynamic>{};
     if (profilePic != null) payload['profilePic'] = profilePic;
     if (nationalId != null) payload['nationalId'] = nationalId;
+    if (nationalIdImg != null) payload['nationalIdImg'] = nationalIdImg;
     if (licenceNumber != null) payload['licenceNumber'] = licenceNumber;
     if (licenceDocument != null) payload['licenceDocument'] = licenceDocument;
     if (preferredLanes != null) payload['preferredLanes'] = preferredLanes;
@@ -171,6 +138,7 @@ class BackendApi {
   Future<void> driversCreate({
     String? profilePic,
     String? nationalId,
+    String? nationalIdImg,
     String? licenceNumber,
     String? licenceDocument,
     String? preferredLanes,
@@ -178,6 +146,7 @@ class BackendApi {
     final payload = <String, dynamic>{};
     if (profilePic != null) payload['profilePic'] = profilePic;
     if (nationalId != null) payload['nationalId'] = nationalId;
+    if (nationalIdImg != null) payload['nationalIdImg'] = nationalIdImg;
     if (licenceNumber != null) payload['licenceNumber'] = licenceNumber;
     if (licenceDocument != null) payload['licenceDocument'] = licenceDocument;
     if (preferredLanes != null) payload['preferredLanes'] = preferredLanes;
@@ -200,55 +169,99 @@ class BackendApi {
     return r.data ?? {};
   }
 
-  // --- shipments (consignor) ---
-  Future<List<dynamic>> shipmentsConsignor() async {
-    final r = await _dio.get<List<dynamic>>('/shipments/consignor');
-    return r.data ?? [];
-  }
-
-  Future<dynamic> shipmentsConsignorActive() async {
-    final r = await _dio.get<dynamic>('/shipments/consignor/active');
-    return r.data;
-  }
-
-  Future<Map<String, dynamic>> shipmentsCreate(
-    Map<String, dynamic> body,
-  ) async {
-    final r = await _dio.post<dynamic>('/shipments/create', data: body);
-    final d = r.data;
-    if (d is Map<String, dynamic>) return d;
-    return {'id': d};
-  }
-
-  Future<void> shipmentsConsignorRejectOffer(Map<String, dynamic> body) async {
-    await _dio.post<void>('/shipments/consignor-reject-offer', data: body);
-  }
-
-  Future<void> shipmentsConsignorCounterOffer(Map<String, dynamic> body) async {
-    await _dio.post<void>('/shipments/consignor-counter-offer', data: body);
-  }
-
-  Future<void> shipmentsConsignorCancel(Map<String, dynamic> body) async {
-    await _dio.post<void>('/shipments/consignor-cancel', data: body);
-  }
-
-  Future<void> shipmentsConsignorAcceptOffer(String shipmentId) async {
-    await _dio.post<void>('/shipments/consignor-accept-offer/$shipmentId');
+  Future<void> vehiclesUpdate({
+    String? libreDocument,
+    String? libreDocumentSec,
+    String? plateNumber,
+    String? type,
+    String? insuranceDoc,
+    String? details,
+    String? photo,
+  }) async {
+    final payload = <String, dynamic>{};
+    if (libreDocument != null) payload['libreDocument'] = libreDocument;
+    if (libreDocumentSec != null) payload['libreDocumentSec'] = libreDocumentSec;
+    if (plateNumber != null) payload['plateNumber'] = plateNumber;
+    if (type != null) payload['type'] = type;
+    if (insuranceDoc != null) payload['insuranceDoc'] = insuranceDoc;
+    if (details != null) payload['details'] = details;
+    if (photo != null) payload['photo'] = photo;
+    await _dio.post<void>('/vehicles/update', data: payload);
   }
 
   // --- assignments ---
+  /// Loads all driver assignments via the paged API and returns a flat list
+  /// (same shape callers expect from the old `GET /assignments/driver`).
+  /// Omits `status` so the backend returns ACTIVE + COMPLETED + CANCELLED.
   Future<List<dynamic>> assignmentsDriver() async {
-    final r = await _dio.get<List<dynamic>>('/assignments/driver');
-    return r.data ?? [];
+    return _assignmentsDriverAllPages();
   }
 
-  Future<List<dynamic>> assignmentsConsignorOfShipment(
-    String shipmentId,
-  ) async {
-    final r = await _dio.get<List<dynamic>>(
-      '/assignments/consignor/$shipmentId',
+  /// [status] is optional: `ACTIVE`, `COMPLETED`, `CANCELLED`, or null/omitted for all.
+  Future<Map<String, dynamic>> assignmentsDriverPages({
+    String? status,
+    int page = 0,
+    int size = 10,
+  }) async {
+    final query = <String, dynamic>{
+      'page': page,
+      'size': size,
+    };
+    final trimmed = status?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) {
+      query['status'] = trimmed;
+    }
+    final r = await _dio.get<Map<String, dynamic>>(
+      '/assignments/driver/pages',
+      queryParameters: query,
     );
-    return r.data ?? [];
+    return r.data ?? {};
+  }
+
+  Future<List<dynamic>> _assignmentsDriverAllPages({
+    String? status,
+    int size = 10,
+  }) async {
+    final out = <dynamic>[];
+    var page = 0;
+    while (true) {
+      final raw = await assignmentsDriverPages(
+        status: status,
+        page: page,
+        size: size,
+      );
+      final data = _unwrapAssignmentsPage(raw);
+      final content = data['content'];
+      final batch = content is List ? List<dynamic>.from(content) : <dynamic>[];
+      out.addAll(batch);
+      if (!_assignmentsPageHasMore(data, batch.length, size)) break;
+      page += 1;
+      if (page > 1000) break;
+    }
+    return out;
+  }
+
+  static Map<String, dynamic> _unwrapAssignmentsPage(Map<String, dynamic> raw) {
+    final data = raw['data'];
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return raw;
+  }
+
+  static bool _assignmentsPageHasMore(
+    Map<String, dynamic> data,
+    int fetchedCount,
+    int pageSize,
+  ) {
+    final last = data['last'];
+    if (last is bool) return !last;
+
+    final totalPages = data['totalPages'];
+    final number = data['number'];
+    if (totalPages is num && number is num) {
+      return number.toInt() + 1 < totalPages.toInt();
+    }
+    return fetchedCount >= pageSize;
   }
 
   Future<void> assignmentsConfirmLoaded(Map<String, dynamic> body) async {
@@ -265,16 +278,6 @@ class BackendApi {
 
   Future<void> assignmentsConfirmOffloaded(Map<String, dynamic> body) async {
     await _dio.put<void>('/assignments/shipment-offloaded', data: body);
-  }
-
-  Future<void> assignmentsConfirmConsignorReceived(
-    Map<String, dynamic> body,
-  ) async {
-    await _dio.put<void>('/assignments/consignor-received', data: body);
-  }
-
-  Future<void> assignmentsConsignorConfirm(Map<String, dynamic> body) async {
-    await _dio.put<void>('/assignments/consignor-confirm', data: body);
   }
 
   Future<void> assignmentsCancel(Map<String, dynamic> body) async {
@@ -324,24 +327,7 @@ class BackendApi {
     await _dio.post<void>('/tracking', data: req);
   }
 
-  Future<List<Map<String, dynamic>>> trackingRoute(String assignmentId) async {
-    final r = await _dio.get<dynamic>('/tracking/$assignmentId');
-    return TrackingRouteCoords.flattenRecords(r.data);
-  }
-
-  Future<Map<String, dynamic>> trackingLatest(String assignmentId) async {
-    final r = await _dio.get<Map<String, dynamic>>(
-      '/tracking/$assignmentId/latest',
-    );
-    return r.data ?? {};
-  }
-
-  // --- grn / gdn ---
-  Future<Map<String, dynamic>> grnCreate(Map<String, dynamic> body) async {
-    final r = await _dio.post<Map<String, dynamic>>('/grn', data: body);
-    return r.data ?? {};
-  }
-
+  // --- grn / gdn (read — drivers view documents) ---
   Future<List<dynamic>> grnOfAssignment(String assignmentId) async {
     final r = await _dio.get<List<dynamic>>('/grn/assignment/$assignmentId');
     return r.data ?? [];
@@ -349,11 +335,6 @@ class BackendApi {
 
   Future<Map<String, dynamic>> grnGet(String publicId) async {
     final r = await _dio.get<Map<String, dynamic>>('/grn/$publicId');
-    return r.data ?? {};
-  }
-
-  Future<Map<String, dynamic>> gdnCreate(Map<String, dynamic> body) async {
-    final r = await _dio.post<Map<String, dynamic>>('/gdn', data: body);
     return r.data ?? {};
   }
 
@@ -365,55 +346,6 @@ class BackendApi {
   Future<Map<String, dynamic>> gdnGet(String publicId) async {
     final r = await _dio.get<Map<String, dynamic>>('/gdn/$publicId');
     return r.data ?? {};
-  }
-
-  Future<Map<String, dynamic>> gdnVoid({
-    required String publicId,
-    String? reason,
-  }) async {
-    final r = await _dio.put<Map<String, dynamic>>(
-      '/gdn/void',
-      data: {
-        'publicId': publicId,
-        if (reason != null && reason.isNotEmpty) 'reason': reason,
-      },
-    );
-    return r.data ?? {};
-  }
-
-  Future<Map<String, dynamic>> grnVoid({
-    required String publicId,
-    String? reason,
-  }) async {
-    final r = await _dio.put<Map<String, dynamic>>(
-      '/grn/void',
-      data: {
-        'publicId': publicId,
-        if (reason != null && reason.isNotEmpty) 'reason': reason,
-      },
-    );
-    return r.data ?? {};
-  }
-
-  // --- shipment finance ---
-  Future<Map<String, dynamic>> shipmentFinanceByShipment(
-    String shipmentId,
-  ) async {
-    final r = await _dio.get<Map<String, dynamic>>(
-      '/shipment-finance/shipment/$shipmentId',
-    );
-    return r.data ?? {};
-  }
-
-  Future<Map<String, dynamic>> shipmentFinanceLoad(String publicId) async {
-    final r = await _dio.get<Map<String, dynamic>>(
-      '/shipment-finance/$publicId',
-    );
-    return r.data ?? {};
-  }
-
-  Future<void> shipmentFinanceCreatePayment(Map<String, dynamic> body) async {
-    await _dio.post<void>('/shipment-finance', data: body);
   }
 
   // --- assignment finance (driver payouts visibility) ---
@@ -431,10 +363,6 @@ class BackendApi {
   // --- feedback ---
   Future<void> feedbackToPlatform() async {
     await _dio.post<void>('/feedback/to-platform');
-  }
-
-  Future<void> feedbackToDriver(Map<String, dynamic> body) async {
-    await _dio.post<void>('/feedback/to-driver', data: body);
   }
 
   Future<void> feedbackToConsignor(Map<String, dynamic> body) async {

@@ -406,6 +406,22 @@ class AppLocalizationsAm extends AppLocalizations {
   String get businessNameOptional => 'የድርጅት ስም (አማራጭ)';
 
   @override
+  String get consignorBusinessNameOrName => 'የድርጅት ስም ወይም ስም';
+
+  @override
+  String get consignorBusinessNameOrNameOptional => 'የድርጅት ስም ወይም ስም (አማራጭ)';
+
+  @override
+  String get consignorUploadTradeLicenceOrId =>
+      'የንግድ ፈቃድ ወይም መታወቂያ ይስቀሉ (ምስል ወይም PDF)';
+
+  @override
+  String get tinNumber => 'የግብር ከፋይ መለያ ቁጥር';
+
+  @override
+  String get tinNumberOptional => 'የግብር ከፋይ መለያ ቁጥር (አማራጭ)';
+
+  @override
   String get tradeLicenceAttached => 'የንግድ ፈቃድ ተያይዟል';
 
   @override
@@ -523,6 +539,9 @@ class AppLocalizationsAm extends AppLocalizations {
   String get licenceDocumentAttached => 'የመንጃ ፈቃድ ሰነድ ተያይዟል';
 
   @override
+  String get licenceDocument => 'የመንጃ ፈቃድ ሰነድ';
+
+  @override
   String get preferredLanesOptional => 'የተመረጡ መንገዶች (አማራጭ)';
 
   @override
@@ -533,6 +552,15 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get otpSentCheckPhone => 'ማረጋገጫ ኮድ ተልኳል። ለኮዱ ስልክዎን ያረጋግጡ።';
+
+  @override
+  String get otpResent => 'አዲስ የማረጋገጫ ኮድ ተልኳል።';
+
+  @override
+  String get didntReceiveOtp => 'ኮዱ አልደረሰዎትም?';
+
+  @override
+  String get resendOtp => 'እንደገና ላክ';
 
   @override
   String get pleaseFillInAllFields => 'እባክዎ ሁሉንም መስኮች ይሙሉ。';
@@ -1166,6 +1194,12 @@ class AppLocalizationsAm extends AppLocalizations {
   String get updateProfileSubtitle => 'ፎቶ፣ ፈቃድ፣ መስመሮች';
 
   @override
+  String get updateVehicleProfileTitle => 'ተሽከርካሪ አዘምን';
+
+  @override
+  String get updateVehicleProfileListSubtitle => 'ሰሌዳ፣ ሰነዶች፣ ፎቶ';
+
+  @override
   String get vehicleDetailsTitle => 'የተሽከርካሪ ዝርዝሮች';
 
   @override
@@ -1276,7 +1310,16 @@ class AppLocalizationsAm extends AppLocalizations {
   String get enterValidTenDigitPhone => 'ትክክለኛ 10 አሃዝ ስልክ ቁጥር ያስገቡ።';
 
   @override
+  String get enterValidRegistrationPhone =>
+      'በ 09 ወይም 07 የሚጀምር ትክክለኛ ስልክ ቁጥር ያስገቡ።';
+
+  @override
   String get enterYourPassword => 'የይለፍ ቃልዎን ያስገቡ።';
+
+  @override
+  String passwordMustBeBetweenCharacters(int min, int max) {
+    return 'የይለፍ ቃሉ ከ $min እስከ $max ቁምፊ መሆን አለበት።';
+  }
 
   @override
   String fieldIsRequired(String fieldName) {
@@ -1327,6 +1370,66 @@ class AppLocalizationsAm extends AppLocalizations {
   String get boloDocumentAttached => 'የቦሎ ሰነድ ተያይዟል';
 
   @override
+  String get boloDocument => 'የቦሎ ሰነድ';
+
+  @override
+  String get libreDocumentSec => 'የሊብሬ ሰነድ ሁለተኛ';
+
+  @override
+  String get libreDocument => 'የሊብሬ ሰነድ';
+
+  @override
+  String get profilePic => 'ፕሮፋይል ምስል';
+
+  @override
+  String get nationalIdImg => 'የብሄራዊ መታወቂያ ምስል';
+
+  @override
+  String get uploadProfilePic => 'ፕሮፋይል ምስል ይጭኑ (JPG፣ PNG ወይም WebP)';
+
+  @override
+  String get uploadNationalIdImg => 'የብሄራዊ መታወቂያ ምስል ይጭኑ (ምስል ወይም PDF)';
+
+  @override
+  String get uploadLibreDocument => 'የሊብሬ ሰነድ ይስቀሉ (ምስል ወይም PDF)';
+
+  @override
+  String get uploadLibreDocumentSec => 'የሊብሬ ሰነድ ሁለተኛ ይስቀሉ (ምስል ወይም PDF)';
+
+  @override
+  String get uploadPhoto => 'ፎቶ ይስቀሉ (JPG፣ PNG ወይም WebP)';
+
+  @override
+  String get profilePicUploaded => 'ፕሮፋይል ምስል ተጭኗል።';
+
+  @override
+  String get profilePicAttached => 'ፕሮፋይል ምስል ተያይዟል';
+
+  @override
+  String get libreDocumentUploaded => 'የሊብሬ ሰነድ ተጭኗል።';
+
+  @override
+  String get libreDocumentAttached => 'የሊብሬ ሰነድ ተያይዟል';
+
+  @override
+  String get libreDocumentSecUploaded => 'የሊብሬ ሰነድ ሁለተኛ ተጭኗል።';
+
+  @override
+  String get libreDocumentSecAttached => 'የሊብሬ ሰነድ ሁለተኛ ተያይዟል';
+
+  @override
+  String get nationalIdImgUploaded => 'የብሄራዊ መታወቂያ ምስል ተጭኗል።';
+
+  @override
+  String get nationalIdImgAttached => 'የብሄራዊ መታወቂያ ምስል ተያይዟል';
+
+  @override
+  String get photoUploaded => 'ፎቶ ተጭኗል።';
+
+  @override
+  String get photoAttached => 'ፎቶ ተያይዟል';
+
+  @override
   String get uploadInsuranceDocument => 'የኢንሹራንስ ሰነድ ይስቀሉ (ምስል ወይም ፒዲኤፍ)';
 
   @override
@@ -1341,6 +1444,9 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get vehiclePhotoUploaded => 'የተሽከርካሪ ፎቶ ተጭኗል።';
+
+  @override
+  String get vehiclePhoto => 'የተሽከርካሪ ፎቶ';
 
   @override
   String get driverRegistrationTitle => 'የአሽከርካሪ ምዝገባ';
@@ -1477,6 +1583,15 @@ class AppLocalizationsAm extends AppLocalizations {
   String get updateDriverProfileSubtitle => 'ፎቶ፣ መታወቂያ፣ መንጃ ፈቃድ እና ተመራጭ መንገዶች';
 
   @override
+  String get updateVehicleProfile => 'የተሽከርካሪ መገለጫ አዘምን';
+
+  @override
+  String get updateVehicleProfileSubtitle => 'ሰሌዳ፣ አይነት፣ ሰነዶች፣ ፎቶ እና ማስታወሻዎች';
+
+  @override
+  String get vehicleProfileUpdated => 'የተሽከርካሪ መገለጫ በተሳካ ሁኔታ ተዘምኗል';
+
+  @override
   String get uploadProfilePhoto => 'የመገለጫ ፎቶ ይስቀሉ';
 
   @override
@@ -1487,6 +1602,18 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get nationalId => 'ብሄራዊ መታወቂያ';
+
+  @override
+  String get nationalIdImage => 'የብሄራዊ መታወቂያ ምስል';
+
+  @override
+  String get uploadNationalIdImage => 'የብሄራዊ መታወቂያ ምስል ይጭኑ (ምስል ወይም PDF)';
+
+  @override
+  String get nationalIdImageUploaded => 'የብሄራዊ መታወቂያ ምስል ተጭኗል።';
+
+  @override
+  String get nationalIdImageAttached => 'የብሄራዊ መታወቂያ ምስል ተያይዟል';
 
   @override
   String get locationTrackingNotice =>

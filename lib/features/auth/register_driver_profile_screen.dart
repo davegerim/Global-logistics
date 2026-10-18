@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
+import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
-import 'package:global_logistics_app/core/services/presigned_storage_service.dart';
+import 'package:global_logistics_app/core/utils/registration_flow_utils.dart';
+import 'package:global_logistics_app/core/utils/form_field_utils.dart';
+import 'package:global_logistics_app/data/schemas/driver_registration_schema.dart';
+import 'package:global_logistics_app/features/auth/widgets/driver_registration_field_list.dart';
 import 'package:global_logistics_app/shared/widgets/gl_primary_button.dart';
-import 'package:global_logistics_app/shared/widgets/presigned_url_upload_row.dart';
 
 class RegisterDriverProfileScreen extends ConsumerStatefulWidget {
   const RegisterDriverProfileScreen({super.key});
@@ -19,36 +22,79 @@ class RegisterDriverProfileScreen extends ConsumerStatefulWidget {
 
 class _RegisterDriverProfileScreenState
     extends ConsumerState<RegisterDriverProfileScreen> {
-  final _licenceNumber = TextEditingController();
-  final _licenceDocument = TextEditingController();
-  final _preferredLanes = TextEditingController();
+  late final Map<String, TextEditingController> _controllers;
   var _busy = false;
+  final Map<String, String?> _fieldErrors = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = {
+      for (final field in DriverRegistrationSchema.profileFields)
+        field.apiKey: TextEditingController(),
+    };
+  }
+
+  void _clearFieldError(String key) {
+    if (_fieldErrors.containsKey(key)) {
+      setState(() => _fieldErrors.remove(key));
+    }
+  }
+
+  bool _validateForm() {
+    final l10n = context.l10n;
+    final errors = validateDriverRegistrationFields(
+      fields: DriverRegistrationSchema.profileFields,
+      controllers: _controllers,
+      labelFor: (field) {
+        if (field.type != DriverRegistrationFieldType.text) {
+          return DriverRegistrationSchema.uploadButtonLabel(l10n, field);
+        }
+        return DriverRegistrationSchema.label(l10n, field);
+      },
+      fieldIsRequired: l10n.fieldIsRequired,
+    );
+
+    setState(() {
+      _fieldErrors
+        ..clear()
+        ..addAll(errors);
+    });
+    return errors.isEmpty;
+  }
 
   @override
   void dispose() {
-    _licenceNumber.dispose();
-    _licenceDocument.dispose();
-    _preferredLanes.dispose();
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
   Future<void> _createDriverProfile() async {
+    if (!_validateForm()) return;
     setState(() => _busy = true);
     try {
-      await ref
-          .read(backendApiProvider)
-          .driversCreate(
-            licenceNumber: _licenceNumber.text.trim().isEmpty
-                ? null
-                : _licenceNumber.text.trim(),
-            licenceDocument: _licenceDocument.text.trim().isEmpty
-                ? null
-                : _licenceDocument.text.trim(),
-            preferredLanes: _preferredLanes.text.trim().isEmpty
-                ? null
-                : _preferredLanes.text.trim(),
+      final values = {
+        for (final entry in _controllers.entries)
+          entry.key: entry.value.text,
+      };
+      final payload = DriverRegistrationSchema.buildPayload(
+        DriverRegistrationSchema.profileFields,
+        values,
+      );
+      await ref.read(backendApiProvider).driversCreate(
+            profilePic: payload['profilePic'] as String?,
+            nationalId: payload['nationalId'] as String?,
+            nationalIdImg: payload['nationalIdImg'] as String?,
+            licenceNumber: payload['licenceNumber'] as String?,
+            licenceDocument: payload['licenceDocument'] as String?,
+            preferredLanes: payload['preferredLanes'] as String?,
           );
-      if (mounted) context.push('/register-driver-vehicle');
+      await ref.read(authProvider.notifier).refreshProfile();
+      if (!mounted) return;
+      final auth = ref.read(authProvider);
+      context.go(RegistrationFlowUtils.postAuthRoute(auth));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -64,14 +110,28 @@ class _RegisterDriverProfileScreenState
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    required String fieldKey,
+    bool isPassword = false,
     TextInputType? keyboardType,
+    bool required = true,
+    String? errorText,
+    VoidCallback? onChanged,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.surfaceHighlight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderLight, width: 1.5),
+        border: Border.all(
+          color: formContainerBorderColor(
+            errorText: errorText,
+            normal: AppColors.borderLight,
+          ),
+          width: formContainerBorderWidth(
+            errorText: errorText,
+            normal: 1.5,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -82,14 +142,22 @@ class _RegisterDriverProfileScreenState
       ),
       child: TextField(
         controller: controller,
+        obscureText: isPassword,
         keyboardType: keyboardType,
+        onChanged: (_) => onChanged?.call(),
         style: const TextStyle(
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
           fontSize: 14,
         ),
         decoration: InputDecoration(
-          labelText: label,
+          labelText: formFieldLabel(label, required: required),
+          errorText: errorText,
+          errorStyle: const TextStyle(
+            color: AppColors.error,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
           labelStyle: const TextStyle(
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w500,
@@ -100,7 +168,18 @@ class _RegisterDriverProfileScreenState
           enabledBorder: InputBorder.none,
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+            borderSide: BorderSide(
+              color: errorText != null ? AppColors.error : AppColors.primary,
+              width: 1.5,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -120,7 +199,17 @@ class _RegisterDriverProfileScreenState
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(
+                RegistrationFlowUtils.previousRegistrationStep(
+                  ref.read(authProvider),
+                ),
+              );
+            }
+          },
         ),
       ),
       body: SafeArea(
@@ -130,7 +219,6 @@ class _RegisterDriverProfileScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Section
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -165,32 +253,15 @@ class _RegisterDriverProfileScreenState
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Form Section
-              _buildInput(
-                controller: _licenceNumber,
-                label: context.l10n.licenceNumber,
-                icon: Icons.pin_outlined,
-              ),
-              PresignedUrlUploadRow(
-                urlController: _licenceDocument,
-                folder: S3Folder.profile,
-                borderRadius: 12,
-                buttonLabel: context.l10n.uploadLicenceDocument,
-                successMessage: context.l10n.licenceDocumentUploaded,
-              ),
-              PresignedUploadAttachedHint(
-                controller: _licenceDocument,
-                message: context.l10n.licenceDocumentAttached,
-              ),
-              _buildInput(
-                controller: _preferredLanes,
-                label: context.l10n.preferredLanesOptional,
-                icon: Icons.route_outlined,
+              ...buildDriverRegistrationFields(
+                context: context,
+                fields: DriverRegistrationSchema.profileFields,
+                controllers: _controllers,
+                fieldErrors: _fieldErrors,
+                onFieldChanged: _clearFieldError,
+                buildTextInput: _buildInput,
               ),
               const SizedBox(height: 24),
-
-              // Action Button
               SizedBox(
                 width: double.infinity,
                 height: 52,

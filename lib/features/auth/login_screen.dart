@@ -106,8 +106,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final roleParam = GoRouterState.of(context).uri.queryParameters['role'];
-    final role = roleParam == 'driver' ? AppRole.driver : AppRole.consignor;
+    const role = AppRole.driver;
     final t = Theme.of(context).textTheme;
     final auth = ref.watch(authProvider);
     ref.watch(localeProvider);
@@ -123,27 +122,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
                   child: Row(
                     children: [
-                      GestureDetector(
-                        onTap: () => context.go('/role'),
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceMuted,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: AppColors.textPrimary,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      const AppLanguageToggle(),
+                      Spacer(),
+                      AppLanguageToggle(),
                     ],
                   ),
                 ),
@@ -193,9 +177,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          role == AppRole.driver
-                              ? context.l10n.signInToAccessRoutes
-                              : context.l10n.signInToManageShipments,
+                          context.l10n.signInToAccessRoutes,
                           style: t.bodySmall?.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -418,11 +400,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
                               onPressed: () {
-                                if (role == AppRole.driver) {
-                                  context.push('/register-driver');
-                                } else {
-                                  context.push('/register-consignor');
-                                }
+                                context.push('/register-driver');
                               },
                               child: Text(
                                 context.l10n.createAccount,

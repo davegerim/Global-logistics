@@ -12,19 +12,19 @@ Future<void> refreshDriverHomeData(WidgetRef ref) async {
   await ref.read(driverAssignedShipmentsProvider.future);
 }
 
-final consignorHomeRefreshTriggerProvider = StateProvider<int>((ref) => 0);
-
-Future<void> refreshConsignorHomeData(WidgetRef ref) async {
-  ref.read(consignorHomeRefreshTriggerProvider.notifier).state++;
-  ref.invalidate(unreadNotificationsCountProvider);
-  ref.invalidate(consignorShipmentsProvider);
-  await ref.read(consignorShipmentsProvider.future);
+Future<void> refreshDriverAssignmentDetailData(WidgetRef ref) async {
+  ref.invalidate(driverAssignedShipmentsProvider);
+  await ref.read(driverAssignedShipmentsProvider.future);
 }
 
-final consignorShipmentsProvider = FutureProvider<List<ShipmentModel>>((ref) {
-  final repo = ref.watch(logisticsRepositoryProvider);
-  return repo.fetchConsignorShipments();
-});
+ShipmentModel? findDriverAssignmentById(List<ShipmentModel> list, String id) {
+  for (final s in list) {
+    if (s.id == id || s.publicId == id || s.assignmentId == id) {
+      return s;
+    }
+  }
+  return null;
+}
 
 final driverAssignedShipmentsProvider = FutureProvider<List<ShipmentModel>>((ref) {
   final repo = ref.watch(logisticsRepositoryProvider);
@@ -55,7 +55,15 @@ final driverActiveAssignmentsProvider = Provider<AsyncValue<List<ShipmentModel>>
   );
 });
 
-final shipmentDetailProvider = FutureProvider.family<ShipmentModel?, String>((ref, id) {
-  final repo = ref.watch(logisticsRepositoryProvider);
-  return repo.getShipment(id);
+/// Driver assignment detail — derived from [driverAssignedShipmentsProvider]
+/// so status stays in sync with the home list after admin or consignor updates.
+final driverAssignmentDetailProvider =
+    Provider.autoDispose.family<AsyncValue<ShipmentModel?>, String>((ref, id) {
+  final all = ref.watch(driverAssignedShipmentsProvider);
+  return all.when(
+    skipLoadingOnReload: true,
+    data: (list) => AsyncValue.data(findDriverAssignmentById(list, id)),
+    loading: () => const AsyncValue.loading(),
+    error: AsyncValue.error,
+  );
 });

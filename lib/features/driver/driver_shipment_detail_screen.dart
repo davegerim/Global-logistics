@@ -99,7 +99,6 @@ class _DriverShipmentDetailScreenState
             .read(driverTrackingControllerProvider.notifier)
             .sendTrackingPing(assignmentId, reason: 'status:$label');
       }
-      ref.invalidate(shipmentDetailProvider(widget.shipmentId));
       ref.invalidate(driverAssignedShipmentsProvider);
       if (context.mounted) {
         await _refreshGdnState(assignmentId);
@@ -196,9 +195,23 @@ class _DriverShipmentDetailScreenState
     }
   }
 
+  Future<void> _onRefresh() async {
+    setState(() {
+      _gdnInfo = null;
+      _hasGdn = false;
+      _checkingGdn = false;
+      _assignmentDocuments = null;
+      _documentsLoadedForAid = null;
+      _feedbackLoadedForAid = null;
+      _feedbackToConsignorSubmitted = false;
+      _loadingFeedbackState = false;
+    });
+    await refreshDriverAssignmentDetailData(ref);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final async = ref.watch(shipmentDetailProvider(widget.shipmentId));
+    final async = ref.watch(driverAssignmentDetailProvider(widget.shipmentId));
     final api = ref.read(backendApiProvider);
     final fmt = DateFormat.yMMMd();
 
@@ -234,9 +247,15 @@ class _DriverShipmentDetailScreenState
               aid != null &&
               assignmentAllowsFeedback(status) &&
               !_feedbackToConsignorSubmitted;
-          return ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
+          return RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: _onRefresh,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              padding: const EdgeInsets.all(20),
+              children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -507,8 +526,10 @@ class _DriverShipmentDetailScreenState
                 ),
               ],
             ],
+            ),
           );
         },
+        skipLoadingOnReload: true,
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(userFacingMessage(e))),
       ),

@@ -227,7 +227,7 @@ abstract class AppLocalizations {
   /// No description provided for @libriNumber.
   ///
   /// In en, this message translates to:
-  /// **'Libre number'**
+  /// **'Chassis number'**
   String get libriNumber;
 
   /// No description provided for @libriDocumentAttached.
@@ -890,6 +890,36 @@ abstract class AppLocalizations {
   /// **'Business Name (Optional)'**
   String get businessNameOptional;
 
+  /// No description provided for @consignorBusinessNameOrName.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Name or Name'**
+  String get consignorBusinessNameOrName;
+
+  /// No description provided for @consignorBusinessNameOrNameOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Name or Name (Optional)'**
+  String get consignorBusinessNameOrNameOptional;
+
+  /// No description provided for @consignorUploadTradeLicenceOrId.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Trade Licence or ID (image or PDF)'**
+  String get consignorUploadTradeLicenceOrId;
+
+  /// No description provided for @tinNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'TIN Number'**
+  String get tinNumber;
+
+  /// No description provided for @tinNumberOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'TIN Number (Optional)'**
+  String get tinNumberOptional;
+
   /// No description provided for @tradeLicenceAttached.
   ///
   /// In en, this message translates to:
@@ -1124,6 +1154,12 @@ abstract class AppLocalizations {
   /// **'Licence document attached'**
   String get licenceDocumentAttached;
 
+  /// No description provided for @licenceDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Licence document'**
+  String get licenceDocument;
+
   /// No description provided for @preferredLanesOptional.
   ///
   /// In en, this message translates to:
@@ -1147,6 +1183,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OTP sent. Check your phone for the verification code.'**
   String get otpSentCheckPhone;
+
+  /// No description provided for @otpResent.
+  ///
+  /// In en, this message translates to:
+  /// **'A new verification code has been sent.'**
+  String get otpResent;
+
+  /// No description provided for @didntReceiveOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t receive the code?'**
+  String get didntReceiveOtp;
+
+  /// No description provided for @resendOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend'**
+  String get resendOtp;
 
   /// No description provided for @pleaseFillInAllFields.
   ///
@@ -2195,7 +2249,7 @@ abstract class AppLocalizations {
   /// No description provided for @uploadTradeLicence.
   ///
   /// In en, this message translates to:
-  /// **'Upload trade licence or ID (image or PDF)'**
+  /// **'Upload TIN number or ID (image or PDF)'**
   String get uploadTradeLicence;
 
   /// No description provided for @tradeLicenceUploaded.
@@ -2359,6 +2413,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Photo, licence, lanes'**
   String get updateProfileSubtitle;
+
+  /// No description provided for @updateVehicleProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update vehicle'**
+  String get updateVehicleProfileTitle;
+
+  /// No description provided for @updateVehicleProfileListSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate, documents, photo'**
+  String get updateVehicleProfileListSubtitle;
 
   /// No description provided for @vehicleDetailsTitle.
   ///
@@ -2570,11 +2636,23 @@ abstract class AppLocalizations {
   /// **'Enter a valid 10-digit phone number.'**
   String get enterValidTenDigitPhone;
 
+  /// No description provided for @enterValidRegistrationPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid phone number starting with 09 or 07.'**
+  String get enterValidRegistrationPhone;
+
   /// No description provided for @enterYourPassword.
   ///
   /// In en, this message translates to:
   /// **'Enter your password.'**
   String get enterYourPassword;
+
+  /// No description provided for @passwordMustBeBetweenCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be between {min} and {max} characters.'**
+  String passwordMustBeBetweenCharacters(int min, int max);
 
   /// No description provided for @fieldIsRequired.
   ///
@@ -2660,6 +2738,126 @@ abstract class AppLocalizations {
   /// **'Bolo document attached'**
   String get boloDocumentAttached;
 
+  /// No description provided for @boloDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Bolo document'**
+  String get boloDocument;
+
+  /// No description provided for @libreDocumentSec.
+  ///
+  /// In en, this message translates to:
+  /// **'Libre Document Sec'**
+  String get libreDocumentSec;
+
+  /// No description provided for @libreDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Libre Document'**
+  String get libreDocument;
+
+  /// No description provided for @profilePic.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Pic'**
+  String get profilePic;
+
+  /// No description provided for @nationalIdImg.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID Img'**
+  String get nationalIdImg;
+
+  /// No description provided for @uploadProfilePic.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload profile pic (JPG, PNG, or WebP)'**
+  String get uploadProfilePic;
+
+  /// No description provided for @uploadNationalIdImg.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload national ID img (image or PDF)'**
+  String get uploadNationalIdImg;
+
+  /// No description provided for @uploadLibreDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload libre document (image or PDF)'**
+  String get uploadLibreDocument;
+
+  /// No description provided for @uploadLibreDocumentSec.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload libre document sec (image or PDF)'**
+  String get uploadLibreDocumentSec;
+
+  /// No description provided for @uploadPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload photo (JPG, PNG, or WebP)'**
+  String get uploadPhoto;
+
+  /// No description provided for @profilePicUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile pic uploaded.'**
+  String get profilePicUploaded;
+
+  /// No description provided for @profilePicAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile pic attached'**
+  String get profilePicAttached;
+
+  /// No description provided for @libreDocumentUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Libre document uploaded.'**
+  String get libreDocumentUploaded;
+
+  /// No description provided for @libreDocumentAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Libre document attached'**
+  String get libreDocumentAttached;
+
+  /// No description provided for @libreDocumentSecUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Libre document sec uploaded.'**
+  String get libreDocumentSecUploaded;
+
+  /// No description provided for @libreDocumentSecAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Libre document sec attached'**
+  String get libreDocumentSecAttached;
+
+  /// No description provided for @nationalIdImgUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID img uploaded.'**
+  String get nationalIdImgUploaded;
+
+  /// No description provided for @nationalIdImgAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID img attached'**
+  String get nationalIdImgAttached;
+
+  /// No description provided for @photoUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo uploaded.'**
+  String get photoUploaded;
+
+  /// No description provided for @photoAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo attached'**
+  String get photoAttached;
+
   /// No description provided for @uploadInsuranceDocument.
   ///
   /// In en, this message translates to:
@@ -2689,6 +2887,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Vehicle photo uploaded.'**
   String get vehiclePhotoUploaded;
+
+  /// No description provided for @vehiclePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle photo'**
+  String get vehiclePhoto;
 
   /// No description provided for @driverRegistrationTitle.
   ///
@@ -2954,6 +3158,24 @@ abstract class AppLocalizations {
   /// **'Photo, ID, licence, and preferred lanes'**
   String get updateDriverProfileSubtitle;
 
+  /// No description provided for @updateVehicleProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Update vehicle profile'**
+  String get updateVehicleProfile;
+
+  /// No description provided for @updateVehicleProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate, type, documents, photo, and notes'**
+  String get updateVehicleProfileSubtitle;
+
+  /// No description provided for @vehicleProfileUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle profile updated successfully'**
+  String get vehicleProfileUpdated;
+
   /// No description provided for @uploadProfilePhoto.
   ///
   /// In en, this message translates to:
@@ -2977,6 +3199,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'National ID'**
   String get nationalId;
+
+  /// No description provided for @nationalIdImage.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID image'**
+  String get nationalIdImage;
+
+  /// No description provided for @uploadNationalIdImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload national ID image (image or PDF)'**
+  String get uploadNationalIdImage;
+
+  /// No description provided for @nationalIdImageUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID image uploaded.'**
+  String get nationalIdImageUploaded;
+
+  /// No description provided for @nationalIdImageAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID image attached'**
+  String get nationalIdImageAttached;
 
   /// No description provided for @locationTrackingNotice.
   ///

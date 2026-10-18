@@ -1,30 +1,14 @@
-import 'package:global_logistics_app/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
+import 'package:global_logistics_app/core/utils/registration_flow_utils.dart';
 import 'package:global_logistics_app/features/auth/forgot_password_screen.dart';
 import 'package:global_logistics_app/features/auth/login_screen.dart';
-import 'package:global_logistics_app/features/auth/register_consignor_screen.dart';
-import 'package:global_logistics_app/features/auth/register_consignor_profile_screen.dart';
-import 'package:global_logistics_app/features/auth/register_consignor_verify_screen.dart';
 import 'package:global_logistics_app/features/auth/register_driver_profile_screen.dart';
 import 'package:global_logistics_app/features/auth/register_driver_screen.dart';
 import 'package:global_logistics_app/features/auth/register_driver_vehicle_screen.dart';
 import 'package:global_logistics_app/features/auth/register_driver_verify_screen.dart';
-import 'package:global_logistics_app/features/consignor/consignor_documents_screen.dart';
-import 'package:global_logistics_app/features/consignor/consignor_gdn_form_screen.dart';
-import 'package:global_logistics_app/features/consignor/consignor_grn_form_screen.dart';
-import 'package:global_logistics_app/features/consignor/consignor_home_screen.dart';
-import 'package:global_logistics_app/features/consignor/consignor_negotiation_screen.dart';
-import 'package:global_logistics_app/features/consignor/consignor_profile_screen.dart';
-import 'package:global_logistics_app/features/consignor/consignor_shipment_history_screen.dart';
-import 'package:global_logistics_app/features/consignor/consignor_shipment_detail_screen.dart';
-import 'package:global_logistics_app/features/consignor/consignor_shipment_payment_screen.dart';
-import 'package:global_logistics_app/features/consignor/consignor_shipments_screen.dart';
-import 'package:global_logistics_app/features/consignor/consignor_shell.dart';
-import 'package:global_logistics_app/features/consignor/create_booking_screen.dart';
-import 'package:global_logistics_app/features/consignor/tracking_map_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_assignment_history_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_home_screen.dart';
 import 'package:global_logistics_app/features/driver/driver_license_details_screen.dart';
@@ -36,7 +20,6 @@ import 'package:global_logistics_app/features/driver/driver_shipment_detail_scre
 import 'package:global_logistics_app/features/driver/driver_shell.dart';
 import 'package:global_logistics_app/features/driver/driver_vehicle_details_screen.dart';
 import 'package:global_logistics_app/features/notifications/notifications_screen.dart';
-import 'package:global_logistics_app/features/role/role_selection_screen.dart';
 import 'package:global_logistics_app/features/splash/splash_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -66,40 +49,49 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final auth = ref.read(authProvider);
       final path = state.uri.path;
 
-      if (path == '/onboarding') {
+      if (path == '/onboarding' || path == '/role') {
         return '/login';
+      }
+
+      // Legacy consignor deep links → driver home.
+      if (path.startsWith('/consignor') ||
+          path.startsWith('/register-consignor')) {
+        return auth.isAuthenticated ? '/driver/home' : '/login';
+      }
+
+      final otpRedirect = _otpVerifyRedirect(auth, path, state.uri);
+      if (otpRedirect != null) {
+        return otpRedirect;
+      }
+
+      final onboardingRedirect = RegistrationFlowUtils.onboardingRedirect(
+        auth,
+        path,
+      );
+      if (onboardingRedirect != null) {
+        return onboardingRedirect;
       }
 
       final isPublic =
           path == '/splash' ||
-          path == '/role' ||
           path == '/login' ||
           path == '/forgot-password' ||
-          path == '/register-consignor' ||
-          path == '/register-consignor-verify' ||
-          path == '/register-consignor-profile' ||
           path == '/register-driver' ||
-          path == '/register-driver-verify';
+          path == '/register-driver-verify' ||
+          path == '/register-driver-profile' ||
+          path == '/register-driver-vehicle';
 
       if (!auth.isAuthenticated && !isPublic) {
         return '/login';
       }
-      if (auth.isAuthenticated &&
-          (path == '/login' || path == '/role')) {
-        return auth.role == AppRole.driver ? '/driver/home' : '/consignor/home';
+      if (auth.isAuthenticated && auth.role == null) {
+        return '/login';
+      }
+      if (auth.isAuthenticated && path == '/login') {
+        return RegistrationFlowUtils.postAuthRoute(auth);
       }
       if (auth.isAuthenticated && path == '/splash') {
-        return auth.role == AppRole.driver ? '/driver/home' : '/consignor/home';
-      }
-      if (auth.isAuthenticated &&
-          auth.role == AppRole.consignor &&
-          path.startsWith('/driver')) {
-        return '/consignor/home';
-      }
-      if (auth.isAuthenticated &&
-          auth.role == AppRole.driver &&
-          path.startsWith('/consignor')) {
-        return '/driver/home';
+        return RegistrationFlowUtils.postAuthRoute(auth);
       }
       return null;
     },
@@ -107,10 +99,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
-      ),
-      GoRoute(
-        path: '/role',
-        builder: (context, state) => const RoleSelectionScreen(),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
@@ -124,24 +112,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/register-consignor',
-        builder: (context, state) => const RegisterConsignorScreen(),
-      ),
-      GoRoute(
-        path: '/register-consignor-verify',
-        builder: (context, state) {
-          final extra = state.extra;
-          final phone = extra is Map<String, dynamic>
-              ? (extra['phone'] as String? ?? '')
-              : '';
-          return RegisterConsignorVerifyScreen(phone: phone);
-        },
-      ),
-      GoRoute(
-        path: '/register-consignor-profile',
-        builder: (context, state) => const RegisterConsignorProfileScreen(),
-      ),
-      GoRoute(
         path: '/register-driver',
         builder: (context, state) => const RegisterDriverScreen(),
       ),
@@ -149,9 +119,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/register-driver-verify',
         builder: (context, state) {
           final extra = state.extra;
-          final phone = extra is Map<String, dynamic>
+          var phone = extra is Map<String, dynamic>
               ? (extra['phone'] as String? ?? '')
               : '';
+          if (phone.isEmpty) {
+            phone = state.uri.queryParameters['phone'] ?? '';
+          }
           return RegisterDriverVerifyScreen(phone: phone);
         },
       ),
@@ -162,156 +135,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/register-driver-vehicle',
         builder: (context, state) => const RegisterDriverVehicleScreen(),
-      ),
-      GoRoute(
-        path: '/consignor',
-        redirect: (context, state) {
-          if (state.fullPath == '/consignor') {
-            return '/consignor/home';
-          }
-          return null;
-        },
-        routes: [
-          StatefulShellRoute.indexedStack(
-            builder: (context, state, navigationShell) {
-              return ConsignorShell(navigationShell: navigationShell);
-            },
-            branches: [
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: 'home',
-                    pageBuilder: (context, state) =>
-                        const NoTransitionPage(child: ConsignorHomeScreen()),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: 'shipments',
-                    pageBuilder: (context, state) => const NoTransitionPage(
-                      child: ConsignorShipmentsScreen(),
-                    ),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: 'documents',
-                    pageBuilder: (context, state) => const NoTransitionPage(
-                      child: ConsignorDocumentsScreen(),
-                    ),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: 'profile',
-                    pageBuilder: (context, state) =>
-                        const NoTransitionPage(child: ConsignorProfileScreen()),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          GoRoute(
-            parentNavigatorKey: _rootNavigatorKey,
-            path: 'shipment/:id',
-            builder: (context, state) {
-              final id = state.pathParameters['id']!;
-              final assignmentId = state.uri.queryParameters['assignment'];
-              return ConsignorShipmentDetailScreen(
-                shipmentId: id,
-                initialAssignmentId: assignmentId,
-              );
-            },
-          ),
-          GoRoute(
-            parentNavigatorKey: _rootNavigatorKey,
-            path: 'shipment/:id/negotiation',
-            builder: (context, state) {
-              final id = state.pathParameters['id']!;
-              return ConsignorNegotiationScreen(shipmentId: id);
-            },
-          ),
-          GoRoute(
-            parentNavigatorKey: _rootNavigatorKey,
-            path: 'shipment/:id/payment',
-            builder: (context, state) {
-              final id = state.pathParameters['id']!;
-              return ConsignorShipmentPaymentScreen(shipmentId: id);
-            },
-          ),
-          GoRoute(
-            parentNavigatorKey: _rootNavigatorKey,
-            path: 'shipment/:id/history',
-            builder: (context, state) {
-              final id = state.pathParameters['id']!;
-              return ConsignorShipmentHistoryScreen(shipmentId: id);
-            },
-          ),
-          GoRoute(
-            parentNavigatorKey: _rootNavigatorKey,
-            path: 'shipment/:id/gdn',
-            builder: (context, state) {
-              final id = state.pathParameters['id']!;
-              final assignmentId = state.uri.queryParameters['assignment'];
-              final goodsDescription =
-                  state.uri.queryParameters['goods'] ?? 'Shipment';
-              if (assignmentId == null || assignmentId.isEmpty) {
-                return Scaffold(
-                  body: Center(child: Text(context.l10n.assignmentRequiredGdn)),
-                );
-              }
-              return ConsignorGdnFormScreen(
-                shipmentId: id,
-                assignmentId: assignmentId,
-                goodsDescription: goodsDescription,
-              );
-            },
-          ),
-          GoRoute(
-            parentNavigatorKey: _rootNavigatorKey,
-            path: 'shipment/:id/grn',
-            builder: (context, state) {
-              final id = state.pathParameters['id']!;
-              final assignmentId = state.uri.queryParameters['assignment'];
-              final assignmentStatus =
-                  state.uri.queryParameters['status'] ?? '';
-              if (assignmentId == null || assignmentId.isEmpty) {
-                return Scaffold(
-                  body: Center(child: Text(context.l10n.assignmentRequiredGrn)),
-                );
-              }
-              return ConsignorGrnFormScreen(
-                shipmentId: id,
-                assignmentId: assignmentId,
-                assignmentStatus: assignmentStatus,
-              );
-            },
-          ),
-          GoRoute(
-            parentNavigatorKey: _rootNavigatorKey,
-            path: 'create',
-            builder: (context, state) => const CreateBookingScreen(),
-          ),
-          GoRoute(
-            parentNavigatorKey: _rootNavigatorKey,
-            path: 'track/:id',
-            builder: (context, state) {
-              final id = state.pathParameters['id']!;
-              return TrackingMapScreen(shipmentId: id);
-            },
-          ),
-          GoRoute(
-            parentNavigatorKey: _rootNavigatorKey,
-            path: 'notifications',
-            builder: (context, state) => const NotificationsScreen(),
-          ),
-        ],
       ),
       GoRoute(
         path: '/driver',
@@ -402,3 +225,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+String? _otpVerifyRedirect(AuthState auth, String path, Uri uri) {
+  if (!auth.needsPhoneVerification) return null;
+  final phone = auth.phone?.trim() ?? '';
+  if (phone.isEmpty) return '/login';
+  const otpPath = '/register-driver-verify';
+  if (path == otpPath && uri.queryParameters['phone'] == phone) {
+    return null;
+  }
+  return RegistrationFlowUtils.otpVerifyRoute(auth);
+}

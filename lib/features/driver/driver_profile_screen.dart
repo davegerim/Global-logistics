@@ -40,22 +40,20 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
     if (id == null) return;
     try {
       final v = await ref.read(backendApiProvider).vehiclesProfile(id);
-      if (mounted) setState(() => _vehicle = v);
+      if (mounted) setState(() => _vehicle = RoleProfileUtils.flattenForFieldLookup(v));
     } catch (_) {}
   }
 
   Future<void> _loadDriverProfile() async {
     try {
       final p = await ref.read(backendApiProvider).driversProfile();
-      if (mounted) setState(() => _driverProfile = p);
+      if (mounted) {
+        setState(() => _driverProfile = RoleProfileUtils.flattenForFieldLookup(p));
+      }
     } catch (_) {}
   }
 
-  static bool _looksLikeUrl(String? s) {
-    if (s == null) return false;
-    final t = s.trim().toLowerCase();
-    return t.startsWith('http://') || t.startsWith('https://');
-  }
+  static bool _looksLikeUrl(String? s) => RoleProfileUtils.looksLikeUrl(s);
 
   Future<void> _editDriverProfile() async {
     final profilePic = TextEditingController(
@@ -72,6 +70,11 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
     final licenceDocument = TextEditingController(
       text: RoleProfileUtils.stringField(_driverProfile, 'licenceDocument') ??
           RoleProfileUtils.stringField(_driverProfile, 'licenseDocument') ??
+          '',
+    );
+    final nationalIdImg = TextEditingController(
+      text: RoleProfileUtils.stringField(_driverProfile, 'nationalIdImg') ??
+          RoleProfileUtils.stringField(_driverProfile, 'nationalIdImage') ??
           '',
     );
     final preferredLanes = TextEditingController(
@@ -95,6 +98,16 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
           message: context.l10n.profilePhotoAttached,
         ),
         _buildInput(nationalId, context.l10n.nationalId),
+        PresignedUrlUploadRow(
+          urlController: nationalIdImg,
+          folder: S3Folder.profile,
+          buttonLabel: context.l10n.uploadNationalIdImg,
+          successMessage: context.l10n.nationalIdImgUploaded,
+        ),
+        PresignedUploadAttachedHint(
+          controller: nationalIdImg,
+          message: context.l10n.nationalIdImgAttached,
+        ),
         _buildInput(licenceNumber, context.l10n.licenceNumber),
         PresignedUrlUploadRow(
           urlController: licenceDocument,
@@ -118,6 +131,9 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                 nationalId: nationalId.text.trim().isEmpty
                     ? null
                     : nationalId.text.trim(),
+                nationalIdImg: nationalIdImg.text.trim().isEmpty
+                    ? null
+                    : nationalIdImg.text.trim(),
                 licenceNumber: licenceNumber.text.trim().isEmpty
                     ? null
                     : licenceNumber.text.trim(),
@@ -145,9 +161,150 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
     );
     profilePic.dispose();
     nationalId.dispose();
+    nationalIdImg.dispose();
     licenceNumber.dispose();
     licenceDocument.dispose();
     preferredLanes.dispose();
+  }
+
+  static String _vehicleField(
+    Map<String, dynamic>? vehicle,
+    List<String> keys,
+  ) {
+    return RoleProfileUtils.firstStringField(vehicle, keys) ?? '';
+  }
+
+  Future<void> _editVehicleProfile() async {
+    final v = _vehicle;
+    if (v == null || v.isEmpty) return;
+
+    final libreDocument = TextEditingController(
+      text: _vehicleField(v, RoleProfileUtils.vehicleLibreDocumentKeys),
+    );
+    final libreDocumentSec = TextEditingController(
+      text: _vehicleField(v, RoleProfileUtils.vehicleLibreDocumentSecKeys),
+    );
+    final insuranceDoc = TextEditingController(
+      text: _vehicleField(v, RoleProfileUtils.vehicleInsuranceDocumentKeys),
+    );
+    final plateNumber = TextEditingController(
+      text: _vehicleField(v, ['plateNumber', 'plate', 'licensePlate']),
+    );
+    final type = TextEditingController(
+      text: _vehicleField(v, ['type', 'vehicleType']),
+    );
+    final details = TextEditingController(
+      text: _vehicleField(v, ['details', 'description']),
+    );
+    final photo = TextEditingController(
+      text: _vehicleField(v, ['photo', 'photoUrl', 'imageUrl']),
+    );
+
+    Object? saveError;
+    var saved = false;
+
+    await _showPremiumSheet(
+      title: context.l10n.updateVehicleProfile,
+      subtitle: context.l10n.updateVehicleProfileSubtitle,
+      icon: Icons.directions_car_outlined,
+      children: [
+        _buildInput(plateNumber, context.l10n.plateNumber),
+        _buildInput(type, context.l10n.typeLabel),
+        PresignedUrlUploadRow(
+          urlController: libreDocument,
+          folder: S3Folder.profile,
+          buttonLabel: context.l10n.uploadLibreDocument,
+          successMessage: context.l10n.libreDocumentUploaded,
+        ),
+        PresignedUploadAttachedHint(
+          controller: libreDocument,
+          message: context.l10n.libreDocumentAttached,
+        ),
+        PresignedUrlUploadRow(
+          urlController: libreDocumentSec,
+          folder: S3Folder.profile,
+          buttonLabel: context.l10n.uploadLibreDocumentSec,
+          successMessage: context.l10n.libreDocumentSecUploaded,
+        ),
+        PresignedUploadAttachedHint(
+          controller: libreDocumentSec,
+          message: context.l10n.libreDocumentSecAttached,
+        ),
+        PresignedUrlUploadRow(
+          urlController: insuranceDoc,
+          folder: S3Folder.profile,
+          buttonLabel: context.l10n.uploadInsuranceDocument,
+          successMessage: context.l10n.insuranceDocumentUploaded,
+        ),
+        PresignedUploadAttachedHint(
+          controller: insuranceDoc,
+          message: context.l10n.insuranceDocumentAttached,
+        ),
+        _buildInput(details, context.l10n.details),
+        PresignedUrlUploadRow(
+          urlController: photo,
+          folder: S3Folder.profile,
+          allowPdf: false,
+          buttonLabel: context.l10n.uploadVehiclePhoto,
+          successMessage: context.l10n.vehiclePhotoUploaded,
+          invalidTypeMessage: context.l10n.vehiclePhotoInvalidType,
+        ),
+        PresignedUploadAttachedHint(
+          controller: photo,
+          message: context.l10n.vehiclePhotoAttached,
+        ),
+      ],
+      actionLabel: context.l10n.saveChanges,
+      onAction: () async {
+        try {
+          await ref.read(backendApiProvider).vehiclesUpdate(
+                libreDocument: libreDocument.text.trim().isEmpty
+                    ? null
+                    : libreDocument.text.trim(),
+                libreDocumentSec: libreDocumentSec.text.trim().isEmpty
+                    ? null
+                    : libreDocumentSec.text.trim(),
+                plateNumber: plateNumber.text.trim().isEmpty
+                    ? null
+                    : plateNumber.text.trim(),
+                type: type.text.trim().isEmpty ? null : type.text.trim(),
+                insuranceDoc: insuranceDoc.text.trim().isEmpty
+                    ? null
+                    : insuranceDoc.text.trim(),
+                details: details.text.trim().isEmpty
+                    ? null
+                    : details.text.trim(),
+                photo: photo.text.trim().isEmpty ? null : photo.text.trim(),
+              );
+          saved = true;
+        } catch (e) {
+          saveError = e;
+        }
+      },
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      libreDocument.dispose();
+      libreDocumentSec.dispose();
+      insuranceDoc.dispose();
+      plateNumber.dispose();
+      type.dispose();
+      details.dispose();
+      photo.dispose();
+    });
+
+    if (!mounted) return;
+    if (saved) {
+      await _loadVehicle();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.vehicleProfileUpdated)),
+      );
+    } else if (saveError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingMessage(saveError!))),
+      );
+    }
   }
 
   Future<void> _showPremiumSheet({
@@ -348,8 +505,21 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
     );
   }
 
+  Future<void> _reloadProfileData() async {
+    await Future.wait([_loadVehicle(), _loadDriverProfile()]);
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen(authProvider, (previous, next) {
+      if (!next.isAuthenticated) return;
+      final userChanged = previous?.userPublicId != next.userPublicId;
+      final signedIn = previous?.isAuthenticated != true && next.isAuthenticated;
+      if (userChanged || signedIn) {
+        _reloadProfileData();
+      }
+    });
+
     final auth = ref.watch(authProvider);
     final accountStatusLabel =
         DriverAccountStatusUtils.displayLabel(auth, context.l10n);
@@ -538,10 +708,17 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen> {
                       Icons.local_shipping_outlined,
                       context.l10n.vehicleDetailsTitle,
                       _vehicle != null
-                          ? '${_vehicle!['type'] ?? context.l10n.truckLabel} · ${_vehicle!['plateNumber'] ?? context.l10n.noPlateLabel}'
+                          ? '${RoleProfileUtils.firstStringField(_vehicle, ['type', 'vehicleType']) ?? context.l10n.truckLabel} · ${RoleProfileUtils.firstStringField(_vehicle, ['plateNumber', 'plate', 'licensePlate']) ?? context.l10n.noPlateLabel}'
                           : context.l10n.loadVehicleInfo,
                       onTap: () => context.push('/driver/profile/vehicle'),
                     ),
+                    if (_vehicle != null && _vehicle!.isNotEmpty)
+                      _buildListItem(
+                        Icons.directions_car_outlined,
+                        context.l10n.updateVehicleProfileTitle,
+                        context.l10n.updateVehicleProfileListSubtitle,
+                        onTap: _editVehicleProfile,
+                      ),
                     _buildListItem(
                       Icons.badge_outlined,
                       context.l10n.driverLicenseTitle,

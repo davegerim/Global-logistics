@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
-import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/providers/notifications_provider.dart';
 
@@ -106,9 +105,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   void _navigateToNotification(_UiNotification item) {
-    final auth = ref.read(authProvider);
-    final isDriver = auth.role == AppRole.driver;
-    final prefix = isDriver ? '/driver' : '/consignor';
+    const prefix = '/driver';
 
     final refType = (item.referenceType ?? '').trim().toUpperCase();
     final type = (item.type ?? '').trim().toUpperCase();
@@ -126,42 +123,27 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     // Route primarily by referenceType (tells us what entity the refId points to)
     switch (refType) {
       case 'SHIPMENT':
-        route = _routeForShipment(type, refId, prefix, isDriver);
+        route = _routeForShipment(type, refId, prefix);
         break;
       case 'ASSIGNMENT':
-        if (isDriver) {
-          route = '$prefix/shipment/$refId';
-        } else {
-          // For consignor, force assignment context in detail screen.
-          route = '$prefix/shipment/$refId?assignment=$refId';
-        }
+        route = '$prefix/shipment/$refId';
         break;
       case 'NEGOTIATION':
-        if (isDriver) {
-          route = '$prefix/offers/$refId/negotiation';
-        } else {
-          route = '$prefix/shipment/$refId/negotiation';
-        }
+        route = '$prefix/offers/$refId/negotiation';
         break;
       case 'TRACKING':
-        if (!isDriver) {
-          route = '$prefix/track/$refId';
-        } else {
-          route = '$prefix/shipment/$refId';
-        }
+        route = '$prefix/shipment/$refId';
         break;
       case 'PAYOUT':
       case 'PAYMENT':
-        if (isDriver) {
-          route = '$prefix/profile/payouts';
-        }
+        route = '$prefix/profile/payouts';
         break;
       case 'PROFILE':
         route = '$prefix/profile';
         break;
       default:
         // Fall back to notification type if referenceType is missing
-        route = _routeFromNotificationType(type, refId, prefix, isDriver);
+        route = _routeFromNotificationType(type, refId, prefix);
         break;
     }
 
@@ -186,9 +168,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     String type,
     String refId,
     String prefix,
-    bool isDriver,
   ) {
-    if (isDriver && type == 'ADMIN_OFFER') {
+    if (type == 'ADMIN_OFFER') {
       return '$prefix/offers';
     }
     return '$prefix/shipment/$refId';
@@ -198,7 +179,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     String type,
     String refId,
     String prefix,
-    bool isDriver,
   ) {
     switch (type) {
       case 'SHIPMENT':
@@ -215,46 +195,28 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       case 'OFFER_UPDATE':
       case 'COUNTER_OFFER':
       case 'BID':
-        if (isDriver) {
-          return '$prefix/offers/$refId/negotiation';
-        } else {
-          return '$prefix/shipment/$refId/negotiation';
-        }
+        return '$prefix/offers/$refId/negotiation';
       case 'DRIVER_ASSIGNED':
       case 'ASSIGNMENT':
       case 'ASSIGNMENT_UPDATE':
       case 'ASSIGNMENT_STATUS':
-        if (isDriver) return '$prefix/shipment/$refId';
-        return '$prefix/shipment/$refId?assignment=$refId';
       case 'GDN':
       case 'GDN_UPDATE':
       case 'GRN':
       case 'GRN_UPDATE':
-        if (isDriver) return '$prefix/shipment/$refId';
-        return '$prefix/shipment/$refId?assignment=$refId';
       case 'TRACKING':
       case 'LOCATION':
-        if (!isDriver) {
-          return '$prefix/track/$refId';
-        } else {
-          return '$prefix/shipment/$refId';
-        }
+        return '$prefix/shipment/$refId';
       case 'PAYOUT':
       case 'PAYMENT':
-        if (isDriver) {
-          return '$prefix/profile/payouts';
-        }
-        return null;
+        return '$prefix/profile/payouts';
       case 'PROFILE_ACTIVATED':
       case 'PROFILE_APPROVED':
       case 'PROFILE_REJECTED':
       case 'PROFILE_UPDATED':
         return '$prefix/profile';
       case 'ADMIN_OFFER':
-        if (isDriver) {
-          return '$prefix/offers';
-        }
-        return '$prefix/shipment/$refId';
+        return '$prefix/offers';
       default:
         return null;
     }

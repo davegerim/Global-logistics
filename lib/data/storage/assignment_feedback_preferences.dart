@@ -7,7 +7,6 @@ class AssignmentFeedbackPreferences {
       AssignmentFeedbackPreferences._();
 
   static const _kToConsignor = 'gl_feedback_to_consignor_ids';
-  static const _kToDriver = 'gl_feedback_to_driver_ids';
 
   Future<bool> hasSubmittedToConsignor(String assignmentId) async {
     final ids = await _readIds(_kToConsignor);
@@ -16,15 +15,6 @@ class AssignmentFeedbackPreferences {
 
   Future<void> markSubmittedToConsignor(String assignmentId) async {
     await _addId(_kToConsignor, assignmentId);
-  }
-
-  Future<bool> hasSubmittedToDriver(String assignmentId) async {
-    final ids = await _readIds(_kToDriver);
-    return ids.contains(assignmentId);
-  }
-
-  Future<void> markSubmittedToDriver(String assignmentId) async {
-    await _addId(_kToDriver, assignmentId);
   }
 
   Future<Set<String>> _readIds(String key) async {

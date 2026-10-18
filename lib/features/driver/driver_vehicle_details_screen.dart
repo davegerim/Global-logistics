@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
+import 'package:global_logistics_app/data/utils/role_profile_utils.dart';
+import 'package:global_logistics_app/shared/widgets/network_document_preview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DriverVehicleDetailsScreen extends ConsumerStatefulWidget {
@@ -44,7 +46,7 @@ class _DriverVehicleDetailsScreenState
       final v = await ref.read(backendApiProvider).vehiclesProfile(id);
       if (!mounted) return;
       setState(() {
-        _vehicle = v;
+        _vehicle = RoleProfileUtils.flattenForFieldLookup(v);
         _loading = false;
       });
     } catch (e) {
@@ -56,20 +58,12 @@ class _DriverVehicleDetailsScreenState
     }
   }
 
-  static String _pick(Map<String, dynamic> m, List<String> keys) {
-    for (final k in keys) {
-      final v = m[k];
-      if (v == null) continue;
-      final s = v.toString().trim();
-      if (s.isNotEmpty) return s;
-    }
-    return '';
+  static String _pick(Map<String, dynamic>? m, List<String> keys) {
+    if (m == null) return '';
+    return RoleProfileUtils.firstStringField(m, keys) ?? '';
   }
 
-  static bool _looksLikeUrl(String s) {
-    final t = s.trim().toLowerCase();
-    return t.startsWith('http://') || t.startsWith('https://');
-  }
+  static bool _looksLikeUrl(String s) => RoleProfileUtils.looksLikeUrl(s);
 
   Future<void> _openUrl(String url) async {
     final uri = Uri.tryParse(url.trim());
@@ -78,42 +72,19 @@ class _DriverVehicleDetailsScreenState
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
-  Future<void> _showDocumentValue(String label, String value) async {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty || !mounted) return;
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(label),
-        content: SelectableText(trimmed),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(context.l10n.close),
-          ),
-          if (_looksLikeUrl(trimmed))
-            FilledButton.icon(
-              onPressed: () async {
-                Navigator.pop(ctx);
-                await _openUrl(trimmed);
-              },
-              icon: const Icon(Icons.open_in_new_rounded),
-              label: Text(context.l10n.openLink),
-            ),
-        ],
-      ),
-    );
+  Future<void> _openDocument(String url) async {
+    if (!_looksLikeUrl(url)) return;
+    await _openUrl(url);
   }
 
   @override
   Widget build(BuildContext context) {
     final v = _vehicle;
-    final libriDocument = v == null
-        ? ''
-        : _pick(v, ['libriDocument', 'libri_document']);
-    final insuranceDocument = v == null
-        ? ''
-        : _pick(v, ['insuranceDocument', 'insurance_document']);
+    final libreDocument = _pick(v, RoleProfileUtils.vehicleLibreDocumentKeys);
+    final libreDocumentSec =
+        _pick(v, RoleProfileUtils.vehicleLibreDocumentSecKeys);
+    final insuranceDocument =
+        _pick(v, RoleProfileUtils.vehicleInsuranceDocumentKeys);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundWarm,
@@ -170,32 +141,20 @@ class _DriverVehicleDetailsScreenState
                     _SectionLabel(context.l10n.registrationAndDocuments),
                     _InfoCard(
                       children: [
-                        _DetailRow(
-                          label: context.l10n.libriNumber,
-                          value: _pick(v, ['libriNumber', 'libri_no']),
-                          emptyHint: '—',
+                        _DetailRowDocument(
+                          label: context.l10n.libreDocument,
+                          value: libreDocument,
+                          onOpen: () => _openDocument(libreDocument),
                         ),
-                        _DetailRowLink(
-                          label: context.l10n.libriDocument,
-                          value: libriDocument,
-                          onOpen: () => _showDocumentValue(
-                            context.l10n.libriDocument,
-                            libriDocument,
-                          ),
+                        _DetailRowDocument(
+                          label: context.l10n.libreDocumentSec,
+                          value: libreDocumentSec,
+                          onOpen: () => _openDocument(libreDocumentSec),
                         ),
-                        _DetailRow(
-                          label: context.l10n.insuranceNumber,
-                          value:
-                              _pick(v, ['insuranceNumber', 'insurance_number']),
-                          emptyHint: '—',
-                        ),
-                        _DetailRowLink(
+                        _DetailRowDocument(
                           label: context.l10n.insuranceDocument,
                           value: insuranceDocument,
-                          onOpen: () => _showDocumentValue(
-                            context.l10n.insuranceDocument,
-                            insuranceDocument,
-                          ),
+                          onOpen: () => _openDocument(insuranceDocument),
                         ),
                       ],
                     ),
@@ -228,8 +187,16 @@ class _DriverVehicleDetailsScreenState
                     if (_pick(v, ['photo', 'photoUrl', 'imageUrl']).isNotEmpty) ...[
                       const SizedBox(height: 16),
                       _SectionLabel(context.l10n.photoTitle),
-                      _VehiclePhotoCard(
-                        url: _pick(v, ['photo', 'photoUrl', 'imageUrl']),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: NetworkDocumentPreview(
+                          url: _pick(v, ['photo', 'photoUrl', 'imageUrl']),
+                          aspectRatio: 16 / 10,
+                          borderRadius: 28,
+                          onTap: () => _openDocument(
+                            _pick(v, ['photo', 'photoUrl', 'imageUrl']),
+                          ),
+                        ),
                       ),
                     ],
                   ],
@@ -393,56 +360,8 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({
-    required this.label,
-    required this.value,
-    this.emptyHint = '—',
-  });
-
-  final String label;
-  final String value;
-  final String emptyHint;
-
-  @override
-  Widget build(BuildContext context) {
-    final display = value.isEmpty ? emptyHint : value;
-    final muted = value.isEmpty;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              display,
-              textAlign: TextAlign.right,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: muted ? AppColors.textTertiary : AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DetailRowLink extends StatelessWidget {
-  const _DetailRowLink({
+class _DetailRowDocument extends StatelessWidget {
+  const _DetailRowDocument({
     required this.label,
     required this.value,
     this.onOpen,
@@ -454,112 +373,33 @@ class _DetailRowLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasLink = onOpen != null && value.isNotEmpty;
-
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (value.isEmpty)
-                  Text(
-                    '—',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textTertiary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                  )
-                else ...[
-                  SelectableText(
-                    value,
-                    textAlign: TextAlign.right,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                          height: 1.35,
-                        ),
-                  ),
-                  if (hasLink) ...[
-                    const SizedBox(height: 6),
-                    TextButton.icon(
-                      onPressed: onOpen,
-                      icon: const Icon(Icons.open_in_new_rounded, size: 18),
-                      label: Text(context.l10n.openLink),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        visualDensity: VisualDensity.compact,
-                      ),
-                    ),
-                  ],
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _VehiclePhotoCard extends StatelessWidget {
-  const _VehiclePhotoCard({required this.url});
-
-  final String url;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: AspectRatio(
-          aspectRatio: 16 / 10,
-          child: Image.network(
-            url,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Container(
-              color: AppColors.surfaceHighlight,
-              child: const Center(
-                child: Icon(
-                  Icons.broken_image_outlined,
-                  size: 48,
-                  color: AppColors.textTertiary,
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
                 ),
-              ),
-            ),
-            loadingBuilder: (context, child, progress) {
-              if (progress == null) return child;
-              return const Center(child: CircularProgressIndicator());
-            },
           ),
-        ),
+          const SizedBox(height: 8),
+          if (value.isEmpty)
+            Text(
+              '—',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textTertiary,
+                    fontWeight: FontWeight.w700,
+                  ),
+            )
+          else
+            NetworkDocumentPreview(
+              url: value,
+              onTap: onOpen,
+            ),
+        ],
       ),
     );
   }

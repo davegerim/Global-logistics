@@ -76,7 +76,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get driverRating => 'Driver Rating';
 
   @override
-  String get libriNumber => 'Libre number';
+  String get libriNumber => 'Chassis number';
 
   @override
   String get libriDocumentAttached => 'Libre document attached';
@@ -418,6 +418,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get businessNameOptional => 'Business Name (Optional)';
 
   @override
+  String get consignorBusinessNameOrName => 'Business Name or Name';
+
+  @override
+  String get consignorBusinessNameOrNameOptional =>
+      'Business Name or Name (Optional)';
+
+  @override
+  String get consignorUploadTradeLicenceOrId =>
+      'Upload Trade Licence or ID (image or PDF)';
+
+  @override
+  String get tinNumber => 'TIN Number';
+
+  @override
+  String get tinNumberOptional => 'TIN Number (Optional)';
+
+  @override
   String get tradeLicenceAttached => 'Trade licence attached';
 
   @override
@@ -537,6 +554,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get licenceDocumentAttached => 'Licence document attached';
 
   @override
+  String get licenceDocument => 'Licence document';
+
+  @override
   String get preferredLanesOptional => 'Preferred Lanes (Optional)';
 
   @override
@@ -549,6 +569,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get otpSentCheckPhone =>
       'OTP sent. Check your phone for the verification code.';
+
+  @override
+  String get otpResent => 'A new verification code has been sent.';
+
+  @override
+  String get didntReceiveOtp => 'Didn\'t receive the code?';
+
+  @override
+  String get resendOtp => 'Resend';
 
   @override
   String get pleaseFillInAllFields => 'Please fill in all fields.';
@@ -1108,7 +1137,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Update your company name and trade licence';
 
   @override
-  String get uploadTradeLicence => 'Upload trade licence or ID (image or PDF)';
+  String get uploadTradeLicence => 'Upload TIN number or ID (image or PDF)';
 
   @override
   String get tradeLicenceUploaded => 'Trade licence uploaded.';
@@ -1198,6 +1227,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateProfileSubtitle => 'Photo, licence, lanes';
+
+  @override
+  String get updateVehicleProfileTitle => 'Update vehicle';
+
+  @override
+  String get updateVehicleProfileListSubtitle => 'Plate, documents, photo';
 
   @override
   String get vehicleDetailsTitle => 'Vehicle Details';
@@ -1312,7 +1347,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterValidTenDigitPhone => 'Enter a valid 10-digit phone number.';
 
   @override
+  String get enterValidRegistrationPhone =>
+      'Enter a valid phone number starting with 09 or 07.';
+
+  @override
   String get enterYourPassword => 'Enter your password.';
+
+  @override
+  String passwordMustBeBetweenCharacters(int min, int max) {
+    return 'Password must be between $min and $max characters.';
+  }
 
   @override
   String fieldIsRequired(String fieldName) {
@@ -1364,6 +1408,67 @@ class AppLocalizationsEn extends AppLocalizations {
   String get boloDocumentAttached => 'Bolo document attached';
 
   @override
+  String get boloDocument => 'Bolo document';
+
+  @override
+  String get libreDocumentSec => 'Libre Document Sec';
+
+  @override
+  String get libreDocument => 'Libre Document';
+
+  @override
+  String get profilePic => 'Profile Pic';
+
+  @override
+  String get nationalIdImg => 'National ID Img';
+
+  @override
+  String get uploadProfilePic => 'Upload profile pic (JPG, PNG, or WebP)';
+
+  @override
+  String get uploadNationalIdImg => 'Upload national ID img (image or PDF)';
+
+  @override
+  String get uploadLibreDocument => 'Upload libre document (image or PDF)';
+
+  @override
+  String get uploadLibreDocumentSec =>
+      'Upload libre document sec (image or PDF)';
+
+  @override
+  String get uploadPhoto => 'Upload photo (JPG, PNG, or WebP)';
+
+  @override
+  String get profilePicUploaded => 'Profile pic uploaded.';
+
+  @override
+  String get profilePicAttached => 'Profile pic attached';
+
+  @override
+  String get libreDocumentUploaded => 'Libre document uploaded.';
+
+  @override
+  String get libreDocumentAttached => 'Libre document attached';
+
+  @override
+  String get libreDocumentSecUploaded => 'Libre document sec uploaded.';
+
+  @override
+  String get libreDocumentSecAttached => 'Libre document sec attached';
+
+  @override
+  String get nationalIdImgUploaded => 'National ID img uploaded.';
+
+  @override
+  String get nationalIdImgAttached => 'National ID img attached';
+
+  @override
+  String get photoUploaded => 'Photo uploaded.';
+
+  @override
+  String get photoAttached => 'Photo attached';
+
+  @override
   String get uploadInsuranceDocument =>
       'Upload insurance document (image or PDF)';
 
@@ -1379,6 +1484,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vehiclePhotoUploaded => 'Vehicle photo uploaded.';
+
+  @override
+  String get vehiclePhoto => 'Vehicle photo';
 
   @override
   String get driverRegistrationTitle => 'Driver Registration';
@@ -1521,6 +1629,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Photo, ID, licence, and preferred lanes';
 
   @override
+  String get updateVehicleProfile => 'Update vehicle profile';
+
+  @override
+  String get updateVehicleProfileSubtitle =>
+      'Plate, type, documents, photo, and notes';
+
+  @override
+  String get vehicleProfileUpdated => 'Vehicle profile updated successfully';
+
+  @override
   String get uploadProfilePhoto => 'Upload profile photo';
 
   @override
@@ -1531,6 +1649,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nationalId => 'National ID';
+
+  @override
+  String get nationalIdImage => 'National ID image';
+
+  @override
+  String get uploadNationalIdImage => 'Upload national ID image (image or PDF)';
+
+  @override
+  String get nationalIdImageUploaded => 'National ID image uploaded.';
+
+  @override
+  String get nationalIdImageAttached => 'National ID image attached';
 
   @override
   String get locationTrackingNotice =>

@@ -1,4 +1,3 @@
-import 'package:global_logistics_app/data/mappers/api_mappers.dart';
 import 'package:global_logistics_app/data/models/driver_offer_model.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
@@ -6,12 +5,9 @@ import 'package:global_logistics_app/data/models/shipment_status.dart';
 /// Contract for the existing backend. Replace [MockLogisticsRepository] with
 /// HTTP/WebSocket implementations when API details are wired.
 abstract class LogisticsRepository {
-  Future<List<ShipmentModel>> fetchConsignorShipments();
-  Future<ShipmentModel?> getShipment(String id);
   Future<List<DriverOfferModel>> fetchDriverOffers();
   Future<List<ShipmentModel>> fetchDriverAssignedShipments();
   Future<List<DocumentRef>> fetchDocumentsForAssignment(String assignmentId);
-  Future<List<PaymentRecord>> fetchPayments();
   Future<List<DriverAssignmentFinance>> fetchDriverPayouts();
 }
 
@@ -88,24 +84,6 @@ class MockLogisticsRepository implements LogisticsRepository {
   ];
 
   @override
-  Future<List<ShipmentModel>> fetchConsignorShipments() async {
-    await Future<void>.delayed(const Duration(milliseconds: 400));
-    final out = List<ShipmentModel>.from(_shipments);
-    out.sort(compareShipmentsNewestFirst);
-    return out;
-  }
-
-  @override
-  Future<ShipmentModel?> getShipment(String id) async {
-    await Future<void>.delayed(const Duration(milliseconds: 200));
-    try {
-      return _shipments.firstWhere((s) => s.id == id);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  @override
   Future<List<DriverOfferModel>> fetchDriverOffers() async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
     return [
@@ -158,20 +136,6 @@ class MockLogisticsRepository implements LogisticsRepository {
         title: 'Goods Received Note',
         type: 'GRN',
         availableAt: _now,
-      ),
-    ];
-  }
-
-  @override
-  Future<List<PaymentRecord>> fetchPayments() async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-    return [
-      PaymentRecord(
-        id: 'p1',
-        amount: 12850,
-        currency: 'ETB',
-        status: 'Verified',
-        updatedAt: _now.subtract(const Duration(days: 1)),
       ),
     ];
   }

@@ -6,6 +6,8 @@ import 'package:global_logistics_app/core/constants/app_colors.dart';
 import 'package:global_logistics_app/core/utils/consignor_account_status_utils.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
+import 'package:global_logistics_app/data/utils/role_profile_utils.dart';
+import 'package:global_logistics_app/shared/widgets/network_document_preview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DriverLicenseDetailsScreen extends ConsumerStatefulWidget {
@@ -18,7 +20,7 @@ class DriverLicenseDetailsScreen extends ConsumerStatefulWidget {
 
 class _DriverLicenseDetailsScreenState
     extends ConsumerState<DriverLicenseDetailsScreen> {
-  Map<String, dynamic>? _identity;
+  Map<String, dynamic>? _driverProfile;
   Object? _error;
   var _loading = true;
 
@@ -34,10 +36,10 @@ class _DriverLicenseDetailsScreenState
       _error = null;
     });
     try {
-      final p = await ref.read(backendApiProvider).identityGet();
+      final p = await ref.read(backendApiProvider).driversProfile();
       if (!mounted) return;
       setState(() {
-        _identity = p;
+        _driverProfile = RoleProfileUtils.flattenForFieldLookup(p);
         _loading = false;
       });
     } catch (e) {
@@ -49,10 +51,7 @@ class _DriverLicenseDetailsScreenState
     }
   }
 
-  static bool _looksLikeUrl(String s) {
-    final t = s.trim().toLowerCase();
-    return t.startsWith('http://') || t.startsWith('https://');
-  }
+  static bool _looksLikeUrl(String s) => RoleProfileUtils.looksLikeUrl(s);
 
   Future<void> _openUrl(String url) async {
     final uri = Uri.tryParse(url.trim());
@@ -61,47 +60,32 @@ class _DriverLicenseDetailsScreenState
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
-  /// Collects licence-related fields from identity root and common nested maps.
-  static List<_LicenseField> _collectFields(BuildContext context, Map<String, dynamic> raw) {
+  /// Collects licence-related fields from `/drivers/profile`.
+  static List<_LicenseField> _collectFields(
+    BuildContext context,
+    Map<String, dynamic> raw,
+  ) {
+    final l10n = context.l10n;
+    final specs = <({String label, List<String> keys, bool showAsImage})>[
+      (label: l10n.licenseNumber, keys: ['licenceNumber', 'licenseNumber'], showAsImage: false),
+      (label: l10n.licenseDocument, keys: ['licenceDocument', 'licenseDocument'], showAsImage: true),
+      (label: l10n.nationalId, keys: ['nationalId'], showAsImage: false),
+      (label: l10n.nationalIdImg, keys: ['nationalIdImg', 'nationalIdImage'], showAsImage: true),
+      (label: l10n.preferredLanes, keys: ['preferredLanes'], showAsImage: false),
+      (label: l10n.profilePhoto, keys: ['profilePic'], showAsImage: true),
+    ];
+
     final seen = <String>{};
     final out = <_LicenseField>[];
 
-    void addPair(String label, dynamic value) {
-      if (value == null) return;
-      final s = value.toString().trim();
-      if (s.isEmpty) return;
-      final key = '$label:$s';
-      if (seen.contains(key)) return;
+    for (final spec in specs) {
+      final value = RoleProfileUtils.firstStringField(raw, spec.keys);
+      if (value == null) continue;
+      final key = '${spec.label}:$value';
+      if (seen.contains(key)) continue;
       seen.add(key);
-      final showAsImage = label == 'Profile photo' && _looksLikeUrl(s);
-      out.add(_LicenseField(label, s, showAsImage: showAsImage));
-    }
-
-    final directKeys = <String, String>{
-      'licenceNumber': context.l10n.licenseNumber,
-      'licenseNumber': context.l10n.licenseNumber,
-      'licenceDocument': context.l10n.licenseDocument,
-      'licenseDocument': context.l10n.licenseDocument,
-      'nationalId': context.l10n.nationalId,
-      'preferredLanes': context.l10n.preferredLanes,
-      'profilePic': context.l10n.profilePhoto,
-    };
-
-    void scan(Map<String, dynamic> map) {
-      for (final e in directKeys.entries) {
-        if (map.containsKey(e.key)) {
-          addPair(e.value, map[e.key]);
-        }
-      }
-    }
-
-    scan(raw);
-
-    for (final nest in ['driver', 'driverProfile', 'driverDetails', 'profile']) {
-      final n = raw[nest];
-      if (n is Map) {
-        scan(Map<String, dynamic>.from(n));
-      }
+      final showAsImage = spec.showAsImage && _looksLikeUrl(value);
+      out.add(_LicenseField(spec.label, value, showAsImage: showAsImage));
     }
 
     return out;
@@ -112,8 +96,9 @@ class _DriverLicenseDetailsScreenState
     final auth = ref.watch(authProvider);
     final accountStatusLabel =
         DriverAccountStatusUtils.displayLabel(auth, context.l10n);
-    final fields =
-        _identity == null ? <_LicenseField>[] : _collectFields(context, _identity!);
+    final fields = _driverProfile == null
+        ? <_LicenseField>[]
+        : _collectFields(context, _driverProfile!);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundWarm,
@@ -173,17 +158,6 @@ class _DriverLicenseDetailsScreenState
                         onOpenUrl: _openUrl,
                         looksLikeUrl: _looksLikeUrl,
                       ),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        context.l10n.documentLinksBrowserDesc,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textTertiary,
-                              height: 1.4,
-                            ),
-                      ),
-                    ),
                   ],
                 ]),
               ),
@@ -348,9 +322,9 @@ class _LicenseFieldsCard extends StatelessWidget {
             _LicenseFieldTile(
               field: fields[i],
               onOpenUrl: fields[i].showAsImage
-                  ? null
+                  ? onOpenUrl
                   : looksLikeUrl(fields[i].value)
-                      ? () => onOpenUrl(fields[i].value)
+                      ? onOpenUrl
                       : null,
             ),
           ],
@@ -364,7 +338,7 @@ class _LicenseFieldTile extends StatelessWidget {
   const _LicenseFieldTile({required this.field, this.onOpenUrl});
 
   final _LicenseField field;
-  final VoidCallback? onOpenUrl;
+  final Future<void> Function(String url)? onOpenUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -382,29 +356,10 @@ class _LicenseFieldTile extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           if (field.showAsImage)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: Image.network(
-                  field.value,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: AppColors.surfaceHighlight,
-                    child: const Center(
-                      child: Icon(
-                        Icons.broken_image_outlined,
-                        size: 48,
-                        color: AppColors.textTertiary,
-                      ),
-                    ),
-                  ),
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
-                    return const Center(child: CircularProgressIndicator());
-                  },
-                ),
-              ),
+            NetworkDocumentPreview(
+              url: field.value,
+              aspectRatio: 1,
+              onTap: () => onOpenUrl?.call(field.value),
             )
           else
             SelectableText(
@@ -415,10 +370,10 @@ class _LicenseFieldTile extends StatelessWidget {
                     height: 1.35,
                   ),
             ),
-          if (onOpenUrl != null) ...[
+          if (onOpenUrl != null && !field.showAsImage) ...[
             const SizedBox(height: 8),
             TextButton.icon(
-              onPressed: onOpenUrl,
+              onPressed: () => onOpenUrl!(field.value),
               icon: const Icon(Icons.open_in_new_rounded, size: 18),
               label: Text(context.l10n.openLink),
               style: TextButton.styleFrom(
