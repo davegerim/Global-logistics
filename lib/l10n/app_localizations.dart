@@ -713,7 +713,7 @@ abstract class AppLocalizations {
   /// No description provided for @settled.
   ///
   /// In en, this message translates to:
-  /// **'Settled'**
+  /// **'Agreed'**
   String get settled;
 
   /// No description provided for @goods.

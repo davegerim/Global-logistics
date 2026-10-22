@@ -316,7 +316,7 @@ class _DriverOffersScreenState extends ConsumerState<DriverOffersScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            o.apiStatus ?? 'Offer',
+                            context.translateDynamic(o.apiStatus ?? 'Offer'),
                             style: Theme.of(context).textTheme.labelMedium
                                 ?.copyWith(
                                   color: AppColors.primary,

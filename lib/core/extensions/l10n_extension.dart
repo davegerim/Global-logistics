@@ -37,7 +37,8 @@ extension AppLocalizationsX on BuildContext {
       case 'ETB': return isAm ? 'ብር' : 'ETB';
       case 'System message': return isAm ? 'የስርዓት መልእክት' : 'System message';
       case 'food': return isAm ? 'ምግብ' : 'food';
-      case 'SELECTED': return isAm ? 'ተመርጧል' : 'SELECTED';
+      case 'SELECTED': return isAm ? 'ተመርጠዋል' : 'SELECTED';
+      case 'Selected': return isAm ? 'ተመርጠዋል' : 'Selected';
       case 'DRIVER_ASSIGNED': return isAm ? 'አሽከርካሪ ተመድቧል' : 'DRIVER_ASSIGNED';
       case 'PROFILE_ACTIVATED': return isAm ? 'መገለጫ ነቅቷል' : 'PROFILE_ACTIVATED';
       case 'You have been assigned for freight': return isAm ? 'ለጭነት ተመድበዋል' : 'You have been assigned for freight';
@@ -54,7 +55,7 @@ extension AppLocalizationsX on BuildContext {
       case 'Freight Loaded': return isAm ? 'ጭነት ተጭኗል' : 'Freight Loaded';
       case 'BOOKING_APPROVED': return isAm ? 'ምዝገባ ጸድቋል' : 'BOOKING_APPROVED';
       case 'ADMIN_OFFER': return isAm ? 'የአስተዳዳሪ ቅናሽ' : 'ADMIN_OFFER';
-      case 'OFFLOADED': return isAm ? 'ወርዷል' : 'OFFLOADED';
+      case 'OFFLOADED': return isAm ? 'ተራግፏል' : 'OFFLOADED';
       case 'ARRIVED': return isAm ? 'ደርሷል' : 'ARRIVED';
       case 'IN_TRANSIT': return isAm ? 'በመጓጓዝ ላይ' : 'IN_TRANSIT';
       case 'LOADED': return isAm ? 'ተጭኗል' : 'LOADED';
@@ -64,6 +65,10 @@ extension AppLocalizationsX on BuildContext {
       case 'CREATED': return isAm ? 'ተፈጥሯል' : 'CREATED';
       case 'Shipment created': return isAm ? 'ጭነት ተፈጥሯል' : 'Shipment created';
       case 'Shipment approved': return isAm ? 'ጭነት ጸድቋል' : 'Shipment approved';
+      case 'GDN': return isAm ? 'የዕቃ ማስረከቢያ ሰነድ' : 'GDN';
+      case 'GRN': return isAm ? 'የዕቃ መረከቢያ ሰነድ' : 'GRN';
+      case 'GDN_GENERATED': return isAm ? 'የዕቃ ማስረከቢያ ሰነድ ተፈጥሯል' : 'GDN_GENERATED';
+      case 'GRN_GENERATED': return isAm ? 'የዕቃ መረከቢያ ሰነድ ተፈጥሯል' : 'GRN_GENERATED';
     }
 
     // Advanced fallbacks for dynamic content like "Booking food-16 approved"

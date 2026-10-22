@@ -326,7 +326,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get active => 'Active';
 
   @override
-  String get settled => 'Settled';
+  String get settled => 'Agreed';
 
   @override
   String get goods => 'Goods';

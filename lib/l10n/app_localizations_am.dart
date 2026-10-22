@@ -184,7 +184,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get noShipmentHistoryYet => 'እስካሁን ምንም የጭነት ታሪክ የለም።';
 
   @override
-  String get activeAssignments => 'ገባሪ ምደባዎች';
+  String get activeAssignments => 'አሁን የተመደቡ';
 
   @override
   String get close => 'ዝጋ';
@@ -310,13 +310,13 @@ class AppLocalizationsAm extends AppLocalizations {
   String get shipmentOffers => 'የጭነት ቅናሾች';
 
   @override
-  String get allOffers => 'ሁሉም ቅናሾች';
+  String get allOffers => 'ሁሉም ጭነቶች';
 
   @override
-  String get active => 'ገባሪ';
+  String get active => 'የአሁን';
 
   @override
-  String get settled => 'የተጠናቀቀ';
+  String get settled => 'ተስማምተዋል';
 
   @override
   String get goods => 'እቃዎች';
@@ -328,13 +328,13 @@ class AppLocalizationsAm extends AppLocalizations {
   String get negotiationId => 'የድርድር መለያ';
 
   @override
-  String get openNegotiation => 'ድርድር ክፈት';
+  String get openNegotiation => 'ድርድር';
 
   @override
-  String get goodsDeliveryNote => 'የእቃ ማድረሻ ሰነድ (GDN)';
+  String get goodsDeliveryNote => 'የዕቃ ማስረከቢያ ሰነድ';
 
   @override
-  String get goodsReceivedNote => 'የእቃ መቀበያ ሰነድ (GRN)';
+  String get goodsReceivedNote => 'የዕቃ መረከቢያ ሰነድ';
 
   @override
   String get assignmentRequiredGdn => 'GDN ለመፍጠር ምደባ ያስፈልጋል።';
@@ -367,7 +367,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get markVehicleReachesDestination => 'ተሽከርካሪ መድረሻው ላይ ሲደርስ ምልክት ያድርጉ።';
 
   @override
-  String get confirmOffloaded => 'ማውረዱን አረጋግጥ';
+  String get confirmOffloaded => 'መራገፉን ያረጋጡ';
 
   @override
   String get finishUnloadingCompleteHandover => 'ማውረድ ይጨርሱ እና ርክክብ ያጠናቅቁ።';
@@ -446,7 +446,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get counterProposalSubmitted => 'አዲስ ቅናሽ ገብቷል።';
 
   @override
-  String get offerNegotiation => 'የቅናሽ ድርድር';
+  String get offerNegotiation => 'ድርድር';
 
   @override
   String get offerNotFound => 'ቅናሽ አልተገኘም';
@@ -659,16 +659,16 @@ class AppLocalizationsAm extends AppLocalizations {
   String get arrivedLabel => 'ደርሷል';
 
   @override
-  String get offloadedLabel => 'ወርዷል';
+  String get offloadedLabel => 'ተራግፏል';
 
   @override
   String get loadedLabel => 'ተጭኗል';
 
   @override
-  String get gdnGeneratedLabel => 'GDN ተፈጥሯል';
+  String get gdnGeneratedLabel => 'የዕቃ ማስረከቢያ ሰነድ ተፈጥሯል';
 
   @override
-  String get grnGeneratedLabel => 'GRN ተፈጥሯል';
+  String get grnGeneratedLabel => 'የዕቃ መረከቢያ ሰነድ ተፈጥሯል';
 
   @override
   String get consignorAcceptedLabel => 'በአስጫኝ ተቀባይነት አግኝቷል';
@@ -677,7 +677,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get driverAssignedLabel => 'አሽከርካሪ ተመድቧል';
 
   @override
-  String get selectedLabel => 'ተመርጧል';
+  String get selectedLabel => 'ተመርጠዋል';
 
   @override
   String get consignorReceivedLabel => 'በአስጫኝ ተቀብሏል';
@@ -701,7 +701,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get statusDriverAssigned => 'አሽከርካሪ ተመድቧል';
 
   @override
-  String get statusGdnIssued => 'GDN ተሰጥቷል';
+  String get statusGdnIssued => 'የዕቃ ማስረከቢያ ሰነድ ተሰጥቷል';
 
   @override
   String get statusLoading => 'በመጫን ላይ';
@@ -1041,7 +1041,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get confirmSelection => 'ምርጫ አረጋግጥ';
 
   @override
-  String get gdnGrnHub => 'GDN እና GRN ማዕከል';
+  String get gdnGrnHub => 'የዕቃ ማስረከቢያ ሰነድ እና የዕቃ መረከቢያ ሰነድ ማዕከል';
 
   @override
   String get viewAllShippingDocumentsDesc =>
@@ -1071,10 +1071,10 @@ class AppLocalizationsAm extends AppLocalizations {
   String get allFilter => 'ሁሉም';
 
   @override
-  String get gdnFilter => 'GDN';
+  String get gdnFilter => 'የዕቃ ማስረከቢያ ሰነድ';
 
   @override
-  String get grnFilter => 'GRN';
+  String get grnFilter => 'የዕቃ መረከቢያ ሰነድ';
 
   @override
   String get goodsDetails => 'የእቃ ዝርዝሮች';
@@ -1182,7 +1182,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get accountStatusPrefix => 'የመለያ ሁኔታ: ';
 
   @override
-  String get openOffersButton => 'ቅናሾችን ክፈት';
+  String get openOffersButton => 'ክፍት ጭነቶች';
 
   @override
   String get noActiveAssignmentsDesc => 'ምንም ገባሪ ምደባዎች የሉም። አዳዲስ ቅናሾችን ያረጋግጡ።';
@@ -1742,7 +1742,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get dropOffLabel => 'ማራገፊያ';
 
   @override
-  String get gdnGrnTitle => 'የጭነት/የማስረከቢያ ሰነዶች';
+  String get gdnGrnTitle => 'የዕቃ ማስረከቢያ ሰነድ እና የዕቃ መረከቢያ ሰነድ';
 
   @override
   String get documentsIssuedDesc => 'ለዚህ ምደባ የተሰጡ ሰነዶች';
@@ -1758,17 +1758,17 @@ class AppLocalizationsAm extends AppLocalizations {
   String get transitLabel => 'በመንገድ ላይ';
 
   @override
-  String get waitingForGdnLabel => 'አሰሪው የጭነት ሰነድ እስኪፈጥር በመጠባበቅ ላይ';
+  String get waitingForGdnLabel => 'አሰሪው የዕቃ ማስረከቢያ ሰነድ እስኪፈጥር በመጠባበቅ ላይ';
 
   @override
-  String get checkingGdn => 'የጭነት ሰነድ በመፈለግ ላይ...';
+  String get checkingGdn => 'የዕቃ ማስረከቢያ ሰነድ በመፈለግ ላይ...';
 
   @override
-  String get gdnIsReady => 'የጭነት ሰነድ ዝግጁ ነው';
+  String get gdnIsReady => 'የዕቃ ማስረከቢያ ሰነድ ዝግጁ ነው';
 
   @override
   String get unableToVerifyGdn =>
-      'በአሁኑ ጊዜ የጭነት ሰነድ ማረጋገጥ አልተቻለም። እባክዎ ገፁን ያድሱ።';
+      'በአሁኑ ጊዜ የዕቃ ማስረከቢያ ሰነድ ማረጋገጥ አልተቻለም። እባክዎ ገፁን ያድሱ።';
 
   @override
   String get assignmentIdMissingDesc =>

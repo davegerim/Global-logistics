@@ -784,7 +784,9 @@ class _DriverDocTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      doc.title,
+                      isGdn
+                          ? context.l10n.goodsDeliveryNote
+                          : context.l10n.goodsReceivedNote,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             decoration:
                                 voided ? TextDecoration.lineThrough : null,
@@ -795,7 +797,7 @@ class _DriverDocTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${doc.type} • ${dateFmt.format(doc.availableAt)}',
+                      '${context.translateDynamic(doc.type)} • ${dateFmt.format(doc.availableAt)}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
