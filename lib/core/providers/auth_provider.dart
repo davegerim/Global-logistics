@@ -9,7 +9,6 @@ import 'package:global_logistics_app/core/network/token_refresh_executor.dart';
 import 'package:global_logistics_app/core/errors/user_facing_error.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/tracking/driver_location_tracking.dart';
-import 'package:global_logistics_app/core/tracking/tracking_policy.dart';
 import 'package:global_logistics_app/data/storage/app_launch_preferences.dart';
 import 'package:global_logistics_app/data/storage/registration_preferences.dart';
 import 'package:global_logistics_app/core/utils/registration_flow_utils.dart';
@@ -385,11 +384,7 @@ class AuthNotifier extends Notifier<AuthState> {
         final candidateId = assignmentIdFromMap(assignment);
         if (candidateId == null) continue;
         final status = assignmentStatusFromMap(assignment);
-        final gdns = await api.gdnOfAssignment(candidateId);
-        if (!canSendDriverTrackingUpdate(
-          status,
-          hasGdn: assignmentHasActiveGdn(gdns),
-        )) {
+        if (!isActiveDriverAssignmentStatus(status)) {
           continue;
         }
         await sendDriverTrackingRecord(

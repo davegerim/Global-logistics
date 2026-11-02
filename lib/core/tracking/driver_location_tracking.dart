@@ -16,6 +16,15 @@ String? assignmentStatusFromMap(Map<String, dynamic> assignment) =>
     assignment['status']?.toString() ??
     assignment['currentStatus']?.toString();
 
+/// Matches driver-home "active assignment" (not finished). No GDN check.
+bool isActiveDriverAssignmentStatus(String? status) {
+  final normalized = (status ?? '').trim().toUpperCase();
+  if (normalized.isEmpty) return false;
+  if (normalized == 'CONSIGNOR_RECEIVED') return false;
+  if (normalized == 'COMPLETED') return false;
+  return true;
+}
+
 bool assignmentHasActiveGdn(List<dynamic> gdns) => gdns.any(
   (e) => e is Map && !isGdnGrnVoidedMap(Map<String, dynamic>.from(e)),
 );

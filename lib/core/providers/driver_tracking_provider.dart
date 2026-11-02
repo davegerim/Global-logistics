@@ -5,19 +5,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:global_logistics_app/core/providers/auth_provider.dart';
 import 'package:global_logistics_app/core/providers/backend_api_provider.dart';
 import 'package:global_logistics_app/core/tracking/driver_location_tracking.dart';
-import 'package:global_logistics_app/core/tracking/tracking_policy.dart';
 
-/// Status-driven driver location tracking. Sends pings whenever an assignment
-/// is in a trackable status (LOADED → OFFLOADED), regardless of who updated it.
+/// Driver location tracking while the app is open.
+///
+/// Periodic path: if the driver has any active assignment(s), send location
+/// every [_pingInterval]. Does not require GDN or movement statuses.
+/// Status-click pings from the shipment detail screen are separate and still
+/// use [sendTrackingPing] with their own GDN/status rules.
 class DriverTrackingController extends Notifier<void> {
   static const Duration _pollInterval = Duration(minutes: 2);
-  static const Duration _pingInterval = Duration(minutes: 15);
+  static const Duration _pingInterval = Duration(minutes: 5);
 
   Timer? _pollTimer;
   bool _tickInFlight = false;
   bool _sendInFlight = false;
   bool _appInForeground = true;
-  final Map<String, String> _lastStatuses = {};
   final Map<String, DateTime> _lastPingAt = {};
 
   @override
@@ -77,7 +79,6 @@ class DriverTrackingController extends Notifier<void> {
   }
 
   void _clearState() {
-    _lastStatuses.clear();
     _lastPingAt.clear();
   }
 
@@ -100,34 +101,23 @@ class DriverTrackingController extends Notifier<void> {
 
         seenAssignmentIds.add(assignmentId);
         final status = assignmentStatusFromMap(assignment);
-        final gdns = await api.gdnOfAssignment(assignmentId);
-        final hasGdn = assignmentHasActiveGdn(gdns);
-        if (!canSendDriverTrackingUpdate(status, hasGdn: hasGdn)) {
-          _lastStatuses.remove(assignmentId);
+        if (!isActiveDriverAssignmentStatus(status)) {
           _lastPingAt.remove(assignmentId);
           continue;
         }
 
-        final normalized = normalizeTrackingStatus(status);
-        final previousStatus = _lastStatuses[assignmentId];
-        final statusChanged =
-            previousStatus != null && previousStatus != normalized;
         final lastPing = _lastPingAt[assignmentId];
         final dueForPeriodic =
             lastPing == null ||
             DateTime.now().toUtc().difference(lastPing) >= _pingInterval;
 
-        if (previousStatus == null || statusChanged || dueForPeriodic) {
-          final reason = statusChanged
-              ? 'status-change:$normalized'
-              : (previousStatus == null ? 'tracking-start' : 'periodic-15m');
+        if (dueForPeriodic) {
+          final reason =
+              lastPing == null ? 'active-assignment-start' : 'periodic-5m';
           await sendTrackingPing(assignmentId, reason: reason);
         }
-
-        _lastStatuses[assignmentId] = normalized;
       }
 
-      _lastStatuses.removeWhere((id, _) => !seenAssignmentIds.contains(id));
       _lastPingAt.removeWhere((id, _) => !seenAssignmentIds.contains(id));
     } catch (e) {
       debugPrint('[TRACKING] poll failed: $e');
