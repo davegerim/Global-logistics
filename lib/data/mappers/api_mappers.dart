@@ -106,6 +106,7 @@ ShipmentStatus mapAssignmentStatus(String? s) {
     case 'CONSIGNOR_RECEIVED':
       return ShipmentStatus.delivered;
     case 'CANCELLED':
+      return ShipmentStatus.cancelled;
     case 'REOPENED_BY_ADMIN':
       return ShipmentStatus.pendingReview;
     default:

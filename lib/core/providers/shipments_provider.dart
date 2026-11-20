@@ -31,11 +31,15 @@ final driverAssignedShipmentsProvider = FutureProvider<List<ShipmentModel>>((ref
   return repo.fetchDriverAssignedShipments();
 });
 
-/// Driver home / stats: hide finished assignments (e.g. consignor received).
+/// Driver home / stats: hide finished or cancelled assignments.
 bool isDriverAssignmentActive(ShipmentModel s) {
   final api = (s.apiStatusLabel ?? '').trim().toUpperCase();
-  if (api == 'CONSIGNOR_RECEIVED') return false;
-  if (s.status == ShipmentStatus.completed) return false;
+  if (api == 'CONSIGNOR_RECEIVED' || api == 'COMPLETED') return false;
+  if (api.contains('CANCELLED')) return false;
+  if (s.status == ShipmentStatus.completed ||
+      s.status == ShipmentStatus.cancelled) {
+    return false;
+  }
   return true;
 }
 
