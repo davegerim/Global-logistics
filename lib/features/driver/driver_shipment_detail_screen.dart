@@ -100,6 +100,7 @@ class _DriverShipmentDetailScreenState
             .sendTrackingPing(assignmentId, reason: 'status:$label');
       }
       ref.invalidate(driverAssignedShipmentsProvider);
+      ref.invalidate(driverActiveAssignmentsProvider);
       if (context.mounted) {
         await _refreshGdnState(assignmentId);
       }

@@ -27,6 +27,10 @@ ShipmentModel _assignment({
 }
 
 void main() {
+  test('ACTIVE status constant matches API docs', () {
+    expect(kDriverAssignmentStatusActive, 'ACTIVE');
+  });
+
   group('isDriverAssignmentActive', () {
     test('keeps in-progress assignment statuses', () {
       expect(

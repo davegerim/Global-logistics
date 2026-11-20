@@ -6,15 +6,23 @@ import 'package:global_logistics_app/data/mappers/api_mappers.dart';
 import 'package:global_logistics_app/data/models/shipment_model.dart';
 import 'package:global_logistics_app/data/models/shipment_status.dart';
 
+/// Backend `/assignments/driver/pages` status bucket for in-progress work.
+const kDriverAssignmentStatusActive = 'ACTIVE';
+
 Future<void> refreshDriverHomeData(WidgetRef ref) async {
   ref.invalidate(unreadNotificationsCountProvider);
+  ref.invalidate(driverActiveAssignmentsProvider);
   ref.invalidate(driverAssignedShipmentsProvider);
-  await ref.read(driverAssignedShipmentsProvider.future);
+  await ref.read(driverActiveAssignmentsProvider.future);
 }
 
 Future<void> refreshDriverAssignmentDetailData(WidgetRef ref) async {
   ref.invalidate(driverAssignedShipmentsProvider);
-  await ref.read(driverAssignedShipmentsProvider.future);
+  ref.invalidate(driverActiveAssignmentsProvider);
+  await Future.wait([
+    ref.read(driverAssignedShipmentsProvider.future),
+    ref.read(driverActiveAssignmentsProvider.future),
+  ]);
 }
 
 ShipmentModel? findDriverAssignmentById(List<ShipmentModel> list, String id) {
@@ -26,12 +34,15 @@ ShipmentModel? findDriverAssignmentById(List<ShipmentModel> list, String id) {
   return null;
 }
 
+/// Full driver assignment list (all status buckets). Used by History / detail.
 final driverAssignedShipmentsProvider = FutureProvider<List<ShipmentModel>>((ref) {
   final repo = ref.watch(logisticsRepositoryProvider);
   return repo.fetchDriverAssignedShipments();
 });
 
 /// Driver home / stats: hide finished or cancelled assignments.
+/// Kept as a defensive client filter even when the API is called with
+/// [kDriverAssignmentStatusActive].
 bool isDriverAssignmentActive(ShipmentModel s) {
   final api = (s.apiStatusLabel ?? '').trim().toUpperCase();
   if (api == 'CONSIGNOR_RECEIVED' || api == 'COMPLETED') return false;
@@ -43,24 +54,21 @@ bool isDriverAssignmentActive(ShipmentModel s) {
   return true;
 }
 
-final driverActiveAssignmentsProvider = Provider<AsyncValue<List<ShipmentModel>>>((ref) {
-  final all = ref.watch(driverAssignedShipmentsProvider);
-  return all.when(
-    skipLoadingOnReload: true,
-    data: (list) {
-      final active = list.where(isDriverAssignmentActive).toList()
-        ..sort(compareShipmentsNewestFirst);
-      return AsyncValue.data(
-        AssignmentDisplay.withDriverListSequences(active),
-      );
-    },
-    loading: () => const AsyncValue.loading(),
-    error: AsyncValue.error,
+/// Home / profile active list — requests `status=ACTIVE` from the API, then
+/// applies [isDriverAssignmentActive] as a safety net.
+final driverActiveAssignmentsProvider =
+    FutureProvider<List<ShipmentModel>>((ref) async {
+  final repo = ref.watch(logisticsRepositoryProvider);
+  final list = await repo.fetchDriverAssignedShipments(
+    status: kDriverAssignmentStatusActive,
   );
+  final active = list.where(isDriverAssignmentActive).toList()
+    ..sort(compareShipmentsNewestFirst);
+  return AssignmentDisplay.withDriverListSequences(active);
 });
 
 /// Driver assignment detail — derived from [driverAssignedShipmentsProvider]
-/// so status stays in sync with the home list after admin or consignor updates.
+/// so History / cancelled / completed rows remain resolvable by id.
 final driverAssignmentDetailProvider =
     Provider.autoDispose.family<AsyncValue<ShipmentModel?>, String>((ref, id) {
   final all = ref.watch(driverAssignedShipmentsProvider);

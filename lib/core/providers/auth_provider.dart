@@ -377,7 +377,7 @@ class AuthNotifier extends Notifier<AuthState> {
     if (state.role != AppRole.driver) return;
     try {
       final api = ref.read(backendApiProvider);
-      final assignments = await api.assignmentsDriver();
+      final assignments = await api.assignmentsDriver(status: 'ACTIVE');
       for (final raw in assignments) {
         if (raw is! Map) continue;
         final assignment = raw.cast<String, dynamic>();

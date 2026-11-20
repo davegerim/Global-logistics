@@ -6,7 +6,9 @@ import 'package:global_logistics_app/data/models/shipment_status.dart';
 /// HTTP/WebSocket implementations when API details are wired.
 abstract class LogisticsRepository {
   Future<List<DriverOfferModel>> fetchDriverOffers();
-  Future<List<ShipmentModel>> fetchDriverAssignedShipments();
+  /// [status] mirrors `/assignments/driver/pages`: `ACTIVE`, `COMPLETED`,
+  /// `CANCELLED`, or null/omitted for all.
+  Future<List<ShipmentModel>> fetchDriverAssignedShipments({String? status});
   Future<List<DocumentRef>> fetchDocumentsForAssignment(String assignmentId);
   Future<List<DriverAssignmentFinance>> fetchDriverPayouts();
 }
@@ -109,16 +111,39 @@ class MockLogisticsRepository implements LogisticsRepository {
   }
 
   @override
-  Future<List<ShipmentModel>> fetchDriverAssignedShipments() async {
+  Future<List<ShipmentModel>> fetchDriverAssignedShipments({
+    String? status,
+  }) async {
     await Future<void>.delayed(const Duration(milliseconds: 400));
-    return _shipments
-        .where(
-          (s) =>
-              s.status == ShipmentStatus.inTransit ||
-              s.status == ShipmentStatus.loading ||
-              s.status == ShipmentStatus.driverAssigned,
-        )
-        .toList();
+    final normalized = status?.trim().toUpperCase();
+    if (normalized == null || normalized.isEmpty) {
+      return List<ShipmentModel>.from(_shipments);
+    }
+    if (normalized == 'ACTIVE') {
+      return _shipments
+          .where(
+            (s) =>
+                s.status == ShipmentStatus.inTransit ||
+                s.status == ShipmentStatus.loading ||
+                s.status == ShipmentStatus.driverAssigned,
+          )
+          .toList();
+    }
+    if (normalized == 'COMPLETED') {
+      return _shipments
+          .where(
+            (s) =>
+                s.status == ShipmentStatus.completed ||
+                s.status == ShipmentStatus.delivered,
+          )
+          .toList();
+    }
+    if (normalized == 'CANCELLED') {
+      return _shipments
+          .where((s) => s.status == ShipmentStatus.cancelled)
+          .toList();
+    }
+    return List<ShipmentModel>.from(_shipments);
   }
 
   @override

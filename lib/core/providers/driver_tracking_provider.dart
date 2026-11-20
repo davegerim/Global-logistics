@@ -90,7 +90,8 @@ class DriverTrackingController extends Notifier<void> {
     _tickInFlight = true;
     try {
       final api = ref.read(backendApiProvider);
-      final assignments = await api.assignmentsDriver();
+      // Prefer server-side ACTIVE bucket; keep client filter as safety net.
+      final assignments = await api.assignmentsDriver(status: 'ACTIVE');
       final seenAssignmentIds = <String>{};
 
       for (final raw in assignments) {

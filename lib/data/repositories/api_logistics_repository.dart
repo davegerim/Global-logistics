@@ -18,9 +18,11 @@ class ApiLogisticsRepository implements LogisticsRepository {
   }
 
   @override
-  Future<List<ShipmentModel>> fetchDriverAssignedShipments() async {
+  Future<List<ShipmentModel>> fetchDriverAssignedShipments({
+    String? status,
+  }) async {
     final results = await Future.wait([
-      _api.assignmentsDriver(),
+      _api.assignmentsDriver(status: status),
       _api.driverNegotiationsList().catchError((_) => <dynamic>[]),
     ]);
     final raw = results[0];

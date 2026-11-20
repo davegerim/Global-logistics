@@ -190,11 +190,13 @@ class BackendApi {
   }
 
   // --- assignments ---
-  /// Loads all driver assignments via the paged API and returns a flat list
+  /// Loads driver assignments via the paged API and returns a flat list
   /// (same shape callers expect from the old `GET /assignments/driver`).
-  /// Omits `status` so the backend returns ACTIVE + COMPLETED + CANCELLED.
-  Future<List<dynamic>> assignmentsDriver() async {
-    return _assignmentsDriverAllPages();
+  ///
+  /// [status] is optional: `ACTIVE`, `COMPLETED`, `CANCELLED`, or null/omitted
+  /// for all buckets. Pages are fetched until exhausted (`size` default 10).
+  Future<List<dynamic>> assignmentsDriver({String? status}) async {
+    return _assignmentsDriverAllPages(status: status);
   }
 
   /// [status] is optional: `ACTIVE`, `COMPLETED`, `CANCELLED`, or null/omitted for all.
